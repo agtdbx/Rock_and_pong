@@ -1,6 +1,8 @@
 from define import *
 from pg_utils import *
+from vec2 import *
 import ball
+import wall
 
 import pygame as pg
 import math
@@ -16,7 +18,7 @@ class Game:
 		pg.init()
 
 		# We remove the toolbar of the window's height
-		self.winSize = ((1920, 1080))
+		self.winSize = ((WIN_WIDTH, WIN_HEIGHT))
 		# We create the window
 		self.win = pg.display.set_mode(self.winSize, pg.RESIZABLE)
 
@@ -28,7 +30,10 @@ class Game:
 		self.runMainLoop = True
 
 		# Ball creation
-		self.ball = ball.Ball(200, 200)
+		self.ball = ball.Ball(AREA_BORDER_RECT[0] + AREA_BORDER_RECT[2] / 2, AREA_BORDER_RECT[1] + AREA_BORDER_RECT[3] / 2)
+
+		# Walls creation
+		self.walls = [wall.Wall(AREA_BORDER_RECT[0] + AREA_BORDER_RECT[2] / 2, AREA_BORDER_RECT[1] + AREA_BORDER_SIZE / 2, AREA_BORDER_RECT[2], AREA_BORDER_SIZE, (50, 50, 50))]
 
 		# Scores
 		self.player1Score = 0
@@ -74,20 +79,37 @@ class Game:
 		delta = tmp - self.last
 		self.last = tmp
 
+		for w in self.walls:
+			if self.keyboardState[pg.K_w]:
+				w.translate(Vec2(0, -1))
+			if self.keyboardState[pg.K_s]:
+				w.translate(Vec2(0, 1))
+			if self.keyboardState[pg.K_a]:
+				w.translate(Vec2(-1, 0))
+			if self.keyboardState[pg.K_d]:
+				w.translate(Vec2(1, 0))
+			if self.keyboardState[pg.K_q]:
+				w.rotate(-1)
+			if self.keyboardState[pg.K_e]:
+				w.rotate(1)
+
+			w.makeCollisionWithBall(self.ball)
+
 		if self.mouseState[0]:
 			self.ball.affecteDirection(self.mousePos)
 
-		self.ball.updatePosition(delta)
+		self.ball.updatePosition(delta, self.walls)
 
 		if self.ball.inWaiting:
-			if self.ball.x < WIN_WIDTH / 2:
+			if self.ball.pos.x < WIN_WIDTH / 2:
 				self.player2Score += 1
 			else:
 				self.player1Score += 1
 			self.ball.speed = 0
-			self.ball.x = AREA_BORDER_RECT[0] + AREA_BORDER_RECT[2] / 2
-			self.ball.y = AREA_BORDER_RECT[1] + AREA_BORDER_RECT[3] / 2
+			self.ball.pos.x = AREA_BORDER_RECT[0] + AREA_BORDER_RECT[2] / 2
+			self.ball.pos.y = AREA_BORDER_RECT[1] + AREA_BORDER_RECT[3] / 2
 			self.ball.inWaiting = False
+
 
 		pg.display.set_caption(str(self.clock.get_fps()))
 
@@ -102,6 +124,10 @@ class Game:
 		# Draw area
 		pg.draw.rect(self.win, AREA_BORDER_COLOR, AREA_BORDER_RECT, AREA_BORDER_SIZE)
 		pg.draw.rect(self.win, AREA_COLOR, AREA_RECT)
+
+		# Draw ball
+		for w in self.walls:
+			w.draw(self.win)
 
 		# Draw ball
 		self.ball.draw(self.win)

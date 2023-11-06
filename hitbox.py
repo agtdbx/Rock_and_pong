@@ -1,39 +1,71 @@
-import point
+from vec2 import *
+from define import *
 
 import pygame as pg
 import math
 
 
-def collideBetweenSegments(p0, p1, p2, p3):
-	s1 = point.pointSub(p1, p0)
-	s2 = point.pointSub(p3, p2)
-
-	p0_minus_p2 = point.pointSub(p0, p2)
-
-	divisor = -s2.x * s1.y + s1.x - s2.y
-
+def collideBetweenSegments(p1, p2, p3, p4):
+	divisor = (p1.x - p2.x) * (p3.y - p4.y) - (p1.y - p2.y) * (p3.x - p4.x)
 	if divisor == 0:
-		return False
+		return False, None
 
-	s = (-s1.y * p0_minus_p2.x + s1.x * p0_minus_p2.y) / divisor
-
-	if s < 0 or 1 < s:
-		return False
-
-	t = ( s2.x * p0_minus_p2.y - s2.y * p0_minus_p2.x) / divisor
+	t = (p1.x - p3.x) * (p3.y - p4.y) - (p1.y - p3.y) * (p3.x - p4.x)
+	t /= divisor
 
 	if t < 0 or 1 < t:
-		return False
+		return False, None
 
-	return True
+	u = (p1.x - p3.x) * (p1.y - p2.y) - (p1.y - p3.y) * (p1.x - p2.x)
+	u /= divisor
+
+	if u < 0 or 1 < u:
+		return False, None
+
+	s1Dir = vec2Sub(p2, p1)
+	p = p1.dup()
+	p.translateAlong(s1Dir, t)
+
+	return True, p, p1, p2
+
+
+# def collideBetweenSegments(p0, p1, p2, p3):
+# 	s1 = vec2Sub(p1, p0)
+# 	s2 = vec2Sub(p3, p2)
+
+# 	p0_minus_p2 = vec2Sub(p0, p2)
+
+# 	divisor = -s2.x * s1.y + s1.x - s2.y
+
+# 	if divisor == 0:
+# 		return False, None
+
+# 	s = (-s1.y * p0_minus_p2.x + s1.x * p0_minus_p2.y) / divisor
+
+# 	if s < 0 or 1 < s:
+# 		return False, None
+
+# 	print(p0, p1, p2, p3)
+# 	t = ( s2.x * p0_minus_p2.y - s2.y * p0_minus_p2.x) / divisor
+
+# 	if t < 0 or 1 < t:
+# 		return False, None
+
+# 	p = p0.dup()
+# 	norm = s1.norm()
+# 	s1.divide(norm)
+# 	p.translateAlong(s1, norm * s)
+
+# 	return True, p, p0, p1
 
 
 class Hitbox:
-	def __init__(self, x, y, color):
+	def __init__(self, x, y, color, fillColor = (255, 255, 255)):
 		self.x = x
 		self.y = y
 
 		self.color = color
+		self.fillColor = fillColor
 
 		self.rect = [0, 0, 0, 0]
 
@@ -47,7 +79,7 @@ class Hitbox:
 
 
 	def addPoint(self, x, y):
-		self.points.append(point.Point(self.x + x, self.y + y))
+		self.points.append(Vec2(self.x + x, self.y + y))
 		self.computeSurroundingRect()
 
 
@@ -80,7 +112,6 @@ class Hitbox:
 		self.rect[1] = yUp + self.y
 		self.rect[3] = yDown - yUp + 1
 
-
 	def setPos(self, x, y):
 		dx = x - self.x
 		dy = y - self.y
@@ -112,13 +143,40 @@ class Hitbox:
 		self.computeSurroundingRect()
 
 
+	def drawNormals(self, win):
+		for i in range(1, len(self.points)):
+			segDir = vec2Sub(self.points[i], self.points[i - 1])
+			segNorm = segDir.norm()
+			segDir.divide(segNorm)
+			segNormal = getNormalOfSegment(self.points[i], self.points[i - 1])
+
+			startPoint = self.points[i - 1].dup()
+			startPoint.translateAlong(segDir, segNorm / 2)
+
+			endPoint = startPoint.dup()
+			endPoint.translateAlong(segNormal, 20)
+
+			pg.draw.line(win, self.color, startPoint.asTupple(), endPoint.asTupple(), 1)
+
+
 	def draw(self, win):
-		for i in range (0, len(self.points)):
-			pg.draw.line(win, self.color, self.points[i - 1].asTupple(), self.points[i].asTupple())
+		if DRAW_HITBOX:
+			points = []
+			for p in self.points:
+				points.append(p.asTupple())
 
-		# if (len(self.points) > 1):
-		# 	pg.draw.rect(win, (0, 0, 255), self.rect, 1)
+			pg.draw.polygon(win, self.color, points, 1)
 
+		if DRAW_HITBOX_NORMALS:
+			self.drawNormals(win)
+
+
+	def drawFill(self, win):
+		points = []
+		for p in self.points:
+			points.append(p.asTupple())
+
+		pg.draw.polygon(win, self.fillColor, points)
 
 
 	def isCollide(self, hitbox):
@@ -141,7 +199,22 @@ class Hitbox:
 					p2 = hitbox.points[j - 1]
 					p3 = hitbox.points[j]
 
-					if collideBetweenSegments(p0, p1, p2, p3):
+					if collideBetweenSegments(p0, p1, p2, p3)[0]:
 						return True
 
 		return False
+
+
+	def getCollideInfo(self, hitbox):
+		collideInfos = []
+		for i in range (0, len(self.points)):
+			p0 = self.points[i - 1]
+			p1 = self.points[i]
+
+			for j in range (0,  len(hitbox.points)):
+				p2 = hitbox.points[j - 1]
+				p3 = hitbox.points[j]
+
+				collideInfos.append(collideBetweenSegments(p0, p1, p2, p3))
+
+		return collideInfos

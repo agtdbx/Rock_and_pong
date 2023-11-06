@@ -1,17 +1,16 @@
 from define import *
+from vec2 import *
 import hitbox
 
 import pygame as pg
-import math
 
 class Ball:
 	def __init__(self, x, y):
-		self.x = x
-		self.y = y
+		self.pos = Vec2(x, y)
 		self.radius = BALL_RADIUS
 		self.color = BALL_COLOR
 		self.sprite = pg.image.load("imgs/ball.png")
-		self.hitbox = hitbox.Hitbox(self.x, self.y, HITBOX_BALL_COLOR)
+		self.hitbox = hitbox.Hitbox(x, y, HITBOX_BALL_COLOR)
 		self.hitbox.addPoint(0, -18.5)
 		self.hitbox.addPoint(11.5, - 14.5)
 		self.hitbox.addPoint(18.5, - 5.5)
@@ -23,8 +22,8 @@ class Ball:
 		self.hitbox.addPoint(-16.5, -6.5)
 		self.hitbox.addPoint(-9.5, -13.5)
 		self.speed = 0
-		self.direction = [0, 0]
-		self.lastPositions = [(self.x, self.y) for _ in range(BALL_TRAIL_LENGTH)]
+		self.direction = Vec2(0, 0)
+		self.lastPositions = [(x, y) for _ in range(BALL_TRAIL_LENGTH)]
 		self.lastColors = [BALL_COLOR for _ in range(BALL_TRAIL_LENGTH)]
 		self.inWaiting = False
 
@@ -40,40 +39,35 @@ class Ball:
 					int(self.lastColors[i][2] * BALL_TRAIL_OPACITY))
 			pg.draw.circle(win, color, self.lastPositions[i], self.radius * gradiant)
 
-		win.blit(self.sprite, (self.x - self.radius, self.y - self.radius))
-		if DRAW_HITBOX:
-			self.hitbox.draw(win)
+		win.blit(self.sprite, (self.pos.x - self.radius, self.pos.y - self.radius))
+		self.hitbox.draw(win)
 
 
 	def affecteDirection(self, mousePos):
 		if self.inWaiting:
 			return
 
-		dx = mousePos[0] - self.x
-		dy = mousePos[1] - self.y
-		norm = math.sqrt(dx**2 + dy**2)
+		vecDir = Vec2(mousePos[0] - self.pos.x, mousePos[1] - self.pos.y)
+		norm = vecDir.norm()
+		vecDir.divide(norm)
 
 		if norm != 0:
 			self.speed += norm
 			if self.speed > BALL_MAX_SPEED:
 				self.speed = BALL_MAX_SPEED
 
-			self.direction[0] += dx / norm
-			self.direction[1] += dy / norm
-
-			norm = math.sqrt(self.direction[0]**2 + self.direction[1]**2)
-			self.direction[0] /= norm
-			self.direction[1] /= norm
+			self.direction.add(vecDir)
+			self.direction.normalize()
 
 
-	def updatePosition(self, delta):
+	def updatePosition(self, delta, walls):
 		if self.inWaiting:
 			return
 
 		# Store last positions
 		for i in range (1, BALL_TRAIL_LENGTH):
 			self.lastPositions[i - 1] = self.lastPositions[i]
-		self.lastPositions[-1] = (self.x, self.y)
+		self.lastPositions[-1] = self.pos.asTupple()
 
 		# Store last colors
 		for i in range (1, BALL_TRAIL_LENGTH):
@@ -82,25 +76,31 @@ class Ball:
 
 		# Check position along direction and speed
 		deltaSpeed = self.speed * delta
-		dx = self.x + self.direction[0] * deltaSpeed
-		dy = self.y + self.direction[1] * deltaSpeed
 
-		# Collision with x walls
-		if dx - self.radius < AREA_RECT[0] or dx + self.radius > AREA_RECT[0] + AREA_RECT[2]:
+		# Collision with wall
+		newpos = self.pos.dup()
+		newpos.translateAlong(self.direction, deltaSpeed)
+		self.hitbox.setPos(newpos.x, newpos.y)
+		for w in walls:
+			w.makeCollisionWithBall(self)
+
+		newpos = self.pos.dup()
+		newpos.translateAlong(self.direction, deltaSpeed)
+
+		# Ball in goal
+		if newpos.x - self.radius < AREA_RECT[0] or newpos.x + self.radius > AREA_RECT[0] + AREA_RECT[2]:
 			self.inWaiting = True
 
-		# Collision with wall up
-		if dy - self.radius < AREA_RECT[1]:
-			dy += AREA_BORDER_RECT[3]
-		elif dy + self.radius > AREA_RECT[1] + AREA_RECT[3]:
-			dy -= AREA_BORDER_RECT[3]
+		# Teleport into the other x wall
+		if newpos.y + self.radius < AREA_RECT[1]:
+			newpos.y += AREA_BORDER_RECT[3]
+		elif newpos.y - self.radius > AREA_RECT[1] + AREA_RECT[3]:
+			newpos.y -= AREA_BORDER_RECT[3]
 
 		# Affect position along direction and
-		self.x = dx
-		self.y = dy
+		self.pos = newpos
 
-		self.hitbox.setPos(self.x, self.y)
-
+		self.hitbox.setPos(self.pos.x, self.pos.y)
 
 		if self.speed < BALL_MAX_SPEED / 2:
 			green_gradient = 1 - self.speed / BALL_MAX_SPEED
