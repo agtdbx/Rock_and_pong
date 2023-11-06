@@ -33,7 +33,22 @@ class Game:
 		self.ball = ball.Ball(AREA_BORDER_RECT[0] + AREA_BORDER_RECT[2] / 2, AREA_BORDER_RECT[1] + AREA_BORDER_RECT[3] / 2)
 
 		# Walls creation
-		self.walls = [wall.Wall(AREA_BORDER_RECT[0] + AREA_BORDER_RECT[2] / 2, AREA_BORDER_RECT[1] + AREA_BORDER_SIZE / 2, AREA_BORDER_RECT[2], AREA_BORDER_SIZE, (50, 50, 50))]
+		self.walls = [
+			# Wall up
+			wall.Wall(AREA_BORDER_RECT[0] + AREA_BORDER_RECT[2] / 2,
+			 			AREA_BORDER_RECT[1] + AREA_BORDER_SIZE / 2,
+						AREA_BORDER_RECT[2],
+						AREA_BORDER_SIZE,
+						(50, 50, 50)
+			),
+			# Wall down
+			wall.Wall(AREA_BORDER_RECT[0] + AREA_BORDER_RECT[2] / 2,
+						AREA_BORDER_RECT[1] + AREA_BORDER_RECT[3] - AREA_BORDER_SIZE / 2,
+						AREA_BORDER_RECT[2],
+						AREA_BORDER_SIZE,
+						(50, 50, 50)
+			)
+		]
 
 		# Scores
 		self.player1Score = 0

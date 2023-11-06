@@ -22,41 +22,12 @@ def collideBetweenSegments(p1, p2, p3, p4):
 	if u < 0 or 1 < u:
 		return False, None
 
-	s1Dir = vec2Sub(p2, p1)
-	p = p1.dup()
-	p.translateAlong(s1Dir, t)
+	# Point of intersection
+	# s1Dir = vec2Sub(p2, p1)
+	# p = p1.dup()
+	# p.translateAlong(s1Dir, t)
 
-	return True, p, p1, p2
-
-
-# def collideBetweenSegments(p0, p1, p2, p3):
-# 	s1 = vec2Sub(p1, p0)
-# 	s2 = vec2Sub(p3, p2)
-
-# 	p0_minus_p2 = vec2Sub(p0, p2)
-
-# 	divisor = -s2.x * s1.y + s1.x - s2.y
-
-# 	if divisor == 0:
-# 		return False, None
-
-# 	s = (-s1.y * p0_minus_p2.x + s1.x * p0_minus_p2.y) / divisor
-
-# 	if s < 0 or 1 < s:
-# 		return False, None
-
-# 	print(p0, p1, p2, p3)
-# 	t = ( s2.x * p0_minus_p2.y - s2.y * p0_minus_p2.x) / divisor
-
-# 	if t < 0 or 1 < t:
-# 		return False, None
-
-# 	p = p0.dup()
-# 	norm = s1.norm()
-# 	s1.divide(norm)
-# 	p.translateAlong(s1, norm * s)
-
-# 	return True, p, p0, p1
+	return True, p1, p2
 
 
 class Hitbox:

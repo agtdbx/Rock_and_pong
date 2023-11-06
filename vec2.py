@@ -113,28 +113,20 @@ def getNormalOfSegment(vec1, vec2) -> Vec2:
 	return vec
 
 
-# def vec2AngleBeetween(vec1, vec2) -> int:
-# 	return vec1.x * vec2.x + vec1.y * vec2.y
-
-
 def reflectionAlongVec2(normal, vec) -> Vec2:
 	dot = vec2Dot(normal, vec)
 	if (dot >= 0):
 		normal.multiply(-1)
 
+	divider = vec2Dot(vec, vec)
+	if (divider == 0):
+		return (vec)
 	vecProjOnNormal = normal.dup()
-	vecProjOnNormal.multiply(vec2Dot(vec, normal) / vec2Dot(vec, vec))
+	vecProjOnNormal.multiply(vec2Dot(vec, normal) / divider)
 
 	vecProjOnNormal.multiply(2)
 	reflectedVec = vec2Sub(vec, vecProjOnNormal)
 
 	reflectedVec.normalize()
-
-	# angle = vec2AngleBeetween(normal, vec)
-	# print("Angle", angle)
-
-	# vec.rotate(-2 * angle)
-
-	# vec.normalize()
 
 	return reflectedVec

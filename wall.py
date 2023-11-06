@@ -40,19 +40,10 @@ class Wall:
 
 		collideInfos = self.hitbox.getCollideInfo(ball.hitbox)
 
-		print("\nCollideInfos")
 		for collideInfo in collideInfos:
 			if collideInfo[0]:
-				print(collideInfo[1], collideInfo[2], collideInfo[3])
-
-				touchPos = collideInfo[1]
-				p0 = collideInfo[2]
-				p1 = collideInfo[3]
+				p0 = collideInfo[1]
+				p1 = collideInfo[2]
 				normal = getNormalOfSegment(p0, p1)
-				print("Normal", ball.direction)
-				print("Dir", ball.direction)
 				ball.direction = reflectionAlongVec2(normal, ball.direction)
-				print("Dir", ball.direction)
 				break
-
-		# distToTravel =
