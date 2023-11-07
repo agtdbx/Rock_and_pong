@@ -1,8 +1,9 @@
 from define import *
 from pg_utils import *
 from vec2 import *
-import ball
 import hitbox
+import paddle
+import ball
 
 import pygame as pg
 import math
@@ -32,6 +33,7 @@ def createObstacle(x:int, y:int, listPoint:list, color:tuple) -> hitbox.Hitbox:
 	return hit
 
 
+
 class Game:
 	def __init__(self):
 		"""
@@ -52,32 +54,46 @@ class Game:
 
 		self.runMainLoop = True
 
+		self.inputWait = 0
+
+		# Padd
+		self.paddles = [
+			paddle.Paddle(AREA_RECT[0] + AREA_BORDER_SIZE * 2, WIN_HEIGHT / 2, 1),
+			paddle.Paddle(AREA_RECT[0] + AREA_RECT[2] - AREA_BORDER_SIZE * 2, WIN_HEIGHT / 2, 2)
+		]
+
 		# Ball creation
-		self.ball = ball.Ball(AREA_BORDER_RECT[0] + AREA_BORDER_RECT[2] / 2, AREA_BORDER_RECT[1] + AREA_BORDER_RECT[3] / 2)
+		self.balls = [ball.Ball(WIN_WIDTH / 2, WIN_HEIGHT / 2)]
 
 		# Walls creation
 		self.walls = [
 			# Wall up
 			createWall(
-				AREA_BORDER_RECT[0] + AREA_BORDER_RECT[2] / 2,
-			 	AREA_BORDER_RECT[1] + AREA_BORDER_SIZE / 2,
-				AREA_BORDER_RECT[2],
+				AREA_RECT[0] + AREA_RECT[2] / 2,
+			 	AREA_RECT[1] + AREA_BORDER_SIZE / 2,
+				AREA_RECT[2],
 				AREA_BORDER_SIZE,
 				(50, 50, 50)
 			),
 			# Wall down
 			createWall(
-				AREA_BORDER_RECT[0] + AREA_BORDER_RECT[2] / 2,
-				AREA_BORDER_RECT[1] + AREA_BORDER_RECT[3] - AREA_BORDER_SIZE / 2,
-				AREA_BORDER_RECT[2],
+				AREA_RECT[0] + AREA_RECT[2] / 2,
+				AREA_RECT[1] + AREA_RECT[3] - AREA_BORDER_SIZE / 2,
+				AREA_RECT[2],
 				AREA_BORDER_SIZE,
 				(50, 50, 50)
 			),
-			# Obstable
+			# Obstables
 			createObstacle(
-				AREA_BORDER_RECT[0] + AREA_BORDER_RECT[2] / 2,
-				AREA_BORDER_RECT[1] + AREA_BORDER_RECT[3] / 4,
-				[(-70, -70), (0, -100), (70, -70), (100, 0), (70, 70), (0, 100), (-70, 70), (-100, 0)],
+				AREA_RECT[0] + AREA_RECT[2] / 2,
+				AREA_RECT[1],
+				[(-100, 0), (100, 0), (50, 75), (0, 100), (-50, 75)],
+				(150, 150, 0)
+			),
+			createObstacle(
+				AREA_RECT[0] + AREA_RECT[2] / 2,
+				AREA_RECT[1] + AREA_RECT[3],
+				[(-100, 0), (100, 0), (50, -75), (0, -100), (-50, -75)],
 				(150, 150, 0)
 			)
 		]
@@ -126,21 +142,67 @@ class Game:
 		delta = tmp - self.last
 		self.last = tmp
 
-		if self.mouseState[0]:
-			self.ball.affecteDirection(self.mousePos)
+		if self.inputWait > 0:
+			self.inputWait -= delta
+			if self.inputWait < 0:
+				self.inputWait = 0
 
-		self.ball.updatePosition(delta, self.walls)
+		for p in self.paddles:
+			if p.waitLaunch > 0:
+				p.waitLaunch -= delta
+				if p.waitLaunch < 0:
+					p.waitLaunch = 0
 
-		if self.ball.inWaiting:
-			if self.ball.pos.x < WIN_WIDTH / 2:
+		if self.keyboardState[PLAYER_1_UP]:
+			self.paddles[0].move("up", delta)
+		if self.keyboardState[PLAYER_1_DOWN]:
+			self.paddles[0].move("down", delta)
+
+		if self.keyboardState[PLAYER_2_UP]:
+			self.paddles[1].move("up", delta)
+		if self.keyboardState[PLAYER_2_DOWN]:
+			self.paddles[1].move("down", delta)
+
+		newBalls = []
+
+		for b in self.balls:
+			b.updatePosition(delta, self.paddles, self.walls)
+
+			if b.state == STATE_RUN and self.keyboardState[pg.K_v] and self.inputWait == 0:
+				newBalls.append(b.dup())
+
+			# if the ball is in left goal
+			elif b.state == STATE_IN_GOAL_LEFT:
 				self.player2Score += 1
-			else:
-				self.player1Score += 1
-			self.ball.speed = 0
-			self.ball.pos.x = AREA_BORDER_RECT[0] + AREA_BORDER_RECT[2] / 2
-			self.ball.pos.y = AREA_BORDER_RECT[1] + AREA_BORDER_RECT[3] / 2
-			self.ball.inWaiting = False
+				b.direction = Vec2(1, 0)
+				b.speed = BALL_START_SPEED
+				b.state = STATE_IN_FOLLOW_LEFT
 
+			# if the ball is in right goal
+			elif b.state == STATE_IN_GOAL_RIGHT:
+				self.player1Score += 1
+				b.direction = Vec2(-1, 0)
+				b.speed = BALL_START_SPEED
+				b.state = STATE_IN_FOLLOW_RIGHT
+
+			# if the ball must follow the left paddle
+			elif b.state == STATE_IN_FOLLOW_LEFT:
+				b.setPos(vec2Add(self.paddles[0].pos, Vec2(PADDLE_WIDTH * 2, 0)))
+				if self.keyboardState[PLAYER_1_LAUNCH_BALL] and self.paddles[0].waitLaunch == 0:
+					b.state = STATE_RUN
+					self.paddles[0].waitLaunch = 0.5
+
+			# if the ball must follow the right paddle
+			elif b.state == STATE_IN_FOLLOW_RIGHT:
+				b.setPos(vec2Add(self.paddles[1].pos, Vec2(-PADDLE_WIDTH * 2, 0)))
+				if self.keyboardState[PLAYER_2_LAUNCH_BALL] and self.paddles[1].waitLaunch == 0:
+					b.state = STATE_RUN
+					self.paddles[1].waitLaunch = 0.5
+
+		self.balls.extend(newBalls)
+
+		if self.keyboardState[pg.K_v] and self.inputWait == 0:
+			self.inputWait = 1
 
 		pg.display.set_caption(str(self.clock.get_fps()))
 
@@ -153,15 +215,19 @@ class Game:
 		self.win.fill((0, 0, 0))
 
 		# Draw area
-		pg.draw.rect(self.win, AREA_BORDER_COLOR, AREA_BORDER_RECT, AREA_BORDER_SIZE)
 		pg.draw.rect(self.win, AREA_COLOR, AREA_RECT)
 
-		# Draw ball
+		# Draw walls
 		for w in self.walls:
 			w.drawFill(self.win)
 
 		# Draw ball
-		self.ball.draw(self.win)
+		for b in self.balls:
+			b.draw(self.win)
+
+		# Draw paddles
+		for pad in self.paddles:
+			pad.draw(self.win)
 
 		# Draw score
 		drawText(self.win, "Player 1 : " + str(self.player1Score), (AREA_MARGIN, AREA_MARGIN / 2), (255, 255, 255), size=30, align="mid-left")

@@ -76,15 +76,22 @@ class Vec2:
 
 
 	def rotate(self, angle) -> None:
+		while angle < 0:
+			angle += 360
+		while angle > 359:
+			angle -= 360
+
 		rad = angle * (math.pi / 180)
 		cosRad = math.cos(rad)
 		sinRad = math.sin(rad)
 
 		self.x = self.x * cosRad - self.y * sinRad
-		self.y = self.y * sinRad + self.y * cosRad
+		self.y = self.x * sinRad + self.y * cosRad
+
+		self.normalize()
 
 
-	def dup(self) -> None:
+	def dup(self):
 		return Vec2(self.x, self.y)
 
 

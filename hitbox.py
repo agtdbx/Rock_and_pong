@@ -83,11 +83,10 @@ class Hitbox:
 		self.rect[3] = yDown - yUp + 1
 
 
-	def setPos(self, x, y):
-		dx = x - self.pos.x
-		dy = y - self.pos.y
-		self.pos.x = x
-		self.pos.y = y
+	def setPos(self, vec):
+		dx = vec.x - self.pos.x
+		dy = vec.y - self.pos.y
+		self.pos = vec
 		for i in range (len(self.points)):
 			self.points[i].translate(dx, dy)
 		self.computeSurroundingRect()
