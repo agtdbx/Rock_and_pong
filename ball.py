@@ -4,12 +4,14 @@ import hitbox
 
 import pygame as pg
 
+
 class Ball:
 	def __init__(self, x, y):
 		self.pos = Vec2(x, y)
 		self.radius = BALL_RADIUS
 		self.color = BALL_COLOR
-		self.sprite = pg.image.load("imgs/ball.png")
+		sprite = pg.image.load("imgs/ball.png")
+		self.sprite = pg.transform.scale(sprite, (BALL_RADIUS * 2, BALL_RADIUS * 2))
 		self.hitbox = hitbox.Hitbox(x, y, HITBOX_BALL_COLOR)
 		self.hitbox.addPoint(0, -18.5)
 		self.hitbox.addPoint(11.5, - 14.5)
@@ -82,7 +84,7 @@ class Ball:
 		newpos.translateAlong(self.direction, deltaSpeed)
 		self.hitbox.setPos(newpos.x, newpos.y)
 		for w in walls:
-			w.makeCollisionWithBall(self)
+			self.makeCollisionWithWall(w)
 
 		newpos = self.pos.dup()
 		newpos.translateAlong(self.direction, deltaSpeed)
@@ -117,3 +119,18 @@ class Ball:
 			self.speed -= max(BALL_MINIMUM_FRICTION, (self.speed * BALL_FRICTION_STRENGTH)) * delta
 			if self.speed < 0:
 				self.speed = 0
+
+
+	def makeCollisionWithWall(self, hitbox):
+		if not hitbox.isCollide(self.hitbox):
+			return
+
+		collideInfos = hitbox.getCollideInfo(self.hitbox)
+
+		for collideInfo in collideInfos:
+			if collideInfo[0]:
+				p0 = collideInfo[1]
+				p1 = collideInfo[2]
+				normal = getNormalOfSegment(p0, p1)
+				self.direction = reflectionAlongVec2(normal, self.direction)
+				break

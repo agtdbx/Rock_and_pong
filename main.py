@@ -2,12 +2,35 @@ from define import *
 from pg_utils import *
 from vec2 import *
 import ball
-import wall
+import hitbox
 
 import pygame as pg
 import math
 import time
 import sys
+
+
+def createWall(x, y, w, h, color) -> hitbox.Hitbox:
+	halfW = w / 2
+	halfH = h / 2
+
+	hit = hitbox.Hitbox(x, y, HITBOX_WALL_COLOR, color)
+	hit.addPoint(-halfW, -halfH)
+	hit.addPoint(halfW, -halfH)
+	hit.addPoint(halfW, halfH)
+	hit.addPoint(-halfW, halfH)
+
+	return hit
+
+
+def createObstacle(x:int, y:int, listPoint:list, color:tuple) -> hitbox.Hitbox:
+	hit = hitbox.Hitbox(x, y, HITBOX_WALL_COLOR, color)
+
+	for p in listPoint:
+		hit.addPoint(p[0], p[1])
+
+	return hit
+
 
 class Game:
 	def __init__(self):
@@ -35,18 +58,27 @@ class Game:
 		# Walls creation
 		self.walls = [
 			# Wall up
-			wall.Wall(AREA_BORDER_RECT[0] + AREA_BORDER_RECT[2] / 2,
-			 			AREA_BORDER_RECT[1] + AREA_BORDER_SIZE / 2,
-						AREA_BORDER_RECT[2],
-						AREA_BORDER_SIZE,
-						(50, 50, 50)
+			createWall(
+				AREA_BORDER_RECT[0] + AREA_BORDER_RECT[2] / 2,
+			 	AREA_BORDER_RECT[1] + AREA_BORDER_SIZE / 2,
+				AREA_BORDER_RECT[2],
+				AREA_BORDER_SIZE,
+				(50, 50, 50)
 			),
 			# Wall down
-			wall.Wall(AREA_BORDER_RECT[0] + AREA_BORDER_RECT[2] / 2,
-						AREA_BORDER_RECT[1] + AREA_BORDER_RECT[3] - AREA_BORDER_SIZE / 2,
-						AREA_BORDER_RECT[2],
-						AREA_BORDER_SIZE,
-						(50, 50, 50)
+			createWall(
+				AREA_BORDER_RECT[0] + AREA_BORDER_RECT[2] / 2,
+				AREA_BORDER_RECT[1] + AREA_BORDER_RECT[3] - AREA_BORDER_SIZE / 2,
+				AREA_BORDER_RECT[2],
+				AREA_BORDER_SIZE,
+				(50, 50, 50)
+			),
+			# Obstable
+			createObstacle(
+				AREA_BORDER_RECT[0] + AREA_BORDER_RECT[2] / 2,
+				AREA_BORDER_RECT[1] + AREA_BORDER_RECT[3] / 4,
+				[(-70, -70), (0, -100), (70, -70), (100, 0), (70, 70), (0, 100), (-70, 70), (-100, 0)],
+				(150, 150, 0)
 			)
 		]
 
@@ -94,22 +126,6 @@ class Game:
 		delta = tmp - self.last
 		self.last = tmp
 
-		for w in self.walls:
-			if self.keyboardState[pg.K_w]:
-				w.translate(Vec2(0, -1))
-			if self.keyboardState[pg.K_s]:
-				w.translate(Vec2(0, 1))
-			if self.keyboardState[pg.K_a]:
-				w.translate(Vec2(-1, 0))
-			if self.keyboardState[pg.K_d]:
-				w.translate(Vec2(1, 0))
-			if self.keyboardState[pg.K_q]:
-				w.rotate(-1)
-			if self.keyboardState[pg.K_e]:
-				w.rotate(1)
-
-			w.makeCollisionWithBall(self.ball)
-
 		if self.mouseState[0]:
 			self.ball.affecteDirection(self.mousePos)
 
@@ -142,7 +158,7 @@ class Game:
 
 		# Draw ball
 		for w in self.walls:
-			w.draw(self.win)
+			w.drawFill(self.win)
 
 		# Draw ball
 		self.ball.draw(self.win)

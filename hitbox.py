@@ -32,8 +32,7 @@ def collideBetweenSegments(p1, p2, p3, p4):
 
 class Hitbox:
 	def __init__(self, x, y, color, fillColor = (255, 255, 255)):
-		self.x = x
-		self.y = y
+		self.pos = Vec2(x, y)
 
 		self.color = color
 		self.fillColor = fillColor
@@ -50,7 +49,7 @@ class Hitbox:
 
 
 	def addPoint(self, x, y):
-		self.points.append(Vec2(self.x + x, self.y + y))
+		self.points.append(Vec2(self.pos.x + x, self.pos.y + y))
 		self.computeSurroundingRect()
 
 
@@ -58,7 +57,7 @@ class Hitbox:
 		if len(self.points) == 0:
 			return
 
-		pos = self.points[0].asTuppleCenter(self.x, self.y)
+		pos = self.points[0].asTuppleCenter(self.pos.x, self.pos.y)
 
 		xLeft = pos[0]
 		xRight = pos[0]
@@ -66,7 +65,7 @@ class Hitbox:
 		yDown = pos[1]
 
 		for i in range (1, len(self.points)):
-			pos = self.points[i].asTuppleCenter(self.x, self.y)
+			pos = self.points[i].asTuppleCenter(self.pos.x, self.pos.y)
 
 			if (pos[0] < xLeft):
 				xLeft = pos[0]
@@ -78,25 +77,24 @@ class Hitbox:
 			elif (pos[1] > yDown):
 				yDown = pos[1]
 
-		self.rect[0] = xLeft + self.x
+		self.rect[0] = xLeft + self.pos.x
 		self.rect[2] = xRight - xLeft + 1
-		self.rect[1] = yUp + self.y
+		self.rect[1] = yUp + self.pos.y
 		self.rect[3] = yDown - yUp + 1
 
+
 	def setPos(self, x, y):
-		dx = x - self.x
-		dy = y - self.y
-		self.x = x
-		self.y = y
+		dx = x - self.pos.x
+		dy = y - self.pos.y
+		self.pos.x = x
+		self.pos.y = y
 		for i in range (len(self.points)):
 			self.points[i].translate(dx, dy)
 		self.computeSurroundingRect()
 
 
-
 	def move(self, x, y):
-		self.x += x
-		self.y += y
+		self.pos.add(Vec2(x, y))
 		for i in range (len(self.points)):
 			self.points[i].translate(x, y)
 		self.computeSurroundingRect()
@@ -110,7 +108,7 @@ class Hitbox:
 		cosTmp = math.cos(radiant)
 
 		for i in range (len(self.points)):
-			self.points[i].rotateAround(self.x, self.y, sinTmp, cosTmp)
+			self.points[i].rotateAround(self.pos.x, self.pos.y, sinTmp, cosTmp)
 		self.computeSurroundingRect()
 
 
