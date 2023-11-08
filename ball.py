@@ -31,7 +31,7 @@ class Ball:
 		self.lastColors = [BALL_COLOR for _ in range(BALL_TRAIL_LENGTH)]
 		self.state = STATE_RUN
 
-		self.lastPaddleHitId = 0
+		self.lastPaddleHitId = -1
 
 
 	def draw(self, win):

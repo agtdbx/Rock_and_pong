@@ -6,7 +6,6 @@ import paddle
 import ball
 
 import pygame as pg
-import math
 import time
 import sys
 
@@ -58,8 +57,14 @@ class Game:
 
 		# Padd
 		self.paddles = [
-			paddle.Paddle(AREA_RECT[0] + AREA_BORDER_SIZE * 2, WIN_HEIGHT / 2, 1),
-			paddle.Paddle(AREA_RECT[0] + AREA_RECT[2] - AREA_BORDER_SIZE * 2, WIN_HEIGHT / 2, 2)
+			# L1
+			paddle.Paddle(AREA_RECT[0] + AREA_BORDER_SIZE * 2, WIN_HEIGHT / 2, 0),
+			# R1
+			paddle.Paddle(AREA_RECT[0] + AREA_RECT[2] - AREA_BORDER_SIZE * 2, WIN_HEIGHT / 2, 1),
+			# L2
+			paddle.Paddle(AREA_RECT[0] + AREA_BORDER_SIZE * 2, WIN_HEIGHT / 2 + PADDLE_WIDTH + 10, 2),
+			# R2
+			paddle.Paddle(AREA_RECT[0] + AREA_RECT[2] - AREA_BORDER_SIZE * 2, WIN_HEIGHT / 2 + PADDLE_WIDTH + 10, 3)
 		]
 
 		# Ball creation
@@ -147,21 +152,17 @@ class Game:
 			if self.inputWait < 0:
 				self.inputWait = 0
 
-		for p in self.paddles:
+		for i in range(len(self.paddles)):
+			p = self.paddles[i]
 			if p.waitLaunch > 0:
 				p.waitLaunch -= delta
 				if p.waitLaunch < 0:
 					p.waitLaunch = 0
 
-		if self.keyboardState[PLAYER_1_UP]:
-			self.paddles[0].move("up", delta)
-		if self.keyboardState[PLAYER_1_DOWN]:
-			self.paddles[0].move("down", delta)
-
-		if self.keyboardState[PLAYER_2_UP]:
-			self.paddles[1].move("up", delta)
-		if self.keyboardState[PLAYER_2_DOWN]:
-			self.paddles[1].move("down", delta)
+			if self.keyboardState[PLAYER_KEYS[i][KEY_UP]]:
+				self.paddles[i].move("up", delta)
+			if self.keyboardState[PLAYER_KEYS[i][KEY_DOWN]]:
+				self.paddles[i].move("down", delta)
 
 		newBalls = []
 
@@ -176,7 +177,8 @@ class Game:
 				self.player2Score += 1
 				b.direction = Vec2(1, 0)
 				b.speed = BALL_START_SPEED
-				b.state = STATE_IN_FOLLOW_LEFT
+				b.state = STATE_IN_FOLLOW
+				b.lastPaddleHitId = self.paddles[0].id
 
 			# if the ball is in right goal
 			elif b.state == STATE_IN_GOAL_RIGHT:
@@ -184,20 +186,21 @@ class Game:
 				b.direction = Vec2(-1, 0)
 				b.speed = BALL_START_SPEED
 				b.state = STATE_IN_FOLLOW_RIGHT
+				b.lastPaddleHitId = self.paddles[1].id
 
-			# if the ball must follow the left paddle
-			elif b.state == STATE_IN_FOLLOW_LEFT:
-				b.setPos(vec2Add(self.paddles[0].pos, Vec2(PADDLE_WIDTH * 2, 0)))
-				if self.keyboardState[PLAYER_1_LAUNCH_BALL] and self.paddles[0].waitLaunch == 0:
-					b.state = STATE_RUN
-					self.paddles[0].waitLaunch = 0.5
+			elif b.state == STATE_IN_FOLLOW:
+				padId = b.lastPaddleHitId
 
-			# if the ball must follow the right paddle
-			elif b.state == STATE_IN_FOLLOW_RIGHT:
-				b.setPos(vec2Add(self.paddles[1].pos, Vec2(-PADDLE_WIDTH * 2, 0)))
-				if self.keyboardState[PLAYER_2_LAUNCH_BALL] and self.paddles[1].waitLaunch == 0:
+				# movVec = b.direction.dup()
+				# movVec.multiply(10)
+				# b.setPos(vec2Add(self.paddles[padId].pos, movVec))
+
+				b.setPos(self.paddles[padId].pos.dup())
+				b.pos.translateAlong(b.direction.dup(), 10)
+
+				if self.keyboardState[PLAYER_KEYS[padId][KEY_LAUNCH_BALL]] and self.paddles[0].waitLaunch == 0:
 					b.state = STATE_RUN
-					self.paddles[1].waitLaunch = 0.5
+					self.paddles[padId].waitLaunch = 0.5
 
 		self.balls.extend(newBalls)
 
