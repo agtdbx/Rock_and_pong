@@ -17,6 +17,7 @@ BALL_START_SPEED = WIN_WIDTH / 5 # pixel per seconds
 BALL_MAX_SPEED = WIN_WIDTH # pixel per seconds
 BALL_ACCELERATION = 0.1 # float [0, 1]
 BALL_HITBOX_PRECISION = 16 # nb number for make circle [4, 360]
+BALL_MOVE_STEP = BALL_RADIUS / 2 # Number of pixel travel by ball between 2 collisions check
 
 BALL_FRICTION = False # boolean
 BALL_MINIMUM_FRICTION = 100 # pixel per seconds

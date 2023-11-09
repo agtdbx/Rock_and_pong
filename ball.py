@@ -79,45 +79,63 @@ class Ball:
 
 		# Check position along direction and speed
 		deltaSpeed = self.speed * delta
-		newpos = self.pos.dup()
-		newpos.translateAlong(self.direction, deltaSpeed)
-		self.hitbox.setPos(newpos)
 
-		collision = False
+		nbCheckCollisionStep = int(deltaSpeed // BALL_MOVE_STEP)
+		lastStepMove = deltaSpeed - (nbCheckCollisionStep * BALL_MOVE_STEP)
+		# print("speed", deltaSpeed)
+		# print("BALL_MOVE_CHECK", BALL_MOVE_STEP)
+		# print("nbCheckCollisionStep", nbCheckCollisionStep)
+		# print("lastStepMove", lastStepMove)
+		# print("fats dist", nbCheckCollisionStep * BALL_MOVE_STEP)
+		# print("true dist", nbCheckCollisionStep * BALL_MOVE_STEP + lastStepMove)
+		# print()
+		for i in range(nbCheckCollisionStep + 1):
+			step = BALL_MOVE_STEP
+			if i == nbCheckCollisionStep:
+				step = lastStepMove
 
-		# Collision with paddle
-		for p in paddles:
+			newpos = self.pos.dup()
+			newpos.translateAlong(self.direction, step)
+			self.hitbox.setPos(newpos)
+
+			collision = False
+
+			# Collision with paddle
+			for p in paddles:
+				if collision:
+					newpos = self.pos.dup()
+					newpos.translateAlong(self.direction, step)
+				collision = self.makeCollisionWithPaddle(p)
+
+			# Collision with wall
+			for w in walls:
+				if collision:
+					newpos = self.pos.dup()
+					newpos.translateAlong(self.direction, step)
+				collision = self.makeCollisionWithWall(w)
+
 			if collision:
-				break
-			collision = self.makeCollisionWithPaddle(p)
+				newpos = self.pos.dup()
+				newpos.translateAlong(self.direction, step)
 
-		# Collision with wall
-		for w in walls:
-			if collision:
-				break
-			collision = self.makeCollisionWithWall(w)
+			# Check if ball is in goal
+			if newpos.x - self.radius < AREA_RECT[0]:
+				self.state = STATE_IN_GOAL_LEFT
+				return
 
-		newpos = self.pos.dup()
-		newpos.translateAlong(self.direction, deltaSpeed)
+			if newpos.x + self.radius > AREA_RECT[0] + AREA_RECT[2]:
+				self.state = STATE_IN_GOAL_RIGHT
+				return
 
-		# Check if ball is in goal
-		if newpos.x - self.radius < AREA_RECT[0]:
-			self.state = STATE_IN_GOAL_LEFT
-			return
+			# Teleport into the other x wall
+			if newpos.y + self.radius < AREA_RECT[1]:
+				newpos.y += AREA_RECT[3]
+			elif newpos.y - self.radius > AREA_RECT[1] + AREA_RECT[3]:
+				newpos.y -= AREA_RECT[3]
 
-		if newpos.x + self.radius > AREA_RECT[0] + AREA_RECT[2]:
-			self.state = STATE_IN_GOAL_RIGHT
-			return
-
-		# Teleport into the other x wall
-		if newpos.y + self.radius < AREA_RECT[1]:
-			newpos.y += AREA_RECT[3]
-		elif newpos.y - self.radius > AREA_RECT[1] + AREA_RECT[3]:
-			newpos.y -= AREA_RECT[3]
-
-		# Affect position along direction and
-		self.pos = newpos
-		self.hitbox.setPos(self.pos)
+			# Affect position along direction and
+			self.pos = newpos
+			self.hitbox.setPos(self.pos)
 
 		if self.speed < BALL_MAX_SPEED / 2:
 			green_gradient = 1 - self.speed / BALL_MAX_SPEED
