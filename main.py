@@ -6,6 +6,7 @@ import paddle
 import ball
 
 import pygame as pg
+import random
 import time
 import sys
 
@@ -61,10 +62,10 @@ class Game:
 			paddle.Paddle(AREA_RECT[0] + AREA_BORDER_SIZE * 2, WIN_HEIGHT / 2, 0),
 			# R1
 			paddle.Paddle(AREA_RECT[0] + AREA_RECT[2] - AREA_BORDER_SIZE * 2, WIN_HEIGHT / 2, 1),
-			# L2
-			paddle.Paddle(AREA_RECT[0] + AREA_BORDER_SIZE * 2, WIN_HEIGHT / 2 + PADDLE_WIDTH + 10, 2),
-			# R2
-			paddle.Paddle(AREA_RECT[0] + AREA_RECT[2] - AREA_BORDER_SIZE * 2, WIN_HEIGHT / 2 + PADDLE_WIDTH + 10, 3)
+			# # L2
+			# paddle.Paddle(AREA_RECT[0] + AREA_BORDER_SIZE * 2, WIN_HEIGHT / 2 + PADDLE_WIDTH + 10, 2),
+			# # R2
+			# paddle.Paddle(AREA_RECT[0] + AREA_RECT[2] - AREA_BORDER_SIZE * 2, WIN_HEIGHT / 2 + PADDLE_WIDTH + 10, 3)
 		]
 
 		# Ball creation
@@ -153,11 +154,10 @@ class Game:
 				self.inputWait = 0
 
 		for i in range(len(self.paddles)):
-			p = self.paddles[i]
-			if p.waitLaunch > 0:
-				p.waitLaunch -= delta
-				if p.waitLaunch < 0:
-					p.waitLaunch = 0
+			if self.paddles[i].waitLaunch > 0:
+				self.paddles[i].waitLaunch -= delta
+				if self.paddles[i].waitLaunch < 0:
+					self.paddles[i].waitLaunch = 0
 
 			if self.keyboardState[PLAYER_KEYS[i][KEY_UP]]:
 				self.paddles[i].move("up", delta)
@@ -179,28 +179,27 @@ class Game:
 				b.speed = BALL_START_SPEED
 				b.state = STATE_IN_FOLLOW
 				b.lastPaddleHitId = self.paddles[0].id
+				if len(self.paddles) == 4 and random.random() > 0.5:
+					b.lastPaddleHitId = self.paddles[2].id
 
 			# if the ball is in right goal
 			elif b.state == STATE_IN_GOAL_RIGHT:
 				self.player1Score += 1
 				b.direction = Vec2(-1, 0)
 				b.speed = BALL_START_SPEED
-				b.state = STATE_IN_FOLLOW_RIGHT
+				b.state = STATE_IN_FOLLOW
 				b.lastPaddleHitId = self.paddles[1].id
+				if len(self.paddles) == 4 and random.random() > 0.5:
+					b.lastPaddleHitId = self.paddles[3].id
 
+			# case of ball follow player
 			elif b.state == STATE_IN_FOLLOW:
 				padId = b.lastPaddleHitId
-
-				# movVec = b.direction.dup()
-				# movVec.multiply(10)
-				# b.setPos(vec2Add(self.paddles[padId].pos, movVec))
-
 				b.setPos(self.paddles[padId].pos.dup())
-				b.pos.translateAlong(b.direction.dup(), 10)
-
-				if self.keyboardState[PLAYER_KEYS[padId][KEY_LAUNCH_BALL]] and self.paddles[0].waitLaunch == 0:
+				b.pos.translateAlong(b.direction.dup(), PADDLE_WIDTH * 2)
+				if self.keyboardState[PLAYER_KEYS[padId][KEY_LAUNCH_BALL]] and self.paddles[padId].waitLaunch == 0:
 					b.state = STATE_RUN
-					self.paddles[padId].waitLaunch = 0.5
+					self.paddles[padId].waitLaunch = PADDLE_LAUNCH_COOLDOWN
 
 		self.balls.extend(newBalls)
 

@@ -83,13 +83,19 @@ class Ball:
 		newpos.translateAlong(self.direction, deltaSpeed)
 		self.hitbox.setPos(newpos)
 
+		collision = False
+
 		# Collision with paddle
 		for p in paddles:
-			self.makeCollisionWithPaddle(p)
+			if collision:
+				break
+			collision = self.makeCollisionWithPaddle(p)
 
 		# Collision with wall
 		for w in walls:
-			self.makeCollisionWithWall(w)
+			if collision:
+				break
+			collision = self.makeCollisionWithWall(w)
 
 		newpos = self.pos.dup()
 		newpos.translateAlong(self.direction, deltaSpeed)
@@ -137,9 +143,9 @@ class Ball:
 			self.lastPositions[i] = self.pos.asTupple()
 
 
-	def makeCollisionWithWall(self, hitbox):
+	def makeCollisionWithWall(self, hitbox:hitbox.Hitbox):
 		if not hitbox.isCollide(self.hitbox):
-			return
+			return False
 
 		collideInfos = hitbox.getCollideInfo(self.hitbox)
 
@@ -151,12 +157,13 @@ class Ball:
 				last = self.direction
 				self.direction = reflectionAlongVec2(normal, self.direction)
 				if last != self.direction:
-					break
+					return True
+		return False
 
 
 	def makeCollisionWithPaddle(self, paddle:paddle.Paddle):
 		if not paddle.hitbox.isCollide(self.hitbox):
-			return
+			return False
 
 		newDir = self.pos.dup()
 		newDir.subBy(paddle.pos)
@@ -169,6 +176,7 @@ class Ball:
 			self.speed = BALL_MAX_SPEED
 
 		self.lastPaddleHitId = paddle.id
+		return True
 
 
 	def dup(self):
@@ -176,7 +184,7 @@ class Ball:
 		ball.direction = self.direction.dup()
 		ball.speed = self.speed
 
-		self.direction.rotate(45)
-		ball.direction.rotate(-45)
+		self.direction.rotate(30)
+		ball.direction.rotate(-30)
 
 		return ball

@@ -26,8 +26,9 @@ PERFECT_SHOOT_SIZE = BALL_RADIUS * 4 # in pixel
 
 PADDLE_WIDTH = 14 # in pixel
 PADDLE_HEIGHT = WIN_HEIGHT / 7 # in pixel
-PADDLE_SPEED = WIN_HEIGHT / 2 # pixel per seconds
+PADDLE_SPEED = WIN_HEIGHT / 1.5 # pixel per seconds
 PADDLE_COLOR = (200, 200, 200) # (r, g, b), channell int [0, 255]
+PADDLE_LAUNCH_COOLDOWN = 0.2 # In second
 
 DRAW_HITBOX = False # boolean
 DRAW_HITBOX_NORMALS = False # boolean
@@ -35,12 +36,11 @@ HITBOX_BALL_COLOR = (255, 0, 0) # (r, g, b), channell int [0, 255]
 HITBOX_WALL_COLOR = (0, 255, 0) # (r, g, b), channell int [0, 255]
 HITBOX_PADDLE_COLOR = (0, 0, 255) # (r, g, b), channell int [0, 255]
 
+# Ball state define
 STATE_RUN = 0
 STATE_IN_GOAL_LEFT = 1
 STATE_IN_GOAL_RIGHT = 2
 STATE_IN_FOLLOW = 3
-STATE_IN_FOLLOW_LEFT = 10
-STATE_IN_FOLLOW_RIGHT = 20
 
 # Key define
 KEY_UP = 0
