@@ -58,14 +58,19 @@ class Game:
 
 		# Paddles
 		self.paddles = [
-			# L1
+			# L
 			paddle.Paddle(AREA_RECT[0] + AREA_BORDER_SIZE * 2, WIN_HEIGHT / 2, 0),
-			# R1
-			paddle.Paddle(AREA_RECT[0] + AREA_RECT[2] - AREA_BORDER_SIZE * 2, WIN_HEIGHT / 2, 1),
+			# R
+			paddle.Paddle(AREA_RECT[0] + AREA_RECT[2] - AREA_BORDER_SIZE * 2, WIN_HEIGHT / 2, 1)
+
+			# # L1
+			# paddle.Paddle(AREA_RECT[0] + AREA_BORDER_SIZE * 2, WIN_HEIGHT / 2 - PADDLE_HEIGHT , 0),
+			# # R1
+			# paddle.Paddle(AREA_RECT[0] + AREA_RECT[2] - AREA_BORDER_SIZE * 2, WIN_HEIGHT / 2 - PADDLE_HEIGHT, 1),
 			# # L2
-			# paddle.Paddle(AREA_RECT[0] + AREA_BORDER_SIZE * 2, WIN_HEIGHT / 2 + PADDLE_WIDTH + 10, 2),
+			# paddle.Paddle(AREA_RECT[0] + AREA_BORDER_SIZE * 2, WIN_HEIGHT / 2 + PADDLE_HEIGHT + 10, 2),
 			# # R2
-			# paddle.Paddle(AREA_RECT[0] + AREA_RECT[2] - AREA_BORDER_SIZE * 2, WIN_HEIGHT / 2 + PADDLE_WIDTH + 10, 3)
+			# paddle.Paddle(AREA_RECT[0] + AREA_RECT[2] - AREA_BORDER_SIZE * 2, WIN_HEIGHT / 2 + PADDLE_HEIGHT + 10, 3)
 		]
 
 		# Ball creation
@@ -75,18 +80,9 @@ class Game:
 		if self.balls[0].lastPaddleHitId % 2:
 			self.balls[0].direction = Vec2(-1, 0)
 
-		circlePointWall = []
-		circlePointWallPrecision = 64
-		circlePointWallRadius = 100
-
-		for i in range(circlePointWallPrecision):
-			degree = 360 / circlePointWallPrecision * i
-			radian = degree * (math.pi / 180)
-			x = circlePointWallRadius * math.cos(radian)
-			y = circlePointWallRadius * math.sin(radian)
-			circlePointWall.append((x, y))
-
 		# Walls creation
+		circlePointWall = ball.getPointOfCircle(100, 32, 360 / 64)
+
 		self.walls = [
 			# Wall up
 			createWall(
@@ -175,20 +171,27 @@ class Game:
 				self.inputWait = 0
 
 		for i in range(len(self.paddles)):
-			if self.paddles[i].waitLaunch > 0:
-				self.paddles[i].waitLaunch -= delta
-				if self.paddles[i].waitLaunch < 0:
-					self.paddles[i].waitLaunch = 0
+			self.paddles[i].updateTimes(delta)
 
 			if self.keyboardState[PLAYER_KEYS[i][KEY_UP]]:
 				self.paddles[i].move("up", delta)
 			if self.keyboardState[PLAYER_KEYS[i][KEY_DOWN]]:
 				self.paddles[i].move("down", delta)
+			if self.keyboardState[PLAYER_KEYS[i][KEY_POWER_UP]]:
+				# self.balls[0].modifierSpeed = 20
+				# self.balls[0].modifierPhatomBall = True
+				# self.balls[0].modifierPhatomBallTimer = 0
+				# self.balls[0].modifySize(0.5)
+				# self.balls[0].modifierSkipCollision = True
+				# self.paddles[i].modifySize(0.1)
+				# self.paddles[i].modifierTimeEffect = 2
+				pass
 
 		newBalls = []
 
 		for b in self.balls:
 			b.updatePosition(delta, self.paddles, self.walls)
+			b.updateTime(delta)
 
 			if b.state == STATE_RUN and self.keyboardState[pg.K_v] and self.inputWait == 0:
 				newBalls.append(b.dup())
@@ -199,6 +202,7 @@ class Game:
 				b.direction = Vec2(1, 0)
 				b.speed = BALL_START_SPEED
 				b.state = STATE_IN_FOLLOW
+				b.modifierSkipCollision = False
 				b.lastPaddleHitId = self.paddles[0].id
 				if len(self.paddles) == 4 and random.random() > 0.5:
 					b.lastPaddleHitId = self.paddles[2].id
@@ -209,6 +213,7 @@ class Game:
 				b.direction = Vec2(-1, 0)
 				b.speed = BALL_START_SPEED
 				b.state = STATE_IN_FOLLOW
+				b.modifierSkipCollision = False
 				b.lastPaddleHitId = self.paddles[1].id
 				if len(self.paddles) == 4 and random.random() > 0.5:
 					b.lastPaddleHitId = self.paddles[3].id

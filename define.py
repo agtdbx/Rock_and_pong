@@ -1,7 +1,7 @@
 import pygame as pg
 
-WIN_WIDTH = 1920 # in pixel
-WIN_HEIGHT = 1000 # in pixel
+WIN_WIDTH = 1280 # in pixel
+WIN_HEIGHT = 800 # in pixel
 WIN_CLEAR_COLOR = (0, 0, 0) # (r, g, b), channell int [0, 255]
 
 AREA_MARGIN = 50 # in pixel
@@ -14,7 +14,7 @@ BALL_COLOR = (255, 255, 255) # (r, g, b), channell int [0, 255]
 BALL_TRAIL_OPACITY = 0.5 # float [0, 1]
 BALL_TRAIL_LENGTH = 30 # number of cicles in trail
 BALL_START_SPEED = WIN_WIDTH / 5 # pixel per seconds
-BALL_MIN_SPEED = WIN_WIDTH / 10 # pixel per seconds
+BALL_MIN_SPEED = 1 # pixel per seconds
 BALL_MAX_SPEED = WIN_WIDTH # pixel per seconds
 BALL_PADDLE_ACCELERATION = 100 # pixel per seconds
 BALL_WALL_ACCELERATION = 10 # pixel per seconds
@@ -39,17 +39,30 @@ HITBOX_BALL_COLOR = (255, 0, 0) # (r, g, b), channell int [0, 255]
 HITBOX_WALL_COLOR = (0, 255, 0) # (r, g, b), channell int [0, 255]
 HITBOX_PADDLE_COLOR = (0, 0, 255) # (r, g, b), channell int [0, 255]
 
-# Ball state define
+# Ball state defines
 STATE_RUN = 0
 STATE_IN_GOAL_LEFT = 1
 STATE_IN_GOAL_RIGHT = 2
 STATE_IN_FOLLOW = 3
 
-# Key define
+# Key defines
 KEY_UP = 0
 KEY_DOWN = 1
 KEY_POWER_UP = 2
 KEY_LAUNCH_BALL = 3
+
+# Power up defines
+POWER_UP_NONE = -1
+POWER_UP_BALL_FAST = 0
+POWER_UP_BALL_SLOW = 1
+POWER_UP_BALL_BIG = 2
+POWER_UP_BALL_LITTLE = 3
+POWER_UP_BALL_NO_COLLISION = 4
+POWER_UP_BALL_PHATOM = 5
+POWER_UP_PADDLE_FAST = 6
+POWER_UP_PADDLE_SLOW = 7
+POWER_UP_PADDLE_BIG = 8
+POWER_UP_PADDLE_LITTLE = 9
 
 # LEFT PLAYERS
 PLAYER_KEYS = [

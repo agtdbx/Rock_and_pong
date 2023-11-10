@@ -53,6 +53,10 @@ class Hitbox:
 		self.computeSurroundingRect()
 
 
+	def clearPoints(self):
+		self.points.clear()
+
+
 	def computeSurroundingRect(self):
 		if len(self.points) == 0:
 			return

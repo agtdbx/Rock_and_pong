@@ -4,7 +4,19 @@ import hitbox
 import paddle
 
 import pygame as pg
-import random
+
+
+
+def getPointOfCircle(radius, precision, beginDegree = 0):
+	points = []
+	for i in range(precision):
+			degree = 360 / precision * i + beginDegree
+			radian = degree * (math.pi / 180)
+			x = radius * math.cos(radian)
+			y = radius * math.sin(radian)
+			points.append((x, y))
+	return points
+
 
 
 class Ball:
@@ -12,15 +24,18 @@ class Ball:
 		self.pos = Vec2(x, y)
 		self.radius = BALL_RADIUS
 		self.color = BALL_COLOR
-		self.sprite = pg.image.load("imgs/ball.png")
-		self.hitbox = hitbox.Hitbox(x, y, HITBOX_BALL_COLOR)
+		self.originalSprite = pg.image.load("imgs/ball.png")
+		self.sprite = pg.transform.scale(self.originalSprite, (self.radius * 2, self.radius * 2))
+		self.hitbox = hitbox.Hitbox(self.pos.x, self.pos.y, HITBOX_BALL_COLOR)
 
-		for i in range(BALL_HITBOX_PRECISION):
-			degree = 360 / BALL_HITBOX_PRECISION * i
-			radian = degree * (math.pi / 180)
-			x = BALL_RADIUS * math.cos(radian)
-			y = BALL_RADIUS * math.sin(radian)
-			self.hitbox.addPoint(x, y)
+		# Modifier
+		self.modifierSpeed = 1
+		self.modifierSize = 1
+		self.modifierSkipCollision = False
+		self.modifierPhatomBall = False
+		self.modifierPhatomBallTimer = -1
+
+		self.resetHitbox()
 
 		self.speed = BALL_START_SPEED
 		self.direction = Vec2(1, 0)
@@ -32,15 +47,41 @@ class Ball:
 		self.lastPaddleHitId = 1
 
 
+	def resetHitbox(self):
+		self.hitbox.setPos(self.pos)
+		self.hitbox.clearPoints()
+		points = getPointOfCircle(self.radius * self.modifierSize, BALL_HITBOX_PRECISION, 360 / (BALL_HITBOX_PRECISION * 2))
+
+		for p in points:
+			self.hitbox.addPoint(p[0], p[1])
+
+
+	def resetModifier(self):
+		self.modifierSpeed = 1
+		if self.modifierSize != 1:
+			self.modifySize(1)
+		self.modifierSkipCollision = False
+		self.modifierPhatomBall = False
+		self.modifierPhatomBallTimer = -1
+
+
+	def modifySize(self, modifier):
+		self.modifierSize = modifier
+		self.sprite = pg.transform.scale(self.originalSprite, ((self.radius * 2) * self.modifierSize, (self.radius * 2) * self.modifierSize))
+		self.resetHitbox()
+
+
 	def draw(self, win):
 		for i in range(BALL_TRAIL_LENGTH):
 			gradiant = i / BALL_TRAIL_LENGTH
 			color = (int(self.lastColors[i][0] * BALL_TRAIL_OPACITY),
 					int(self.lastColors[i][1] * BALL_TRAIL_OPACITY),
 					int(self.lastColors[i][2] * BALL_TRAIL_OPACITY))
-			pg.draw.circle(win, color, self.lastPositions[i], self.radius * gradiant)
+			if not self.modifierPhatomBall or int(self.modifierPhatomBallTimer * 5) % 2:
+				pg.draw.circle(win, color, self.lastPositions[i], (self.radius * gradiant) * self.modifierSize)
 
-		win.blit(self.sprite, (self.pos.x - self.radius, self.pos.y - self.radius))
+		if not self.modifierPhatomBall or int(self.modifierPhatomBallTimer * 5) % 2:
+			win.blit(self.sprite, (self.pos.x - (self.radius * self.modifierSize), self.pos.y - (self.radius * self.modifierSize)))
 		self.hitbox.draw(win)
 
 
@@ -61,6 +102,11 @@ class Ball:
 			self.direction.normalize()
 
 
+	def updateTime(self, detla):
+		if self.modifierPhatomBallTimer != -1:
+			self.modifierPhatomBallTimer += detla
+
+
 	def updatePosition(self, delta, paddles, walls):
 		if self.state != STATE_RUN:
 			return
@@ -76,7 +122,7 @@ class Ball:
 		self.lastColors[-1] = self.color
 
 		# Check position along direction and speed
-		deltaSpeed = self.speed * delta
+		deltaSpeed = self.speed * delta * self.modifierSpeed
 
 		nbCheckCollisionStep = int(deltaSpeed // BALL_MOVE_STEP)
 		lastStepMove = deltaSpeed - (nbCheckCollisionStep * BALL_MOVE_STEP)
@@ -96,6 +142,7 @@ class Ball:
 				if collision:
 					newpos = self.pos.dup()
 					newpos.translateAlong(self.direction, step)
+					collision = False
 				collision = self.makeCollisionWithPaddle(p)
 
 			# Collision with wall
@@ -112,20 +159,25 @@ class Ball:
 			# Check if ball is in goal
 			if newpos.x - self.radius < AREA_RECT[0]:
 				self.state = STATE_IN_GOAL_LEFT
+				self.resetModifier()
 				return
 
 			if newpos.x + self.radius > AREA_RECT[0] + AREA_RECT[2]:
 				self.state = STATE_IN_GOAL_RIGHT
+				self.resetModifier()
 				return
 
-			# Teleport into the other x wall
+			# Teleport from up to down
 			if newpos.y + self.radius < AREA_RECT[1]:
 				newpos.y += AREA_RECT[3]
+				self.resetHitbox()
+			# Teleport from down to up
 			elif newpos.y - self.radius > AREA_RECT[1] + AREA_RECT[3]:
 				newpos.y -= AREA_RECT[3]
+				self.resetHitbox()
 
 			# Affect position along direction and
-			self.pos = newpos
+			self.pos = newpos.dup()
 			self.hitbox.setPos(self.pos)
 
 		if self.speed < BALL_MAX_SPEED / 2:
@@ -153,7 +205,7 @@ class Ball:
 
 
 	def makeCollisionWithWall(self, hitbox:hitbox.Hitbox):
-		if not hitbox.isCollide(self.hitbox):
+		if self.modifierSkipCollision or not hitbox.isCollide(self.hitbox):
 			return False
 
 		collideInfos = hitbox.getCollideInfo(self.hitbox)
@@ -188,6 +240,9 @@ class Ball:
 			self.speed = BALL_MAX_SPEED
 
 		self.lastPaddleHitId = paddle.id
+
+		self.resetModifier()
+
 		return True
 
 
@@ -201,5 +256,7 @@ class Ball:
 
 		self.direction.rotate(30)
 		ball.direction.rotate(-30)
+
+		ball.state = STATE_RUN
 
 		return ball

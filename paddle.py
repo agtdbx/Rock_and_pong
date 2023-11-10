@@ -22,18 +22,53 @@ class Paddle:
 
 		self.waitLaunch = 0
 
+		self.modifierSpeed = 1
+		self.modifierSize = 1
+		self.modifierTimeEffect = 0
+
+
+	def updateTimes(self, delta):
+		if self.waitLaunch > 0:
+			self.waitLaunch -= delta
+			if self.waitLaunch < 0:
+				self.waitLaunch = 0
+
+		if self.modifierTimeEffect > 0:
+			self.modifierTimeEffect -= delta
+			if self.modifierTimeEffect < 0:
+				self.modifierTimeEffect = 0
+				self.modifierSpeed = 1
+				if self.modifierSize != 1:
+					self.modifySize(1)
+
 
 	def move(self, dir, delta):
 		if dir == "up":
-			self.pos.y -= PADDLE_SPEED * delta
-			if self.pos.y - self.halfH < AREA_RECT[1] + PERFECT_SHOOT_SIZE:
-				self.pos.y = AREA_RECT[1] + PERFECT_SHOOT_SIZE + self.halfH
+			self.pos.y -= PADDLE_SPEED * self.modifierSpeed * delta
+			if self.pos.y - (self.halfH * self.modifierSize) < AREA_RECT[1] + PERFECT_SHOOT_SIZE:
+				self.pos.y = AREA_RECT[1] + PERFECT_SHOOT_SIZE + (self.halfH * self.modifierSize)
 			self.hitbox.setPos(self.pos.dup())
 
 		elif dir == "down":
-			self.pos.y += PADDLE_SPEED * delta
-			if self.pos.y + self.halfH > AREA_RECT[1] + AREA_RECT[3] - PERFECT_SHOOT_SIZE:
-				self.pos.y = AREA_RECT[1] + AREA_RECT[3] - PERFECT_SHOOT_SIZE - self.halfH
+			self.pos.y += PADDLE_SPEED * self.modifierSpeed * delta
+			if self.pos.y + (self.halfH * self.modifierSize) > AREA_RECT[1] + AREA_RECT[3] - PERFECT_SHOOT_SIZE:
+				self.pos.y = AREA_RECT[1] + AREA_RECT[3] - PERFECT_SHOOT_SIZE - (self.halfH * self.modifierSize)
+			self.hitbox.setPos(self.pos.dup())
+
+
+	def modifySize(self, modifier):
+		self.modifierSize = modifier
+		self.hitbox.clearPoints()
+		self.hitbox.addPoint(-self.halfW, -self.halfH * self.modifierSize)
+		self.hitbox.addPoint(self.halfW, -self.halfH * self.modifierSize)
+		self.hitbox.addPoint(self.halfW, self.halfH * self.modifierSize)
+		self.hitbox.addPoint(-self.halfW, self.halfH * self.modifierSize)
+
+		if self.pos.y - (self.halfH * self.modifierSize) < AREA_RECT[1] + PERFECT_SHOOT_SIZE:
+			self.pos.y = AREA_RECT[1] + PERFECT_SHOOT_SIZE + (self.halfH * self.modifierSize)
+			self.hitbox.setPos(self.pos.dup())
+		if self.pos.y + (self.halfH * self.modifierSize) > AREA_RECT[1] + AREA_RECT[3] - PERFECT_SHOOT_SIZE:
+			self.pos.y = AREA_RECT[1] + AREA_RECT[3] - PERFECT_SHOOT_SIZE - (self.halfH * self.modifierSize)
 			self.hitbox.setPos(self.pos.dup())
 
 
