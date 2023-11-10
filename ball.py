@@ -82,13 +82,6 @@ class Ball:
 
 		nbCheckCollisionStep = int(deltaSpeed // BALL_MOVE_STEP)
 		lastStepMove = deltaSpeed - (nbCheckCollisionStep * BALL_MOVE_STEP)
-		# print("speed", deltaSpeed)
-		# print("BALL_MOVE_CHECK", BALL_MOVE_STEP)
-		# print("nbCheckCollisionStep", nbCheckCollisionStep)
-		# print("lastStepMove", lastStepMove)
-		# print("fats dist", nbCheckCollisionStep * BALL_MOVE_STEP)
-		# print("true dist", nbCheckCollisionStep * BALL_MOVE_STEP + lastStepMove)
-		# print()
 		for i in range(nbCheckCollisionStep + 1):
 			step = BALL_MOVE_STEP
 			if i == nbCheckCollisionStep:
@@ -175,6 +168,9 @@ class Ball:
 				last = self.direction
 				self.direction = reflectionAlongVec2(normal, self.direction)
 				if last != self.direction:
+					self.speed += BALL_WALL_ACCELERATION
+					if self.speed > BALL_MAX_SPEED:
+						self.speed = BALL_MAX_SPEED
 					return True
 		return False
 
@@ -189,7 +185,7 @@ class Ball:
 
 		self.direction = newDir
 
-		self.speed += self.speed * BALL_ACCELERATION
+		self.speed += BALL_PADDLE_ACCELERATION
 		if self.speed > BALL_MAX_SPEED:
 			self.speed = BALL_MAX_SPEED
 
@@ -200,6 +196,9 @@ class Ball:
 	def dup(self):
 		ball = Ball(self.pos.x, self.pos.y)
 		ball.direction = self.direction.dup()
+		self.speed /= 2
+		if self.speed < BALL_MIN_SPEED:
+			self.speed = BALL_MIN_SPEED
 		ball.speed = self.speed
 
 		self.direction.rotate(30)

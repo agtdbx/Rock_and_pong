@@ -14,8 +14,10 @@ BALL_COLOR = (255, 255, 255) # (r, g, b), channell int [0, 255]
 BALL_TRAIL_OPACITY = 0.5 # float [0, 1]
 BALL_TRAIL_LENGTH = 30 # number of cicles in trail
 BALL_START_SPEED = WIN_WIDTH / 5 # pixel per seconds
+BALL_MIN_SPEED = WIN_WIDTH / 10 # pixel per seconds
 BALL_MAX_SPEED = WIN_WIDTH # pixel per seconds
-BALL_ACCELERATION = 0.1 # float [0, 1]
+BALL_PADDLE_ACCELERATION = 100 # pixel per seconds
+BALL_WALL_ACCELERATION = 10 # pixel per seconds
 BALL_HITBOX_PRECISION = 16 # nb number for make circle [4, 360]
 BALL_MOVE_STEP = BALL_RADIUS / 2 # Number of pixel travel by ball between 2 collisions check
 

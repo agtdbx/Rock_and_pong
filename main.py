@@ -71,6 +71,21 @@ class Game:
 		# Ball creation
 		self.balls = [ball.Ball(WIN_WIDTH / 2, WIN_HEIGHT / 2)]
 
+		self.balls[0].state = STATE_IN_FOLLOW
+		self.balls[0].lastPaddleHitId = 0
+		self.balls[0].direction = Vec2(1, 0)
+
+		circlePointWall = []
+		circlePointWallPrecision = 64
+		circlePointWallRadius = 100
+
+		for i in range(circlePointWallPrecision):
+			degree = 360 / circlePointWallPrecision * i
+			radian = degree * (math.pi / 180)
+			x = circlePointWallRadius * math.cos(radian)
+			y = circlePointWallRadius * math.sin(radian)
+			circlePointWall.append((x, y))
+
 		# Walls creation
 		self.walls = [
 			# Wall up
@@ -93,13 +108,19 @@ class Game:
 			createObstacle(
 				AREA_RECT[0] + AREA_RECT[2] / 2,
 				AREA_RECT[1],
-				[(-100, 0), (100, 0), (50, 75), (0, 100), (-50, 75)],
+				[(-300, 0), (300, 0), (275, 50), (75, 75), (0, 125), (-75, 75), (-275, 50)],
 				(150, 150, 0)
 			),
 			createObstacle(
 				AREA_RECT[0] + AREA_RECT[2] / 2,
 				AREA_RECT[1] + AREA_RECT[3],
-				[(-100, 0), (100, 0), (50, -75), (0, -100), (-50, -75)],
+				[(-300, 0), (300, 0), (275, -50), (0, -25), (-275, -50)],
+				(150, 150, 0)
+			),
+			createObstacle(
+				AREA_RECT[0] + AREA_RECT[2] / 2,
+				AREA_RECT[1] + AREA_RECT[3] / 2,
+				circlePointWall,
 				(150, 150, 0)
 			)
 		]
