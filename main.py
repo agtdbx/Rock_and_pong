@@ -101,24 +101,24 @@ class Game:
 				(50, 50, 50)
 			),
 			# Obstables
-			createObstacle(
-				AREA_RECT[0] + AREA_RECT[2] / 2,
-				AREA_RECT[1],
-				[(-300, 0), (300, 0), (275, 50), (75, 75), (0, 125), (-75, 75), (-275, 50)],
-				(150, 150, 0)
-			),
-			createObstacle(
-				AREA_RECT[0] + AREA_RECT[2] / 2,
-				AREA_RECT[1] + AREA_RECT[3],
-				[(-300, 0), (300, 0), (275, -50), (0, -25), (-275, -50)],
-				(150, 150, 0)
-			),
-			createObstacle(
-				AREA_RECT[0] + AREA_RECT[2] / 2,
-				AREA_RECT[1] + AREA_RECT[3] / 2,
-				circlePointWall,
-				(150, 150, 0)
-			)
+			# createObstacle(
+			# 	AREA_RECT[0] + AREA_RECT[2] / 2,
+			# 	AREA_RECT[1],
+			# 	[(-300, 0), (300, 0), (275, 50), (75, 75), (0, 125), (-75, 75), (-275, 50)],
+			# 	(150, 150, 0)
+			# ),
+			# createObstacle(
+			# 	AREA_RECT[0] + AREA_RECT[2] / 2,
+			# 	AREA_RECT[1] + AREA_RECT[3],
+			# 	[(-300, 0), (300, 0), (275, -50), (0, -25), (-275, -50)],
+			# 	(150, 150, 0)
+			# ),
+			# createObstacle(
+			# 	AREA_RECT[0] + AREA_RECT[2] / 2,
+			# 	AREA_RECT[1] + AREA_RECT[3] / 2,
+			# 	circlePointWall,
+			# 	(150, 150, 0)
+			# )
 		]
 
 		# Scores
@@ -178,7 +178,7 @@ class Game:
 			if self.keyboardState[PLAYER_KEYS[i][KEY_DOWN]]:
 				self.paddles[i].move("down", delta)
 			if self.keyboardState[PLAYER_KEYS[i][KEY_POWER_UP]]:
-				# self.balls[0].modifierSpeed = 20
+				self.balls[0].modifierSpeed = 2.5
 				# self.balls[0].modifierPhatomBall = True
 				# self.balls[0].modifierPhatomBallTimer = 0
 				# self.balls[0].modifySize(0.5)

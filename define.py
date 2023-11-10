@@ -1,7 +1,7 @@
 import pygame as pg
 
-WIN_WIDTH = 1280 # in pixel
-WIN_HEIGHT = 800 # in pixel
+WIN_WIDTH = 1920 # in pixel
+WIN_HEIGHT = 1000 # in pixel
 WIN_CLEAR_COLOR = (0, 0, 0) # (r, g, b), channell int [0, 255]
 
 AREA_MARGIN = 50 # in pixel
@@ -13,9 +13,9 @@ BALL_RADIUS = 10 # in pixel
 BALL_COLOR = (255, 255, 255) # (r, g, b), channell int [0, 255]
 BALL_TRAIL_OPACITY = 0.5 # float [0, 1]
 BALL_TRAIL_LENGTH = 30 # number of cicles in trail
-BALL_START_SPEED = WIN_WIDTH / 5 # pixel per seconds
-BALL_MIN_SPEED = 1 # pixel per seconds
-BALL_MAX_SPEED = WIN_WIDTH # pixel per seconds
+BALL_START_SPEED = WIN_WIDTH / 4 # pixel per seconds
+BALL_MIN_SPEED = WIN_WIDTH / 8 # pixel per seconds
+BALL_MAX_SPEED = WIN_WIDTH * 2 # pixel per seconds
 BALL_PADDLE_ACCELERATION = 100 # pixel per seconds
 BALL_WALL_ACCELERATION = 10 # pixel per seconds
 BALL_HITBOX_PRECISION = 16 # nb number for make circle [4, 360]

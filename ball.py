@@ -186,9 +186,14 @@ class Ball:
 		else:
 			green_gradient = self.speed / BALL_MAX_SPEED
 			blue_gradient = 1 - self.speed / BALL_MAX_SPEED
+
 		self.color =	(BALL_COLOR[0],
 						BALL_COLOR[1] * green_gradient,
 						BALL_COLOR[2] * blue_gradient)
+		if self.modifierSpeed > 1:
+			self.color =	(BALL_COLOR[0] * green_gradient,
+						BALL_COLOR[1] * blue_gradient,
+						BALL_COLOR[2])
 
 		# Friction
 		if BALL_FRICTION and self.speed > 0:
