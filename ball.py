@@ -107,7 +107,7 @@ class Ball:
 			self.modifierPhatomBallTimer += detla
 
 
-	def updatePosition(self, delta, paddles, walls):
+	def updatePosition(self, delta, paddlesLeft, paddlesRight, walls):
 		if self.state != STATE_RUN:
 			return
 
@@ -138,7 +138,14 @@ class Ball:
 			collision = False
 
 			# Collision with paddle
-			for p in paddles:
+			for p in paddlesLeft:
+				if collision:
+					newpos = self.pos.dup()
+					newpos.translateAlong(self.direction, step)
+					collision = False
+				collision = self.makeCollisionWithPaddle(p)
+
+			for p in paddlesRight:
 				if collision:
 					newpos = self.pos.dup()
 					newpos.translateAlong(self.direction, step)

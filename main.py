@@ -1,8 +1,7 @@
 from define import *
-from pg_utils import *
 from vec2 import *
 import hitbox
-import paddle
+import team
 import ball
 
 import pygame as pg
@@ -56,28 +55,19 @@ class Game:
 
 		self.inputWait = 0
 
-		# Paddles
-		self.paddles = [
-			# L
-			paddle.Paddle(AREA_RECT[0] + AREA_BORDER_SIZE * 2, WIN_HEIGHT / 2, 0),
-			# R
-			paddle.Paddle(AREA_RECT[0] + AREA_RECT[2] - AREA_BORDER_SIZE * 2, WIN_HEIGHT / 2, 1)
-
-			# # L1
-			# paddle.Paddle(AREA_RECT[0] + AREA_BORDER_SIZE * 2, WIN_HEIGHT / 2 - PADDLE_HEIGHT , 0),
-			# # R1
-			# paddle.Paddle(AREA_RECT[0] + AREA_RECT[2] - AREA_BORDER_SIZE * 2, WIN_HEIGHT / 2 - PADDLE_HEIGHT, 1),
-			# # L2
-			# paddle.Paddle(AREA_RECT[0] + AREA_BORDER_SIZE * 2, WIN_HEIGHT / 2 + PADDLE_HEIGHT + 10, 2),
-			# # R2
-			# paddle.Paddle(AREA_RECT[0] + AREA_RECT[2] - AREA_BORDER_SIZE * 2, WIN_HEIGHT / 2 + PADDLE_HEIGHT + 10, 3)
-		]
+		# Team creation
+		self.teamLeft = team.Team(1, leftSide=True)
+		self.teamRight = team.Team(1, leftSide=False)
 
 		# Ball creation
 		self.balls = [ball.Ball(WIN_WIDTH / 2, WIN_HEIGHT / 2)]
 
-		self.balls[0].lastPaddleHitId = random.randint(0, len(self.paddles) - 1)
-		if self.balls[0].lastPaddleHitId % 2:
+		# Ball begin left side
+		if random.random() > 0.5:
+			self.balls[0].lastPaddleHitId = random.choice(self.teamLeft.paddles).id
+		# Ball begin right side
+		else:
+			self.balls[0].lastPaddleHitId = random.choice(self.teamRight.paddles).id
 			self.balls[0].direction = Vec2(-1, 0)
 
 		# Walls creation
@@ -120,10 +110,6 @@ class Game:
 			# 	(150, 150, 0)
 			# )
 		]
-
-		# Scores
-		self.player1Score = 0
-		self.player2Score = 0
 
 
 	def run(self):
@@ -170,27 +156,13 @@ class Game:
 			if self.inputWait < 0:
 				self.inputWait = 0
 
-		for i in range(len(self.paddles)):
-			self.paddles[i].updateTimes(delta)
-
-			if self.keyboardState[PLAYER_KEYS[i][KEY_UP]]:
-				self.paddles[i].move("up", delta)
-			if self.keyboardState[PLAYER_KEYS[i][KEY_DOWN]]:
-				self.paddles[i].move("down", delta)
-			if self.keyboardState[PLAYER_KEYS[i][KEY_POWER_UP]]:
-				self.balls[0].modifierSpeed = 2.5
-				# self.balls[0].modifierPhatomBall = True
-				# self.balls[0].modifierPhatomBallTimer = 0
-				# self.balls[0].modifySize(0.5)
-				# self.balls[0].modifierSkipCollision = True
-				# self.paddles[i].modifySize(0.1)
-				# self.paddles[i].modifierTimeEffect = 2
-				pass
+		self.teamLeft.tick(delta, self.keyboardState)
+		self.teamRight.tick(delta, self.keyboardState)
 
 		newBalls = []
 
 		for b in self.balls:
-			b.updatePosition(delta, self.paddles, self.walls)
+			b.updatePosition(delta, self.teamLeft.paddles, self.teamRight.paddles, self.walls)
 			b.updateTime(delta)
 
 			if b.state == STATE_RUN and self.keyboardState[pg.K_v] and self.inputWait == 0:
@@ -198,34 +170,33 @@ class Game:
 
 			# if the ball is in left goal
 			elif b.state == STATE_IN_GOAL_LEFT:
-				self.player2Score += 1
+				self.teamRight.score += 1
 				b.direction = Vec2(1, 0)
 				b.speed = BALL_START_SPEED
 				b.state = STATE_IN_FOLLOW
 				b.modifierSkipCollision = False
-				b.lastPaddleHitId = self.paddles[0].id
-				if len(self.paddles) == 4 and random.random() > 0.5:
-					b.lastPaddleHitId = self.paddles[2].id
+				b.lastPaddleHitId = random.choice(self.teamLeft.paddles).id
 
 			# if the ball is in right goal
 			elif b.state == STATE_IN_GOAL_RIGHT:
-				self.player1Score += 1
+				self.teamLeft.score += 1
 				b.direction = Vec2(-1, 0)
 				b.speed = BALL_START_SPEED
 				b.state = STATE_IN_FOLLOW
 				b.modifierSkipCollision = False
-				b.lastPaddleHitId = self.paddles[1].id
-				if len(self.paddles) == 4 and random.random() > 0.5:
-					b.lastPaddleHitId = self.paddles[3].id
+				b.lastPaddleHitId = random.choice(self.teamRight.paddles).id
 
 			# case of ball follow player
 			elif b.state == STATE_IN_FOLLOW:
-				padId = b.lastPaddleHitId
-				b.setPos(self.paddles[padId].pos.dup())
+				if b.lastPaddleHitId < 2:
+					pad = self.teamLeft.paddles[b.lastPaddleHitId]
+				else:
+					pad = self.teamRight.paddles[b.lastPaddleHitId - TEAM_MAX_PLAYER]
+				b.setPos(pad.pos.dup())
 				b.pos.translateAlong(b.direction.dup(), PADDLE_WIDTH * 2)
-				if self.keyboardState[PLAYER_KEYS[padId][KEY_LAUNCH_BALL]] and self.paddles[padId].waitLaunch == 0:
+				if self.keyboardState[PLAYER_KEYS[pad.id][KEY_LAUNCH_BALL]] and pad.waitLaunch == 0:
 					b.state = STATE_RUN
-					self.paddles[padId].waitLaunch = PADDLE_LAUNCH_COOLDOWN
+					pad.waitLaunch = PADDLE_LAUNCH_COOLDOWN
 
 		self.balls.extend(newBalls)
 
@@ -253,13 +224,9 @@ class Game:
 		for b in self.balls:
 			b.draw(self.win)
 
-		# Draw paddles
-		for pad in self.paddles:
-			pad.draw(self.win)
-
-		# Draw score
-		drawText(self.win, "Player 1 : " + str(self.player1Score), (AREA_MARGIN, AREA_MARGIN / 2), (255, 255, 255), size=30, align="mid-left")
-		drawText(self.win, "Player 2 : " + str(self.player2Score), (WIN_WIDTH - AREA_MARGIN, AREA_MARGIN / 2), (255, 255, 255), size=30, align="mid-right")
+		# Draw team
+		self.teamLeft.draw(self.win)
+		self.teamRight.draw(self.win)
 
 		# We update the drawing.
 		# Before the function call, any changes will be not visible
