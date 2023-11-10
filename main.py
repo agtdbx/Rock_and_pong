@@ -56,7 +56,7 @@ class Game:
 
 		self.inputWait = 0
 
-		# Padd
+		# Paddles
 		self.paddles = [
 			# L1
 			paddle.Paddle(AREA_RECT[0] + AREA_BORDER_SIZE * 2, WIN_HEIGHT / 2, 0),
@@ -71,9 +71,9 @@ class Game:
 		# Ball creation
 		self.balls = [ball.Ball(WIN_WIDTH / 2, WIN_HEIGHT / 2)]
 
-		self.balls[0].state = STATE_IN_FOLLOW
-		self.balls[0].lastPaddleHitId = 0
-		self.balls[0].direction = Vec2(1, 0)
+		self.balls[0].lastPaddleHitId = random.randint(0, len(self.paddles) - 1)
+		if self.balls[0].lastPaddleHitId % 2:
+			self.balls[0].direction = Vec2(-1, 0)
 
 		circlePointWall = []
 		circlePointWallPrecision = 64

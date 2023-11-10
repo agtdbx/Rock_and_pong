@@ -23,15 +23,13 @@ class Ball:
 			self.hitbox.addPoint(x, y)
 
 		self.speed = BALL_START_SPEED
-		self.direction = Vec2(random.randint(-1, 1) * 10, random.randint(-10, 10))
-		if self.direction.x == 0:
-			self.direction.x = -10
-		self.direction.normalize()
+		self.direction = Vec2(1, 0)
+
 		self.lastPositions = [(x, y) for _ in range(BALL_TRAIL_LENGTH)]
 		self.lastColors = [BALL_COLOR for _ in range(BALL_TRAIL_LENGTH)]
-		self.state = STATE_RUN
+		self.state = STATE_IN_FOLLOW
 
-		self.lastPaddleHitId = -1
+		self.lastPaddleHitId = 1
 
 
 	def draw(self, win):
