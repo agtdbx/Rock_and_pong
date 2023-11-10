@@ -1,9 +1,7 @@
 from define import *
 from vec2 import *
 import hitbox
-
-import pygame as pg
-
+import ball
 
 class Paddle:
 	def	__init__(self, x, y, id) -> None:

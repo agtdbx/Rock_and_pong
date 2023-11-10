@@ -21,12 +21,24 @@ def getPointOfCircle(radius, precision, beginDegree = 0):
 
 class Ball:
 	def __init__(self, x, y):
+		# Geometry
 		self.pos = Vec2(x, y)
 		self.radius = BALL_RADIUS
+		self.speed = BALL_START_SPEED
+		self.direction = Vec2(1, 0)
+
+		# Graphique
 		self.color = BALL_COLOR
 		self.originalSprite = pg.image.load("imgs/ball.png")
 		self.sprite = pg.transform.scale(self.originalSprite, (self.radius * 2, self.radius * 2))
+
+		# Hitbox creation
 		self.hitbox = hitbox.Hitbox(self.pos.x, self.pos.y, HITBOX_BALL_COLOR)
+		self.hitbox.setPos(self.pos)
+		points = getPointOfCircle(self.radius, BALL_HITBOX_PRECISION, 360 / (BALL_HITBOX_PRECISION * 2))
+
+		for p in points:
+			self.hitbox.addPoint(p[0], p[1])
 
 		# Modifier
 		self.modifierSpeed = 1
@@ -35,10 +47,6 @@ class Ball:
 		self.modifierPhatomBall = False
 		self.modifierPhatomBallTimer = -1
 
-		self.resetHitbox()
-
-		self.speed = BALL_START_SPEED
-		self.direction = Vec2(1, 0)
 
 		self.lastPositions = [(x, y) for _ in range(BALL_TRAIL_LENGTH)]
 		self.lastColors = [BALL_COLOR for _ in range(BALL_TRAIL_LENGTH)]
