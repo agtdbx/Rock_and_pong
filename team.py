@@ -3,7 +3,6 @@ from pg_utils import *
 
 import paddle
 
-
 class Team:
 	def __init__(self, numberOfPlayers:int, leftSide:bool) -> None:
 		if numberOfPlayers < 1:
@@ -30,7 +29,7 @@ class Team:
 		self.score = 0
 
 
-	def tick(self, delta:float, keyboardState:list) -> None:
+	def tick(self, delta:float, keyboardState:list, balls:list) -> None:
 		for i in range(len(self.paddles)):
 			self.paddles[i].updateTimes(delta)
 
@@ -44,6 +43,8 @@ class Team:
 			if keyboardState[PLAYER_KEYS[keyId][KEY_DOWN]]:
 				self.paddles[i].move("down", delta)
 			if keyboardState[PLAYER_KEYS[keyId][KEY_POWER_UP]]:
+				#balls[0].modifierZigZagBall = True
+				#balls[0].modifierSpeed = 2.5
 				pass
 
 

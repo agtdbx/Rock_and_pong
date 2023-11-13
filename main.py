@@ -156,8 +156,8 @@ class Game:
 			if self.inputWait < 0:
 				self.inputWait = 0
 
-		self.teamLeft.tick(delta, self.keyboardState)
-		self.teamRight.tick(delta, self.keyboardState)
+		self.teamLeft.tick(delta, self.keyboardState, self.balls)
+		self.teamRight.tick(delta, self.keyboardState, self.balls)
 
 		newBalls = []
 

@@ -19,7 +19,7 @@ BALL_MAX_SPEED = WIN_WIDTH * 2 # pixel per seconds
 BALL_PADDLE_ACCELERATION = 100 # pixel per seconds
 BALL_WALL_ACCELERATION = 10 # pixel per seconds
 BALL_HITBOX_PRECISION = 16 # nb number for make circle [4, 360]
-BALL_MOVE_STEP = BALL_RADIUS / 2 # Number of pixel travel by ball between 2 collisions check
+BALL_MOVE_STEP = 1 # Number of pixel travel by ball between 2 collisions check
 
 BALL_FRICTION = False # boolean
 BALL_MINIMUM_FRICTION = 100 # pixel per seconds

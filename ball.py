@@ -45,8 +45,9 @@ class Ball:
 		self.modifierSize = 1
 		self.modifierSkipCollision = False
 		self.modifierPhatomBall = False
-		self.modifierPhatomBallTimer = -1
-
+		self.modifierPhatomBallTimer = 0
+		self.modifierZigZagBall = False
+		self.modifierZigZagBallTimer = 0
 
 		self.lastPositions = [(x, y) for _ in range(BALL_TRAIL_LENGTH)]
 		self.lastColors = [BALL_COLOR for _ in range(BALL_TRAIL_LENGTH)]
@@ -70,7 +71,9 @@ class Ball:
 			self.modifySize(1)
 		self.modifierSkipCollision = False
 		self.modifierPhatomBall = False
-		self.modifierPhatomBallTimer = -1
+		self.modifierPhatomBallTimer = 0
+		self.modifierZigZagBall = False
+		self.modifierZigZagBallTimer = 0
 
 
 	def modifySize(self, modifier):
@@ -111,8 +114,20 @@ class Ball:
 
 
 	def updateTime(self, detla):
-		if self.modifierPhatomBallTimer != -1:
+		if self.modifierPhatomBall:
 			self.modifierPhatomBallTimer += detla
+		if self.modifierZigZagBall:
+			self.modifierZigZagBallTimer += detla
+
+
+	def getRealDirection(self) -> Vec2:
+		if not self.modifierZigZagBall:
+			return self.direction
+
+		realDirection = self.direction.dup()
+		realDirection.rotate(45 * math.sin(self.modifierZigZagBallTimer * 20))
+
+		return realDirection
 
 
 	def updatePosition(self, delta, paddlesLeft, paddlesRight, walls):
@@ -139,8 +154,10 @@ class Ball:
 			if i == nbCheckCollisionStep:
 				step = lastStepMove
 
+
+			realDirection = self.getRealDirection()
 			newpos = self.pos.dup()
-			newpos.translateAlong(self.direction, step)
+			newpos.translateAlong(realDirection, step)
 			self.hitbox.setPos(newpos)
 
 			collision = False
@@ -148,28 +165,33 @@ class Ball:
 			# Collision with paddle
 			for p in paddlesLeft:
 				if collision:
+					realDirection = self.getRealDirection()
 					newpos = self.pos.dup()
-					newpos.translateAlong(self.direction, step)
+					newpos.translateAlong(realDirection, step)
 					collision = False
 				collision = self.makeCollisionWithPaddle(p)
 
 			for p in paddlesRight:
 				if collision:
+					realDirection = self.getRealDirection()
 					newpos = self.pos.dup()
-					newpos.translateAlong(self.direction, step)
+					newpos.translateAlong(realDirection, step)
 					collision = False
 				collision = self.makeCollisionWithPaddle(p)
 
 			# Collision with wall
 			for w in walls:
 				if collision:
+					realDirection = self.getRealDirection()
 					newpos = self.pos.dup()
-					newpos.translateAlong(self.direction, step)
+					newpos.translateAlong(realDirection, step)
+					collision = False
 				collision = self.makeCollisionWithWall(w)
 
 			if collision:
+				realDirection = self.getRealDirection()
 				newpos = self.pos.dup()
-				newpos.translateAlong(self.direction, step)
+				newpos.translateAlong(realDirection, step)
 
 			# Check if ball is in goal
 			if newpos.x - self.radius < AREA_RECT[0]:
@@ -241,6 +263,9 @@ class Ball:
 					self.speed += BALL_WALL_ACCELERATION
 					if self.speed > BALL_MAX_SPEED:
 						self.speed = BALL_MAX_SPEED
+					self.modifierZigZagBall = False
+					self.modifierZigZagBallTimer = 0
+					self.modifierSpeed = 1
 					return True
 		return False
 
@@ -249,25 +274,15 @@ class Ball:
 		if not paddle.hitbox.isCollide(self.hitbox):
 			return False
 
-		print("ball", self.pos)
-		print("paddle", paddle.pos)
-
 		diffY = self.pos.y - paddle.pos.y
-		print("Total diff y", diffY)
 		diffY /= (paddle.h * paddle.modifierSize) / 2
-		print("Normalize diff y", diffY)
 
 		if paddle.pos.x < self.pos.x:
 			newDir = Vec2(1, diffY)
-			print("Paddle left")
 		else:
 			newDir = Vec2(-1, diffY)
-			print("Paddle right")
 
-		print("new dir", newDir)
 		newDir.normalize()
-		print("new dir normalize", newDir)
-
 		self.direction = newDir
 
 		self.speed += BALL_PADDLE_ACCELERATION
