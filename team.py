@@ -15,16 +15,17 @@ class Team:
 
 		if leftSide:
 			xPos = AREA_RECT[0] + AREA_BORDER_SIZE * 2
+			id = 0
 		else:
 			xPos = AREA_RECT[0] + AREA_RECT[2] - AREA_BORDER_SIZE * 2
+			id = TEAM_MAX_PLAYER
 
 		self.paddles = []
-		maxHeight = WIN_HEIGHT - PADDLE_HEIGHT
-		for i in range(numberOfPlayers):
-			if leftSide:
-				self.paddles.append(paddle.Paddle(xPos, maxHeight * ((i + 1) / numberOfPlayers), i))
-			else:
-				self.paddles.append(paddle.Paddle(xPos, maxHeight * ((i + 1) / numberOfPlayers), i + TEAM_MAX_PLAYER))
+		if numberOfPlayers == 1:
+			self.paddles.append(paddle.Paddle(xPos, AREA_RECT[1] + AREA_RECT[3] // 2, id))
+		else:
+			self.paddles.append(paddle.Paddle(xPos, AREA_RECT[1] + AREA_RECT[3] // 3, id))
+			self.paddles.append(paddle.Paddle(xPos, AREA_RECT[1] + AREA_RECT[3] // 3 * 2, id + 1))
 
 		self.score = 0
 

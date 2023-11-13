@@ -249,9 +249,24 @@ class Ball:
 		if not paddle.hitbox.isCollide(self.hitbox):
 			return False
 
-		newDir = self.pos.dup()
-		newDir.subBy(paddle.pos)
+		print("ball", self.pos)
+		print("paddle", paddle.pos)
+
+		diffY = self.pos.y - paddle.pos.y
+		print("Total diff y", diffY)
+		diffY /= (paddle.h * paddle.modifierSize) / 2
+		print("Normalize diff y", diffY)
+
+		if paddle.pos.x < self.pos.x:
+			newDir = Vec2(1, diffY)
+			print("Paddle left")
+		else:
+			newDir = Vec2(-1, diffY)
+			print("Paddle right")
+
+		print("new dir", newDir)
 		newDir.normalize()
+		print("new dir normalize", newDir)
 
 		self.direction = newDir
 

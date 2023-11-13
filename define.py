@@ -67,10 +67,18 @@ POWER_UP_PADDLE_SLOW = 7
 POWER_UP_PADDLE_BIG = 8
 POWER_UP_PADDLE_LITTLE = 9
 
-# LEFT PLAYERS
+## PLAYERS KEYS QWERTY
+#PLAYER_KEYS = [
+#	(pg.K_q, pg.K_a, pg.K_z, pg.K_SPACE), # L1 player
+#	(pg.K_w, pg.K_s, pg.K_x, pg.K_SPACE), # L2 player
+#	(pg.K_o, pg.K_k, pg.K_m, pg.K_SPACE), # R1 player
+#	(pg.K_i, pg.K_j, pg.K_n, pg.K_SPACE), # R2 player
+#]
+
+# PLAYERS KEYS AZERTY
 PLAYER_KEYS = [
-	(pg.K_q, pg.K_a, pg.K_z, pg.K_SPACE), # L1 player
-	(pg.K_w, pg.K_s, pg.K_x, pg.K_SPACE), # L2 player
+	(pg.K_a, pg.K_q, pg.K_w, pg.K_SPACE), # L1 player
+	(pg.K_z, pg.K_s, pg.K_x, pg.K_SPACE), # L2 player
 	(pg.K_o, pg.K_k, pg.K_m, pg.K_SPACE), # R1 player
-	(pg.K_i, pg.K_j, pg.K_n, pg.K_SPACE), # R2 player
+	(pg.K_i, pg.K_j, pg.K_SEMICOLON, pg.K_SPACE), # R2 player
 ]
