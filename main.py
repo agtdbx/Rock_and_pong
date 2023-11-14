@@ -70,9 +70,11 @@ class Game:
 			self.balls[0].lastPaddleHitId = random.choice(self.teamRight.paddles).id
 			self.balls[0].direction = Vec2(-1, 0)
 
-		# Walls creation
-		circlePointWall = ball.getPointOfCircle(100, 32, 360 / 64)
+		self.powerUp = [POWER_UP_COOLDOWN, hitbox.Hitbox(0, 0, (0, 0, 200), (200, 200, 200)), -1]
+		for p in ball.getPointOfCircle(20, 16, 0):
+			self.powerUp[1].addPoint(p[0], p[1])
 
+		# Walls creation
 		self.walls = [
 			# Wall up
 			createWall(
@@ -91,24 +93,24 @@ class Game:
 				(50, 50, 50)
 			),
 			# Obstables
-			 createObstacle(
-			 	AREA_RECT[0] + AREA_RECT[2] / 2,
-			 	AREA_RECT[1],
-			 	[(-300, 0), (300, 0), (275, 50), (75, 75), (0, 125), (-75, 75), (-275, 50)],
-			 	(150, 150, 0)
-			 ),
-			 createObstacle(
-			 	AREA_RECT[0] + AREA_RECT[2] / 2,
-			 	AREA_RECT[1] + AREA_RECT[3],
-			 	[(-300, 0), (300, 0), (275, -50), (0, -25), (-275, -50)],
-			 	(150, 150, 0)
-			 ),
-			 createObstacle(
-			 	AREA_RECT[0] + AREA_RECT[2] / 2,
-			 	AREA_RECT[1] + AREA_RECT[3] / 2,
-			 	circlePointWall,
-			 	(150, 150, 0)
-			 )
+			createObstacle(
+			AREA_RECT[0] + AREA_RECT[2] / 2,
+			AREA_RECT[1],
+			[(-300, 0), (300, 0), (275, 50), (75, 75), (0, 125), (-75, 75), (-275, 50)],
+			(150, 150, 0)
+			),
+			createObstacle(
+			AREA_RECT[0] + AREA_RECT[2] / 2,
+			AREA_RECT[1] + AREA_RECT[3],
+			[(-300, 0), (300, 0), (275, -50), (0, -25), (-275, -50)],
+			(150, 150, 0)
+			),
+			createObstacle(
+			AREA_RECT[0] + AREA_RECT[2] / 2,
+			AREA_RECT[1] + AREA_RECT[3] / 2,
+			ball.getPointOfCircle(100, 32, 360 / 64),
+			(150, 150, 0)
+			)
 		]
 
 
@@ -156,13 +158,19 @@ class Game:
 			if self.inputWait < 0:
 				self.inputWait = 0
 
+		if self.powerUp[0] > POWER_UP_VISIBLE:
+			self.powerUp[0] -= delta
+			if self.powerUp[0] <= POWER_UP_VISIBLE:
+				self.powerUp[0] = POWER_UP_VISIBLE
+				self.createPowerUp()
+
 		self.teamLeft.tick(delta, self.keyboardState, self.balls)
 		self.teamRight.tick(delta, self.keyboardState, self.balls)
 
 		newBalls = []
 
 		for b in self.balls:
-			b.updatePosition(delta, self.teamLeft.paddles, self.teamRight.paddles, self.walls)
+			b.updatePosition(delta, self.teamLeft.paddles, self.teamRight.paddles, self.walls, self.powerUp)
 			b.updateTime(delta)
 
 			if b.state == STATE_RUN and self.keyboardState[pg.K_v] and self.inputWait == 0:
@@ -203,6 +211,14 @@ class Game:
 		if self.keyboardState[pg.K_v] and self.inputWait == 0:
 			self.inputWait = 1
 
+		if self.powerUp[0] == POWER_UP_TAKE:
+			powerUp = random.randint(0, 11)
+			if self.powerUp[2] < TEAM_MAX_PLAYER:
+				self.teamLeft.paddles[self.powerUp[2]].powerUp = powerUp
+			else:
+				self.teamRight.paddles[self.powerUp[2] - TEAM_MAX_PLAYER].powerUp = powerUp
+			self.powerUp[0] = POWER_UP_COOLDOWN
+
 		pg.display.set_caption(str(self.clock.get_fps()))
 
 
@@ -215,10 +231,21 @@ class Game:
 
 		# Draw area
 		pg.draw.rect(self.win, AREA_COLOR, AREA_RECT)
+		# pg.draw.rect(self.win, LEFT_TEAM_COLOR, LEFT_TEAM_RECT)
+		# pg.draw.rect(self.win, MIDDLE_COLOR, MIDDLE_RECT)
+		# pg.draw.rect(self.win, RIGTH_TEAM_COLOR, RIGTH_TEAM_RECT)
 
 		# Draw walls
 		for w in self.walls:
 			w.drawFill(self.win)
+			if DRAW_HITBOX:
+				w.draw(self.win)
+
+		# Power up draw
+		if self.powerUp[0] == POWER_UP_VISIBLE:
+			self.powerUp[1].drawFill(self.win)
+			if DRAW_HITBOX:
+				self.powerUp[1].draw(self.win)
 
 		# Draw ball
 		for b in self.balls:
@@ -240,6 +267,24 @@ class Game:
 		# Pygame quit
 		pg.quit()
 		sys.exit()
+
+
+	def createPowerUp(self):
+		collide = True
+
+		while collide:
+			collide = False
+
+			x = random.randint(LEFT_TEAM_RECT[0] + LEFT_TEAM_RECT[2], RIGTH_TEAM_RECT[0])
+			y = random.randint(AREA_RECT[1], AREA_RECT[1] + AREA_RECT[3])
+
+			self.powerUp[1].setPos(Vec2(x, y))
+
+			for hit in self.walls:
+				collide = self.powerUp[1].isInsideSurrondingBox(hit)
+				if collide:
+					break
+
 
 
 Game().run() # Start game

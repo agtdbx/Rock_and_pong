@@ -8,13 +8,20 @@ AREA_MARGIN = 50 # in pixel
 AREA_RECT = (AREA_MARGIN, AREA_MARGIN, WIN_WIDTH - (AREA_MARGIN * 2), WIN_HEIGHT - (AREA_MARGIN * 2))
 AREA_COLOR = (100, 100, 100) # (r, g, b), channell int [0, 255]
 AREA_BORDER_SIZE = 10 # in pixel
+SPACE_PART = AREA_RECT[2] // 5
+LEFT_TEAM_RECT = (AREA_RECT[0], AREA_RECT[1], SPACE_PART, AREA_RECT[3])
+LEFT_TEAM_COLOR = (100, 100, 150) # (r, g, b), channell int [0, 255]
+MIDDLE_RECT = (AREA_RECT[0] + SPACE_PART, AREA_RECT[1], AREA_RECT[2] - SPACE_PART, AREA_RECT[3])
+MIDDLE_COLOR = (100, 100, 100) # (r, g, b), channell int [0, 255]
+RIGTH_TEAM_RECT = (AREA_RECT[0] + AREA_RECT[2] - SPACE_PART, AREA_RECT[1], SPACE_PART, AREA_RECT[3])
+RIGTH_TEAM_COLOR = (150, 100, 100) # (r, g, b), channell int [0, 255]
 
 BALL_RADIUS = 10 # in pixel
 BALL_COLOR = (255, 255, 255) # (r, g, b), channell int [0, 255]
 BALL_TRAIL_OPACITY = 0.5 # float [0, 1]
 BALL_TRAIL_LENGTH = 30 # number of cicles in trail
-BALL_START_SPEED = WIN_WIDTH / 4 # pixel per seconds
-BALL_MIN_SPEED = WIN_WIDTH / 8 # pixel per seconds
+BALL_START_SPEED = WIN_WIDTH // 4 # pixel per seconds
+BALL_MIN_SPEED = WIN_WIDTH // 8 # pixel per seconds
 BALL_MAX_SPEED = WIN_WIDTH * 2 # pixel per seconds
 BALL_PADDLE_ACCELERATION = 100 # pixel per seconds
 BALL_WALL_ACCELERATION = 10 # pixel per seconds
@@ -55,30 +62,44 @@ KEY_POWER_UP = 2
 KEY_LAUNCH_BALL = 3
 
 # Power up defines
+POWER_UP_HITBOX_PRECISION = 16 # number of point to make the circle hitbox
+POWER_UP_HITBOX_RADIUS = 16 # in pixel
+POWER_UP_VISIBLE = 0
+POWER_UP_TAKE = -1
+POWER_UP_COOLDOWN = 5 # in second
+
+
 POWER_UP_NONE = -1
-POWER_UP_BALL_FAST = 0
-POWER_UP_BALL_SLOW = 1
-POWER_UP_BALL_BIG = 2
-POWER_UP_BALL_LITTLE = 3
-POWER_UP_BALL_NO_COLLISION = 4
-POWER_UP_BALL_PHATOM = 5
-POWER_UP_PADDLE_FAST = 6
-POWER_UP_PADDLE_SLOW = 7
-POWER_UP_PADDLE_BIG = 8
-POWER_UP_PADDLE_LITTLE = 9
+# end by hit wall
+POWER_UP_BALL_FAST = 0 # begin by hit paddle - 1 ball
+POWER_UP_BALL_ZIGZAG = 1 # begin by hit paddle - 1 ball
+POWER_UP_BALL_PHATOM = 2 # begin by hit paddle - 1 ball
+# end by hit paddle
+POWER_UP_BALL_NO_COLLISION = 3 # begin when ball isn't close of ennemy - all ball
+# never end
+POWER_UP_DUPLICATION_BALL = 4 # begin when ball isn't close of ennemy - all ball
+# limited time effect
+POWER_UP_BALL_SLOW = 5 # begin when ball isn't close of ennemy - all ball
+POWER_UP_BALL_BIG = 6 # begin when ball isn't close of ennemy - all ball
+POWER_UP_BALL_LITTLE = 7 # begin when ball isn't close of ennemy - all ball
+POWER_UP_PADDLE_FAST = 8 # begin when ball isn't close of ennemy - all team paddle
+POWER_UP_PADDLE_SLOW = 9 # begin when ball isn't close of ennemy - all ennemy team paddle
+POWER_UP_PADDLE_BIG = 10 # begin when ball isn't close of ennemy - all team paddle
+POWER_UP_PADDLE_LITTLE = 11 # begin when ball isn't close of ennemy - all ennemy team paddle
 
-## PLAYERS KEYS QWERTY
-#PLAYER_KEYS = [
-#	(pg.K_q, pg.K_a, pg.K_z, pg.K_SPACE), # L1 player
-#	(pg.K_w, pg.K_s, pg.K_x, pg.K_SPACE), # L2 player
-#	(pg.K_o, pg.K_k, pg.K_m, pg.K_SPACE), # R1 player
-#	(pg.K_i, pg.K_j, pg.K_n, pg.K_SPACE), # R2 player
-#]
 
-# PLAYERS KEYS AZERTY
+# PLAYERS KEYS QWERTY
 PLAYER_KEYS = [
-	(pg.K_a, pg.K_q, pg.K_w, pg.K_SPACE), # L1 player
-	(pg.K_z, pg.K_s, pg.K_x, pg.K_SPACE), # L2 player
+	(pg.K_q, pg.K_a, pg.K_z, pg.K_SPACE), # L1 player
+	(pg.K_w, pg.K_s, pg.K_x, pg.K_SPACE), # L2 player
 	(pg.K_o, pg.K_k, pg.K_m, pg.K_SPACE), # R1 player
-	(pg.K_i, pg.K_j, pg.K_SEMICOLON, pg.K_SPACE), # R2 player
+	(pg.K_i, pg.K_j, pg.K_n, pg.K_SPACE), # R2 player
 ]
+
+# # PLAYERS KEYS AZERTY
+# PLAYER_KEYS = [
+# 	(pg.K_a, pg.K_q, pg.K_w, pg.K_SPACE), # L1 player
+# 	(pg.K_z, pg.K_s, pg.K_x, pg.K_SPACE), # L2 player
+# 	(pg.K_o, pg.K_k, pg.K_m, pg.K_SPACE), # R1 player
+# 	(pg.K_i, pg.K_j, pg.K_SEMICOLON, pg.K_SPACE), # R2 player
+# ]

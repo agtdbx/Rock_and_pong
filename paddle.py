@@ -23,6 +23,8 @@ class Paddle:
 		self.modifierSize = 1
 		self.modifierTimeEffect = 0
 
+		self.powerUp = POWER_UP_NONE
+
 
 	def updateTimes(self, delta):
 		if self.waitLaunch > 0:
@@ -68,6 +70,11 @@ class Paddle:
 			self.pos.y = AREA_RECT[1] + AREA_RECT[3] - PERFECT_SHOOT_SIZE - (self.halfH * self.modifierSize)
 			self.hitbox.setPos(self.pos.dup())
 
+		if modifier != 1:
+			self.modifierTimeEffect = 5
+
 
 	def draw(self, win):
 		self.hitbox.drawFill(win)
+		if DRAW_HITBOX:
+			self.hitbox.draw(win)

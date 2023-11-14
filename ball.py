@@ -130,7 +130,7 @@ class Ball:
 		return realDirection
 
 
-	def updatePosition(self, delta, paddlesLeft, paddlesRight, walls):
+	def updatePosition(self, delta, paddlesLeft, paddlesRight, walls, powerUp):
 		if self.state != STATE_RUN:
 			return
 
@@ -154,13 +154,18 @@ class Ball:
 			if i == nbCheckCollisionStep:
 				step = lastStepMove
 
-
 			realDirection = self.getRealDirection()
 			newpos = self.pos.dup()
 			newpos.translateAlong(realDirection, step)
 			self.hitbox.setPos(newpos)
 
 			collision = False
+
+			# Collision with powerUp
+			if powerUp[0] == POWER_UP_VISIBLE and self.hitbox.isCollide(powerUp[1]):
+				powerUp[0] = POWER_UP_TAKE
+				powerUp[2] = self.lastPaddleHitId
+				print("powerUp take by", powerUp[2])
 
 			# Collision with paddle
 			for p in paddlesLeft:
@@ -297,16 +302,35 @@ class Ball:
 
 
 	def dup(self):
+		# Create new ball
 		ball = Ball(self.pos.x, self.pos.y)
+
+		# Dup direction
 		ball.direction = self.direction.dup()
+
+		# Set new speed
 		self.speed /= 2
 		if self.speed < BALL_MIN_SPEED:
 			self.speed = BALL_MIN_SPEED
 		ball.speed = self.speed
 
+		# Rotate both balls
 		self.direction.rotate(30)
 		ball.direction.rotate(-30)
 
+		# Set RUN state
 		ball.state = STATE_RUN
+
+		# Get info of last paddle touch
+		ball.lastPaddleHitId = self.lastPaddleHitId
+
+		# Dup power up effects
+		if self.modifierSize != 1:
+			ball.modifySize(self.modifierSize)
+		ball.modifierSkipCollision = self.modifierSkipCollision
+		ball.modifierPhatomBall = self.modifierPhatomBall
+		ball.modifierPhatomBallTimer = self.modifierPhatomBallTimer
+		ball.modifierZigZagBall = self.modifierZigZagBall
+		ball.modifierZigZagBallTimer = self.modifierZigZagBallTimer
 
 		return ball

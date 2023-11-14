@@ -23,9 +23,9 @@ def collideBetweenSegments(p1, p2, p3, p4):
 		return False, None
 
 	# Point of intersection
-	# s1Dir = vec2Sub(p2, p1)
-	# p = p1.dup()
-	# p.translateAlong(s1Dir, t)
+	s1Dir = vec2Sub(p2, p1)
+	p = p1.dup()
+	p.translateAlong(s1Dir, t)
 
 	return True, p1, p2
 
@@ -45,7 +45,7 @@ class Hitbox:
 
 
 	def __str__(self):
-		return "<hitbox:" + str(self.x) + ", " + str(self.y) + "| " + str(len(self.points)) + " points >"
+		return "<hitbox:" + str(self.pos.x) + ", " + str(self.pos.y) + "| " + str(len(self.points)) + " points >"
 
 
 	def addPoint(self, x, y):
@@ -174,6 +174,51 @@ class Hitbox:
 					if collideBetweenSegments(p0, p1, p2, p3)[0]:
 						return True
 
+		return False
+
+
+	def isInside(self, hitbox):
+		pointsSize = len(self.points)
+		if (pointsSize <= 1):
+			return False
+
+		hitboxPointsSize = len(hitbox.points)
+		if (hitboxPointsSize <= 1):
+			return False
+
+		if self.rect[0] + self.rect[2] >= hitbox.rect[0] and self.rect[0] <= hitbox.rect[0] + hitbox.rect[2] and \
+			self.rect[1] + self.rect[3] >= hitbox.rect[1] and self.rect[1] <= hitbox.rect[1] + hitbox.rect[3]:
+
+
+			for i in range (0, pointsSize):
+				p = self.points[i]
+				pend = Vec2(p.x + 100, p.y)
+
+				nbCollide = 0
+				for j in range (0, hitboxPointsSize):
+					p2 = hitbox.points[j - 1]
+					p3 = hitbox.points[j]
+
+					if collideBetweenSegments(p, pend, p2, p3)[0]:
+						nbCollide += 1
+
+				if nbCollide % 2 == 1:
+					return True
+		return False
+
+
+	def isInsideSurrondingBox(self, hitbox):
+		pointsSize = len(self.points)
+		if (pointsSize <= 1):
+			return False
+
+		hitboxPointsSize = len(hitbox.points)
+		if (hitboxPointsSize <= 1):
+			return False
+
+		if self.rect[0] + self.rect[2] >= hitbox.rect[0] and self.rect[0] <= hitbox.rect[0] + hitbox.rect[2] and \
+			self.rect[1] + self.rect[3] >= hitbox.rect[1] and self.rect[1] <= hitbox.rect[1] + hitbox.rect[3]:
+				return True
 		return False
 
 
