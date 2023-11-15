@@ -40,8 +40,9 @@ class Team:
 					self.paddles[powerUp[1]].powerUpInCharge.append(POWER_UP_BALL_FAST)
 				elif powerUp[0] == POWER_UP_BALL_WAVE:
 					self.paddles[powerUp[1]].powerUpInCharge.append(POWER_UP_BALL_WAVE)
-				elif powerUp[0] == POWER_UP_BALL_INVISIBLE:
+				elif powerUp[0] == POWER_UP_BALL_INVISIBLE and self.paddles[powerUp[1]].waitUsePowerUp == 0:
 					self.paddles[powerUp[1]].powerUpInCharge.append(POWER_UP_BALL_INVISIBLE)
+					self.paddles[powerUp[1]].waitUsePowerUp = POWER_UP_USE_COOLDOWN
 
 				self.paddles[powerUp[1]].powerUp = POWER_UP_NONE
 

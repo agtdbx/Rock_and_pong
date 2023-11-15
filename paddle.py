@@ -18,6 +18,7 @@ class Paddle:
 		self.hitbox.addPoint(-self.halfW, self.halfH)
 
 		self.waitLaunch = 0
+		self.waitUsePowerUp = 0
 
 		self.modifierSpeed = 1
 		self.modifierSize = 1
@@ -35,6 +36,11 @@ class Paddle:
 			self.waitLaunch -= delta
 			if self.waitLaunch < 0:
 				self.waitLaunch = 0
+
+		if self.waitUsePowerUp > 0:
+			self.waitUsePowerUp -= delta
+			if self.waitUsePowerUp < 0:
+				self.waitUsePowerUp = 0
 
 		powerUpEffectToRemove = []
 

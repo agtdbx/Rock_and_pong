@@ -81,13 +81,15 @@ HITBOX_PADDLE_COLOR = (0, 0, 255) # (r, g, b), channell int [0, 255]
 ############################################################################################
 #                                       POWER UP DEFINE                                    #
 ############################################################################################
+POWER_UP_ENABLE = True
 # Power up object state
 POWER_UP_HITBOX_RADIUS = 16 # in pixel
 POWER_UP_HITBOX_PRECISION = 8 # number of point to make the circle hitbox
 POWER_UP_HITBOX_COLOR = (200, 100, 100) # (r, g, b), channell int [0, 255]
 POWER_UP_VISIBLE = 0
 POWER_UP_TAKE = -1
-POWER_UP_COOLDOWN = 5 # in second
+POWER_UP_SPAWN_COOLDOWN = 5 # in seconds
+POWER_UP_USE_COOLDOWN = 0.5 # in seconds
 
 # Power up list and effects define
 POWER_UP_NONE = -1
@@ -153,18 +155,18 @@ KEY_DOWN = 1
 KEY_POWER_UP = 2
 KEY_LAUNCH_BALL = 3
 
-# PLAYERS KEYS QWERTY
-PLAYER_KEYS = [
-	(pg.K_q, pg.K_a, pg.K_z, pg.K_SPACE), # L1 player
-	(pg.K_w, pg.K_s, pg.K_x, pg.K_SPACE), # L2 player
-	(pg.K_o, pg.K_k, pg.K_m, pg.K_SPACE), # R1 player
-	(pg.K_i, pg.K_j, pg.K_n, pg.K_SPACE), # R2 player
-]
+## PLAYERS KEYS QWERTY
+#PLAYER_KEYS = [
+#	(pg.K_q, pg.K_a, pg.K_z, pg.K_SPACE), # L1 player
+#	(pg.K_w, pg.K_s, pg.K_x, pg.K_SPACE), # L2 player
+#	(pg.K_o, pg.K_k, pg.K_m, pg.K_SPACE), # R1 player
+#	(pg.K_i, pg.K_j, pg.K_n, pg.K_SPACE), # R2 player
+#]
 
-# # PLAYERS KEYS AZERTY
-# PLAYER_KEYS = [
-# 	(pg.K_a, pg.K_q, pg.K_w, pg.K_SPACE), # L1 player
-# 	(pg.K_z, pg.K_s, pg.K_x, pg.K_SPACE), # L2 player
-# 	(pg.K_o, pg.K_k, pg.K_m, pg.K_SPACE), # R1 player
-# 	(pg.K_i, pg.K_j, pg.K_SEMICOLON, pg.K_SPACE), # R2 player
-# ]
+# PLAYERS KEYS AZERTY
+PLAYER_KEYS = [
+(pg.K_a, pg.K_q, pg.K_w, pg.K_SPACE), # L1 player
+(pg.K_z, pg.K_s, pg.K_x, pg.K_SPACE), # L2 player
+(pg.K_o, pg.K_k, pg.K_COMMA, pg.K_SPACE), # R1 player
+(pg.K_i, pg.K_j, pg.K_n, pg.K_SPACE), # R2 player
+]

@@ -71,7 +71,7 @@ class Game:
 			self.balls[0].direction = Vec2(-1, 0)
 
 		# Power up creation
-		self.powerUp = [POWER_UP_COOLDOWN, hitbox.Hitbox(0, 0, (0, 0, 200), POWER_UP_HITBOX_COLOR), -1]
+		self.powerUp = [POWER_UP_SPAWN_COOLDOWN, hitbox.Hitbox(0, 0, (0, 0, 200), POWER_UP_HITBOX_COLOR), -1]
 		for p in ball.getPointOfCircle(POWER_UP_HITBOX_RADIUS, POWER_UP_HITBOX_PRECISION, 0):
 			self.powerUp[1].addPoint(p[0], p[1])
 
@@ -155,11 +155,12 @@ class Game:
 		self.last = tmp
 
 		# Check if ball move. If no ball move, all time base event are stopping
-		updateTime = False
-		for b in self.balls:
-			if b.state == STATE_RUN:
-				updateTime = True
-				break
+		if POWER_UP_ENABLE:
+			updateTime = False
+			for b in self.balls:
+				if b.state == STATE_RUN:
+					updateTime = True
+					break
 
 		if self.inputWait > 0:
 			self.inputWait -= delta
@@ -211,18 +212,18 @@ class Game:
 					pad.waitLaunch = PADDLE_LAUNCH_COOLDOWN
 
 		# Verify if power can be use, and use it if possible
-		self.checkPowerUp(self.teamLeft, LEFT_TEAM_RECT, self.teamRight, RIGTH_TEAM_RECT)
-		self.checkPowerUp(self.teamRight, RIGTH_TEAM_RECT, self.teamLeft, LEFT_TEAM_RECT)
+		if POWER_UP_ENABLE and updateTime:
+			self.checkPowerUp(self.teamLeft, LEFT_TEAM_RECT, self.teamRight, RIGTH_TEAM_RECT)
+			self.checkPowerUp(self.teamRight, RIGTH_TEAM_RECT, self.teamLeft, LEFT_TEAM_RECT)
 
-
-		if self.powerUp[0] == POWER_UP_TAKE:
-			# Generate power up
-			powerUp = random.randint(0, 12)
-			if self.powerUp[2] < TEAM_MAX_PLAYER:
-				self.teamLeft.paddles[self.powerUp[2]].powerUp = powerUp
-			else:
-				self.teamRight.paddles[self.powerUp[2] - TEAM_MAX_PLAYER].powerUp = powerUp
-			self.powerUp[0] = POWER_UP_COOLDOWN
+			if self.powerUp[0] == POWER_UP_TAKE:
+				# Generate power up
+				powerUp = random.randint(0, 12)
+				if self.powerUp[2] < TEAM_MAX_PLAYER:
+					self.teamLeft.paddles[self.powerUp[2]].powerUp = powerUp
+				else:
+					self.teamRight.paddles[self.powerUp[2] - TEAM_MAX_PLAYER].powerUp = powerUp
+				self.powerUp[0] = POWER_UP_SPAWN_COOLDOWN
 
 		pg.display.set_caption(str(self.clock.get_fps()))
 
@@ -322,22 +323,32 @@ class Game:
 					powerUpTryUse[2] = True
 
 			elif powerUpTryUse[0] == POWER_UP_BALL_NO_COLLISION:
-				pass
+				ballPowerUp.append(POWER_UP_BALL_NO_COLLISION)
+				powerUpTryUse[2] = True
 
 			elif powerUpTryUse[0] == POWER_UP_DUPLICATION_BALL:
-				pass
+				newBalls = []
+				for b in self.balls:
+					if b.state == STATE_RUN:
+						newBalls.append(b.dup())
+				self.balls.extend(newBalls)
+				powerUpTryUse[2] = True
 
 			elif powerUpTryUse[0] == POWER_UP_BALL_SLOW:
-				pass
+				ballPowerUp.append(POWER_UP_BALL_SLOW)
+				powerUpTryUse[2] = True
 
 			elif powerUpTryUse[0] == POWER_UP_BALL_STOP:
-				pass
+				ballPowerUp.append(POWER_UP_BALL_STOP)
+				powerUpTryUse[2] = True
 
 			elif powerUpTryUse[0] == POWER_UP_BALL_BIG:
-				pass
+				ballPowerUp.append(POWER_UP_BALL_BIG)
+				powerUpTryUse[2] = True
 
 			elif powerUpTryUse[0] == POWER_UP_BALL_LITTLE:
-				pass
+				ballPowerUp.append(POWER_UP_BALL_LITTLE)
+				powerUpTryUse[2] = True
 
 			elif powerUpTryUse[0] == POWER_UP_PADDLE_FAST:
 				powerUpTryUse[2] = True
@@ -354,6 +365,20 @@ class Game:
 			elif powerUpTryUse[0] == POWER_UP_PADDLE_LITTLE:
 				powerUpTryUse[2] = True
 				ennemyTeam.applyPowerUpToPaddles(POWER_UP_PADDLE_LITTLE)
+
+		for b in self.balls:
+			for powerUp in ballPowerUp:
+				if powerUp == POWER_UP_BALL_NO_COLLISION:
+					b.modifierSkipCollision = True
+				elif powerUp == POWER_UP_BALL_SLOW:
+					b.addPowerUpEffect(POWER_UP_BALL_SLOW)
+				elif powerUp == POWER_UP_BALL_STOP:
+					b.modifierStopBallTimer += POWER_UP_BALL_STOP_TIMER_EFFECT
+				elif powerUp == POWER_UP_BALL_BIG:
+					b.addPowerUpEffect(POWER_UP_BALL_BIG)
+				elif powerUp == POWER_UP_BALL_LITTLE:
+					b.addPowerUpEffect(POWER_UP_BALL_LITTLE)
+
 
 
 

@@ -50,6 +50,9 @@ class Ball:
 		self.modifierWaveBallTimer = 0
 		self.modifierStopBallTimer = 0
 
+		# Represente the effect on ball [POWER_UP, TIME_EFFECT]
+		self.powerUpEffects = []
+
 		self.lastPositions = [(x, y) for _ in range(BALL_TRAIL_LENGTH)]
 		self.lastColors = [BALL_COLOR for _ in range(BALL_TRAIL_LENGTH)]
 		self.state = STATE_IN_FOLLOW
@@ -114,17 +117,46 @@ class Ball:
 			self.direction.normalize()
 
 
-	def updateTime(self, detla):
+	def updateTime(self, delta):
 		if self.modifierInvisibleBall:
-			self.modifierInvisibleBallTimer += detla
+			self.modifierInvisibleBallTimer += delta
 
 		if self.modifierWaveBall:
-			self.modifierWaveBallTimer += detla
+			self.modifierWaveBallTimer += delta
 
 		if self.modifierStopBallTimer > 0:
-			self.modifierStopBallTimer -= detla
+			self.modifierStopBallTimer -= delta
 			if self.modifierStopBallTimer < 0:
 				self.modifierStopBallTimer = 0
+
+
+		powerUpEffectToRemove = []
+
+		for i in range(len(self.powerUpEffects)):
+			powerUpEffect = self.powerUpEffects[i]
+			if powerUpEffect[1] > 0:
+				powerUpEffect[1] -= delta
+				# If the time of the power up ended
+				if powerUpEffect[1] < 0:
+					powerUpEffect[1] = 0
+					powerUpEffectToRemove.append(i)
+					# Remove the effect of the power up
+
+					if powerUpEffect[0] == POWER_UP_BALL_SLOW:
+						self.modifierSpeed *= POWER_UP_BALL_SLOW_SPEED_FACTOR
+						if self.modifierSpeed > 1:
+							self.modifierSpeed = 1
+
+					elif powerUpEffect[0] == POWER_UP_BALL_BIG:
+						self.modifierSize /= POWER_UP_BALL_BIG_SIZE_FACTOR
+						self.modifySize(self.modifierSize)
+
+					elif powerUpEffect[0] == POWER_UP_BALL_LITTLE:
+						self.modifierSize *= POWER_UP_BALL_LITTLE_SIZE_FACTOR
+						self.modifySize(self.modifierSize)
+
+		for i in range(len(powerUpEffectToRemove)):
+			self.powerUpEffects.pop(powerUpEffectToRemove[i] - i)
 
 
 	def getRealDirection(self) -> Vec2:
@@ -208,11 +240,13 @@ class Ball:
 			if newpos.x - self.radius < AREA_RECT[0]:
 				self.state = STATE_IN_GOAL_LEFT
 				self.resetModifier()
+				self.powerUpEffects.clear()
 				return
 
 			if newpos.x + self.radius > AREA_RECT[0] + AREA_RECT[2]:
 				self.state = STATE_IN_GOAL_RIGHT
 				self.resetModifier()
+				self.powerUpEffects.clear()
 				return
 
 			# Teleport from up to down
@@ -284,7 +318,8 @@ class Ball:
 						self.speed = BALL_MAX_SPEED
 					self.modifierWaveBall = False
 					self.modifierWaveBallTimer = 0
-					self.modifierSpeed = 1
+					if self.modifierSpeed > 1:
+						self.modifierSpeed = 1
 					return True
 		return False
 
@@ -310,7 +345,10 @@ class Ball:
 
 		self.lastPaddleHitId = paddle.id
 
-		self.resetModifier()
+		self.modifierWaveBall = False
+		self.modifierWaveBallTimer = 0
+		if self.modifierSpeed > 1:
+			self.modifierSpeed = 1
 
 		# If the paddle have power up in charge, apply them to the ball
 		if len(paddle.powerUpInCharge) > 0:
@@ -364,4 +402,27 @@ class Ball:
 		ball.modifierWaveBall = self.modifierWaveBall
 		ball.modifierWaveBallTimer = self.modifierWaveBallTimer
 
+		ball.powerUpEffects = self.powerUpEffects
+
 		return ball
+
+
+	def addPowerUpEffect(self, powerUp):
+		powerUpEffect = None
+
+		if powerUp == POWER_UP_BALL_SLOW:
+			powerUpEffect = [powerUp, POWER_UP_BALL_SLOW_TIME_EFFECT]
+			self.modifierSpeed /= POWER_UP_BALL_SLOW_SPEED_FACTOR
+
+		elif powerUp == POWER_UP_BALL_BIG:
+			powerUpEffect = [powerUp, POWER_UP_BALL_BIG_TIME_EFFECT]
+			self.modifierSize *= POWER_UP_BALL_BIG_SIZE_FACTOR
+			self.modifySize(self.modifierSize)
+
+		elif powerUp == POWER_UP_BALL_LITTLE:
+			powerUpEffect = [powerUp, POWER_UP_BALL_LITTLE_TIME_EFFECT]
+			self.modifierSize /= POWER_UP_BALL_LITTLE_SIZE_FACTOR
+			self.modifySize(self.modifierSize)
+
+		if powerUpEffect != None:
+			self.powerUpEffects.append(powerUpEffect)
