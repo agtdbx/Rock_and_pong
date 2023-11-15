@@ -27,6 +27,7 @@ class Team:
 			self.paddles.append(paddle.Paddle(xPos, AREA_RECT[1] + AREA_RECT[3] // 3 * 2, id + 1))
 
 		self.score = 0
+		# list of power up who try to use : [power up id, paddle id, power up used (bool)]
 		self.powerUpTryUse = []
 
 
@@ -55,7 +56,7 @@ class Team:
 			if keyboardState[PLAYER_KEYS[keyId][KEY_POWER_UP]]:
 				powerUp = self.paddles[i].powerUp
 				if powerUp != POWER_UP_NONE:
-					self.powerUpTryUse.append((powerUp, i, False))
+					self.powerUpTryUse.append([powerUp, i, False])
 
 
 	def draw(self, win):
@@ -78,6 +79,6 @@ class Team:
 				drawText(win, str(self.paddles[1].powerUp), (WIN_WIDTH - AREA_MARGIN, WIN_HEIGHT - 70), (255, 255, 255), size=30, align="mid-left")
 
 
-	def affectPaddleSize(self, size):
+	def applyPowerUpToPaddles(self, powerUp):
 		for p in self.paddles:
-			p.modifySize(size)
+			p.addPowerUpEffect(powerUp)

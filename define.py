@@ -86,10 +86,6 @@ POWER_UP_VISIBLE = 0
 POWER_UP_TAKE = -1
 POWER_UP_COOLDOWN = 5 # in second
 
-# Modifer for paddle
-MODIFIER_PADDLE_TYPE_SIZE = 0
-MODIFIER_PADDLE_TYPE_SPEED = 1
-
 # Power up list and effects define
 POWER_UP_NONE = -1
 

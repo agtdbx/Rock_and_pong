@@ -22,8 +22,8 @@ class Paddle:
 		self.modifierSpeed = 1
 		self.modifierSize = 1
 
-		# Represente the effect on paddle [MODIFER_TYPE, value_of_modifer, time_before_end]
-		self.modifierInEffect = []
+		# Represente the effect on paddle [POWER_UP, TIME_EFFECT]
+		self.powerUpEffects = []
 
 		self.powerUp = POWER_UP_NONE
 
@@ -34,16 +34,33 @@ class Paddle:
 			if self.waitLaunch < 0:
 				self.waitLaunch = 0
 
-		for m in self.modifierInEffect:
-			if m[2] > 0:
-				m[2] -= delta
-				if m[2] < 0:
-					m[2] = 0
-					if m[0] == MODIFIER_PADDLE_TYPE_SPEED:
-						# We invert the modifer
-						self.modifierSpeed = 1 / m [1]
-					if self.modifierSize != 1:
-						self.modifySize(1)
+		powerUpEffectToRemove = []
+
+		for i in range(len(self.powerUpEffects)):
+			powerUpEffect = self.powerUpEffects[i]
+			if powerUpEffect[1] > 0:
+				powerUpEffect[1] -= delta
+				# If the time of the power up ended
+				if powerUpEffect[1] < 0:
+					powerUpEffect[1] = 0
+					powerUpEffectToRemove.append(i)
+					# Remove the effect of the power up
+					if powerUpEffect[0] == POWER_UP_PADDLE_FAST:
+						self.modifierSpeed /= POWER_UP_PADDLE_FAST_SPEED_FACTOR
+
+					elif powerUpEffect[0] == POWER_UP_PADDLE_SLOW:
+						self.modifierSpeed *= POWER_UP_PADDLE_SLOW_SPEED_FACTOR
+
+					elif powerUpEffect[0] == POWER_UP_PADDLE_BIG:
+						self.modifierSize /= POWER_UP_PADDLE_BIG_SIZE_FACTOR
+						self.modifySize(self.modifierSize)
+
+					elif powerUpEffect[0] == POWER_UP_PADDLE_LITTLE:
+						self.modifierSize *= POWER_UP_PADDLE_LITTLE_SIZE_FACTOR
+						self.modifySize(self.modifierSize)
+
+		for i in range(len(powerUpEffectToRemove)):
+			self.powerUpEffects.pop(powerUpEffectToRemove[i] - i)
 
 
 	def move(self, dir, delta):
@@ -83,3 +100,28 @@ class Paddle:
 		self.hitbox.drawFill(win)
 		if DRAW_HITBOX:
 			self.hitbox.draw(win)
+
+
+	def addPowerUpEffect(self, powerUp):
+		powerUpEffect = None
+
+		if powerUp == POWER_UP_PADDLE_FAST:
+			powerUpEffect = [powerUp, POWER_UP_PADDLE_FAST_TIME_EFFECT]
+			self.modifierSpeed *= POWER_UP_PADDLE_FAST_SPEED_FACTOR
+
+		elif powerUp == POWER_UP_PADDLE_SLOW:
+			powerUpEffect = [powerUp, POWER_UP_PADDLE_SLOW_TIME_EFFECT]
+			self.modifierSpeed /= POWER_UP_PADDLE_SLOW_SPEED_FACTOR
+
+		elif powerUp == POWER_UP_PADDLE_BIG:
+			powerUpEffect = [powerUp, POWER_UP_PADDLE_BIG_TIME_EFFECT]
+			self.modifierSize *= POWER_UP_PADDLE_BIG_SIZE_FACTOR
+			self.modifySize(self.modifierSize)
+
+		elif powerUp == POWER_UP_PADDLE_LITTLE:
+			powerUpEffect = [powerUp, POWER_UP_PADDLE_LITTLE_TIME_EFFECT]
+			self.modifierSize /= POWER_UP_PADDLE_LITTLE_SIZE_FACTOR
+			self.modifySize(self.modifierSize)
+
+		if powerUpEffect != None:
+			self.powerUpEffects.append(powerUpEffect)

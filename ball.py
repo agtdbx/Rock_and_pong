@@ -165,7 +165,6 @@ class Ball:
 			if powerUp[0] == POWER_UP_VISIBLE and self.hitbox.isCollide(powerUp[1]):
 				powerUp[0] = POWER_UP_TAKE
 				powerUp[2] = self.lastPaddleHitId
-				print("powerUp take by", powerUp[2])
 
 			# Collision with paddle
 			for p in paddlesLeft:

@@ -210,8 +210,8 @@ class Game:
 					pad.waitLaunch = PADDLE_LAUNCH_COOLDOWN
 
 		# Verify if power can be use, and use it if possible
-		for powerUpSubmit in self.teamLeft.powerUpTryUse:
-			pass
+		self.checkPowerUp(self.teamLeft, self.teamRight)
+		self.checkPowerUp(self.teamRight, self.teamLeft)
 
 
 		if self.powerUp[0] == POWER_UP_TAKE:
@@ -288,6 +288,53 @@ class Game:
 				collide = self.powerUp[1].isInsideSurrondingBox(hit)
 				if collide:
 					break
+
+
+	def checkPowerUp(self, team:team.Team, ennemyTeam:team.Team):
+		# powerUpTryUse = [power up id, paddle id, power up used (bool)]
+		for powerUpTryUse in team.powerUpTryUse:
+			if powerUpTryUse[0] == POWER_UP_BALL_FAST:
+				pass
+
+			elif powerUpTryUse[0] == POWER_UP_BALL_WAVE:
+				pass
+
+			elif powerUpTryUse[0] == POWER_UP_BALL_INVISIBLE:
+				pass
+
+			elif powerUpTryUse[0] == POWER_UP_BALL_NO_COLLISION:
+				pass
+
+			elif powerUpTryUse[0] == POWER_UP_DUPLICATION_BALL:
+				pass
+
+			elif powerUpTryUse[0] == POWER_UP_BALL_SLOW:
+				pass
+
+			elif powerUpTryUse[0] == POWER_UP_BALL_STOP:
+				pass
+
+			elif powerUpTryUse[0] == POWER_UP_BALL_BIG:
+				pass
+
+			elif powerUpTryUse[0] == POWER_UP_BALL_LITTLE:
+				pass
+
+			elif powerUpTryUse[0] == POWER_UP_PADDLE_FAST:
+				powerUpTryUse[2] = True
+				team.applyPowerUpToPaddles(POWER_UP_PADDLE_FAST)
+
+			elif powerUpTryUse[0] == POWER_UP_PADDLE_SLOW:
+				powerUpTryUse[2] = True
+				ennemyTeam.applyPowerUpToPaddles(POWER_UP_PADDLE_SLOW)
+
+			elif powerUpTryUse[0] == POWER_UP_PADDLE_BIG:
+				powerUpTryUse[2] = True
+				team.applyPowerUpToPaddles(POWER_UP_PADDLE_BIG)
+
+			elif powerUpTryUse[0] == POWER_UP_PADDLE_LITTLE:
+				powerUpTryUse[2] = True
+				ennemyTeam.applyPowerUpToPaddles(POWER_UP_PADDLE_LITTLE)
 
 
 
