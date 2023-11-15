@@ -153,31 +153,34 @@ class Game:
 		delta = tmp - self.last
 		self.last = tmp
 
+		# Check if ball move. If no ball move, all time base event are stopping
+		updateTime = False
+		for b in self.balls:
+			if b.state == STATE_RUN:
+				updateTime = True
+				break
+
 		if self.inputWait > 0:
 			self.inputWait -= delta
 			if self.inputWait < 0:
 				self.inputWait = 0
 
-		if self.powerUp[0] > POWER_UP_VISIBLE:
+		if updateTime and self.powerUp[0] > POWER_UP_VISIBLE:
 			self.powerUp[0] -= delta
 			if self.powerUp[0] <= POWER_UP_VISIBLE:
 				self.powerUp[0] = POWER_UP_VISIBLE
 				self.createPowerUp()
 
-		self.teamLeft.tick(delta, self.keyboardState, self.balls)
-		self.teamRight.tick(delta, self.keyboardState, self.balls)
-
-		newBalls = []
+		self.teamLeft.tick(delta, self.keyboardState, self.balls, updateTime)
+		self.teamRight.tick(delta, self.keyboardState, self.balls, updateTime)
 
 		for b in self.balls:
 			b.updatePosition(delta, self.teamLeft.paddles, self.teamRight.paddles, self.walls, self.powerUp)
-			b.updateTime(delta)
-
-			if b.state == STATE_RUN and self.keyboardState[pg.K_v] and self.inputWait == 0:
-				newBalls.append(b.dup())
+			if updateTime:
+				b.updateTime(delta)
 
 			# if the ball is in left goal
-			elif b.state == STATE_IN_GOAL_LEFT:
+			if b.state == STATE_IN_GOAL_LEFT:
 				self.teamRight.score += 1
 				b.direction = Vec2(1, 0)
 				b.speed = BALL_START_SPEED
@@ -206,10 +209,6 @@ class Game:
 					b.state = STATE_RUN
 					pad.waitLaunch = PADDLE_LAUNCH_COOLDOWN
 
-		self.balls.extend(newBalls)
-
-		if self.keyboardState[pg.K_v] and self.inputWait == 0:
-			self.inputWait = 1
 
 		if self.powerUp[0] == POWER_UP_TAKE:
 			powerUp = random.randint(0, 11)

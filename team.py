@@ -30,7 +30,7 @@ class Team:
 		self.powerUpTryUse = []
 
 
-	def tick(self, delta:float, keyboardState:list, balls:list) -> None:
+	def tick(self, delta:float, keyboardState:list, balls:list, updateTime:bool) -> None:
 		# Check power up try to used
 
 		for powerUp in self.powerUpTryUse:
@@ -41,7 +41,8 @@ class Team:
 
 		# Check input
 		for i in range(len(self.paddles)):
-			self.paddles[i].updateTimes(delta)
+			if updateTime:
+				self.paddles[i].updateTimes(delta)
 
 			keyId = i
 			if not self.leftSide:
