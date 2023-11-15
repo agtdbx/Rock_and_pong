@@ -27,6 +27,8 @@ class Paddle:
 
 		self.powerUp = POWER_UP_NONE
 
+		self.powerUpInCharge = []
+
 
 	def updateTimes(self, delta):
 		if self.waitLaunch > 0:
@@ -97,6 +99,15 @@ class Paddle:
 
 
 	def draw(self, win):
+		if len(self.powerUpInCharge) > 0:
+			if self.powerUpInCharge[0] == POWER_UP_BALL_FAST:
+				self.hitbox.fillColor = POWER_UP_BALL_FAST_COLOR
+			elif self.powerUpInCharge[0] == POWER_UP_BALL_WAVE:
+				self.hitbox.fillColor = POWER_UP_BALL_WAVE_COLOR
+			elif self.powerUpInCharge[0] == POWER_UP_BALL_INVISIBLE:
+				self.hitbox.fillColor = POWER_UP_BALL_INVISIBLE_COLOR
+		else:
+			self.hitbox.fillColor = PADDLE_COLOR
 		self.hitbox.drawFill(win)
 		if DRAW_HITBOX:
 			self.hitbox.draw(win)

@@ -70,8 +70,9 @@ class Game:
 			self.balls[0].lastPaddleHitId = random.choice(self.teamRight.paddles).id
 			self.balls[0].direction = Vec2(-1, 0)
 
-		self.powerUp = [POWER_UP_COOLDOWN, hitbox.Hitbox(0, 0, (0, 0, 200), (200, 200, 200)), -1]
-		for p in ball.getPointOfCircle(20, 16, 0):
+		# Power up creation
+		self.powerUp = [POWER_UP_COOLDOWN, hitbox.Hitbox(0, 0, (0, 0, 200), POWER_UP_HITBOX_COLOR), -1]
+		for p in ball.getPointOfCircle(POWER_UP_HITBOX_RADIUS, POWER_UP_HITBOX_PRECISION, 0):
 			self.powerUp[1].addPoint(p[0], p[1])
 
 		# Walls creation
@@ -94,22 +95,22 @@ class Game:
 			),
 			# Obstables
 			createObstacle(
-			AREA_RECT[0] + AREA_RECT[2] / 2,
-			AREA_RECT[1],
-			[(-300, 0), (300, 0), (275, 50), (75, 75), (0, 125), (-75, 75), (-275, 50)],
-			(150, 150, 0)
+				AREA_RECT[0] + AREA_RECT[2] / 2,
+				AREA_RECT[1],
+				[(-300, 0), (300, 0), (275, 50), (75, 75), (0, 125), (-75, 75), (-275, 50)],
+				(150, 150, 0)
 			),
 			createObstacle(
-			AREA_RECT[0] + AREA_RECT[2] / 2,
-			AREA_RECT[1] + AREA_RECT[3],
-			[(-300, 0), (300, 0), (275, -50), (0, -25), (-275, -50)],
-			(150, 150, 0)
+				AREA_RECT[0] + AREA_RECT[2] / 2,
+				AREA_RECT[1] + AREA_RECT[3],
+				[(-300, 0), (300, 0), (275, -50), (0, -25), (-275, -50)],
+				(150, 150, 0)
 			),
 			createObstacle(
-			AREA_RECT[0] + AREA_RECT[2] / 2,
-			AREA_RECT[1] + AREA_RECT[3] / 2,
-			ball.getPointOfCircle(100, 32, 360 / 64),
-			(150, 150, 0)
+				AREA_RECT[0] + AREA_RECT[2] / 2,
+				AREA_RECT[1] + AREA_RECT[3] / 2,
+				ball.getPointOfCircle(100, 32, 360 / 64),
+				(150, 150, 0)
 			)
 		]
 
@@ -210,8 +211,8 @@ class Game:
 					pad.waitLaunch = PADDLE_LAUNCH_COOLDOWN
 
 		# Verify if power can be use, and use it if possible
-		self.checkPowerUp(self.teamLeft, self.teamRight)
-		self.checkPowerUp(self.teamRight, self.teamLeft)
+		self.checkPowerUp(self.teamLeft, LEFT_TEAM_RECT, self.teamRight, RIGTH_TEAM_RECT)
+		self.checkPowerUp(self.teamRight, RIGTH_TEAM_RECT, self.teamLeft, LEFT_TEAM_RECT)
 
 
 		if self.powerUp[0] == POWER_UP_TAKE:
@@ -290,17 +291,35 @@ class Game:
 					break
 
 
-	def checkPowerUp(self, team:team.Team, ennemyTeam:team.Team):
+	def checkPowerUp(self, team:team.Team, teamArea:tuple, ennemyTeam:team.Team, ennemyTeamArea:tuple):
+		teamAreaNoBall = True
+		ennemyTeamAreaNoBall = True
+
+		for b in self.balls:
+			if b.state == STATE_RUN:
+				if b.pos.x >= teamArea[0] and b.pos.x <= teamArea[0] + teamArea[2]:
+					teamAreaNoBall = False
+				elif b.pos.x >= ennemyTeamArea[0] and b.pos.x <= ennemyTeamArea[0] + ennemyTeamArea[2]:
+					ennemyTeamAreaNoBall = False
+
+				if not teamAreaNoBall and not ennemyTeamAreaNoBall:
+					break
+
+		ballPowerUp = []
+
 		# powerUpTryUse = [power up id, paddle id, power up used (bool)]
 		for powerUpTryUse in team.powerUpTryUse:
 			if powerUpTryUse[0] == POWER_UP_BALL_FAST:
-				pass
+				if teamAreaNoBall:
+					powerUpTryUse[2] = True
 
 			elif powerUpTryUse[0] == POWER_UP_BALL_WAVE:
-				pass
+				if teamAreaNoBall:
+					powerUpTryUse[2] = True
 
 			elif powerUpTryUse[0] == POWER_UP_BALL_INVISIBLE:
-				pass
+				if teamAreaNoBall:
+					powerUpTryUse[2] = True
 
 			elif powerUpTryUse[0] == POWER_UP_BALL_NO_COLLISION:
 				pass

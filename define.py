@@ -32,6 +32,8 @@ STATE_RUN = 0
 STATE_IN_GOAL_LEFT = 1
 STATE_IN_GOAL_RIGHT = 2
 STATE_IN_FOLLOW = 3
+
+
 ############################################################################################
 #                                        MAP DEFINE                                        #
 ############################################################################################
@@ -80,8 +82,9 @@ HITBOX_PADDLE_COLOR = (0, 0, 255) # (r, g, b), channell int [0, 255]
 #                                       POWER UP DEFINE                                    #
 ############################################################################################
 # Power up object state
-POWER_UP_HITBOX_PRECISION = 16 # number of point to make the circle hitbox
 POWER_UP_HITBOX_RADIUS = 16 # in pixel
+POWER_UP_HITBOX_PRECISION = 8 # number of point to make the circle hitbox
+POWER_UP_HITBOX_COLOR = (200, 100, 100) # (r, g, b), channell int [0, 255]
 POWER_UP_VISIBLE = 0
 POWER_UP_TAKE = -1
 POWER_UP_COOLDOWN = 5 # in second
@@ -91,14 +94,17 @@ POWER_UP_NONE = -1
 
 POWER_UP_BALL_FAST = 0 # begin by hit paddle - 1 ball - end by hit wall
 POWER_UP_BALL_FAST_FACTOR = 2.5 # multiply the speed
-POWER_UP_BALL_TIME_STOP = 1 # in seconds
+POWER_UP_BALL_FAST_TIME_STOP = 1 # in seconds
+POWER_UP_BALL_FAST_COLOR = (200, 0, 200) # in seconds
 
 POWER_UP_BALL_WAVE = 1 # begin by hit paddle - 1 ball - end by hit wall
 POWER_UP_BALL_WAVE_DEGREES = 45 # in degrees [0, 359]
 POWER_UP_BALL_WAVE_SPEED_FACTOR = 20 # change the frequence of the wave. High = more but smaller waves
+POWER_UP_BALL_WAVE_COLOR = (0, 200, 200) # in seconds
 
 POWER_UP_BALL_INVISIBLE = 2 # begin by hit paddle - 1 ball - end by hit wall
 POWER_UP_BALL_INVISIBLE_SPEED_FACTOR = 5 # in seconds
+POWER_UP_BALL_INVISIBLE_COLOR = (200, 200, 0) # in seconds
 
 POWER_UP_BALL_NO_COLLISION = 3 # begin when ball isn't close of ennemy - all ball - end by hit paddle
 

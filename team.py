@@ -36,6 +36,13 @@ class Team:
 		for powerUp in self.powerUpTryUse:
 			# if a power up is user, remove it to the player
 			if powerUp[2]:
+				if powerUp[0] == POWER_UP_BALL_FAST:
+					self.paddles[powerUp[1]].powerUpInCharge.append(POWER_UP_BALL_FAST)
+				elif powerUp[0] == POWER_UP_BALL_WAVE:
+					self.paddles[powerUp[1]].powerUpInCharge.append(POWER_UP_BALL_WAVE)
+				elif powerUp[0] == POWER_UP_BALL_INVISIBLE:
+					self.paddles[powerUp[1]].powerUpInCharge.append(POWER_UP_BALL_INVISIBLE)
+
 				self.paddles[powerUp[1]].powerUp = POWER_UP_NONE
 
 		self.powerUpTryUse.clear()

@@ -44,10 +44,11 @@ class Ball:
 		self.modifierSpeed = 1
 		self.modifierSize = 1
 		self.modifierSkipCollision = False
-		self.modifierPhatomBall = False
-		self.modifierPhatomBallTimer = 0
+		self.modifierInvisibleBall = False
+		self.modifierInvisibleBallTimer = 0
 		self.modifierWaveBall = False
 		self.modifierWaveBallTimer = 0
+		self.modifierStopBallTimer = 0
 
 		self.lastPositions = [(x, y) for _ in range(BALL_TRAIL_LENGTH)]
 		self.lastColors = [BALL_COLOR for _ in range(BALL_TRAIL_LENGTH)]
@@ -70,8 +71,8 @@ class Ball:
 		if self.modifierSize != 1:
 			self.modifySize(1)
 		self.modifierSkipCollision = False
-		self.modifierPhatomBall = False
-		self.modifierPhatomBallTimer = 0
+		self.modifierInvisibleBall = False
+		self.modifierInvisibleBallTimer = 0
 		self.modifierWaveBall = False
 		self.modifierWaveBallTimer = 0
 
@@ -88,10 +89,10 @@ class Ball:
 			color = (int(self.lastColors[i][0] * BALL_TRAIL_OPACITY),
 					int(self.lastColors[i][1] * BALL_TRAIL_OPACITY),
 					int(self.lastColors[i][2] * BALL_TRAIL_OPACITY))
-			if not self.modifierPhatomBall or int(self.modifierPhatomBallTimer * 5) % 2:
+			if not self.modifierInvisibleBall or int(self.modifierInvisibleBallTimer * 5) % 2:
 				pg.draw.circle(win, color, self.lastPositions[i], (self.radius * gradiant) * self.modifierSize)
 
-		if not self.modifierPhatomBall or int(self.modifierPhatomBallTimer * POWER_UP_BALL_INVISIBLE_SPEED_FACTOR) % 2:
+		if not self.modifierInvisibleBall or int(self.modifierInvisibleBallTimer * POWER_UP_BALL_INVISIBLE_SPEED_FACTOR) % 2:
 			win.blit(self.sprite, (self.pos.x - (self.radius * self.modifierSize), self.pos.y - (self.radius * self.modifierSize)))
 		self.hitbox.draw(win)
 
@@ -114,10 +115,16 @@ class Ball:
 
 
 	def updateTime(self, detla):
-		if self.modifierPhatomBall:
-			self.modifierPhatomBallTimer += detla
+		if self.modifierInvisibleBall:
+			self.modifierInvisibleBallTimer += detla
+
 		if self.modifierWaveBall:
 			self.modifierWaveBallTimer += detla
+
+		if self.modifierStopBallTimer > 0:
+			self.modifierStopBallTimer -= detla
+			if self.modifierStopBallTimer < 0:
+				self.modifierStopBallTimer = 0
 
 
 	def getRealDirection(self) -> Vec2:
@@ -131,7 +138,7 @@ class Ball:
 
 
 	def updatePosition(self, delta, paddlesLeft, paddlesRight, walls, powerUp):
-		if self.state != STATE_RUN:
+		if self.state != STATE_RUN or self.modifierStopBallTimer > 0:
 			return
 
 		# Store last positions
@@ -228,13 +235,21 @@ class Ball:
 			green_gradient = self.speed / BALL_MAX_SPEED
 			blue_gradient = 1 - self.speed / BALL_MAX_SPEED
 
-		self.color =	(BALL_COLOR[0],
-						BALL_COLOR[1] * green_gradient,
-						BALL_COLOR[2] * blue_gradient)
+		# Trail color
+		# If the ball is faster than normal, change tail color
 		if self.modifierSpeed > 1:
 			self.color =	(BALL_COLOR[0] * green_gradient,
-						BALL_COLOR[1] * blue_gradient,
-						BALL_COLOR[2])
+							BALL_COLOR[1] * blue_gradient,
+							BALL_COLOR[2])
+		# Idem if slower
+		elif self.modifierSpeed < 1:
+			self.color =	(BALL_COLOR[0] * blue_gradient,
+							BALL_COLOR[1],
+							BALL_COLOR[2]* green_gradient)
+		else:
+			self.color =	(BALL_COLOR[0],
+							BALL_COLOR[1] * green_gradient,
+							BALL_COLOR[2] * blue_gradient)
 
 		# Friction
 		if BALL_FRICTION and self.speed > 0:
@@ -297,6 +312,23 @@ class Ball:
 
 		self.resetModifier()
 
+		# If the paddle have power up in charge, apply them to the ball
+		if len(paddle.powerUpInCharge) > 0:
+			for powerUp in paddle.powerUpInCharge:
+				if powerUp == POWER_UP_BALL_FAST:
+					self.modifierSpeed *= POWER_UP_BALL_FAST_FACTOR
+					self.modifierStopBallTimer = POWER_UP_BALL_FAST_TIME_STOP
+					for i in range(len(self.lastPositions)):
+						self.lastPositions[i] = self.pos.asTupple()
+
+				elif powerUp == POWER_UP_BALL_WAVE:
+					self.modifierWaveBall = True
+
+				elif powerUp == POWER_UP_BALL_INVISIBLE:
+					self.modifierInvisibleBall = True
+
+			paddle.powerUpInCharge.clear()
+
 		return True
 
 
@@ -327,8 +359,8 @@ class Ball:
 		if self.modifierSize != 1:
 			ball.modifySize(self.modifierSize)
 		ball.modifierSkipCollision = self.modifierSkipCollision
-		ball.modifierPhatomBall = self.modifierPhatomBall
-		ball.modifierPhatomBallTimer = self.modifierPhatomBallTimer
+		ball.modifierInvisibleBall = self.modifierInvisibleBall
+		ball.modifierInvisibleBallTimer = self.modifierInvisibleBallTimer
 		ball.modifierWaveBall = self.modifierWaveBall
 		ball.modifierWaveBallTimer = self.modifierWaveBallTimer
 
