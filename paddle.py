@@ -21,7 +21,9 @@ class Paddle:
 
 		self.modifierSpeed = 1
 		self.modifierSize = 1
-		self.modifierTimeEffect = 0
+
+		# Represente the effect on paddle [MODIFER_TYPE, value_of_modifer, time_before_end]
+		self.modifierInEffect = []
 
 		self.powerUp = POWER_UP_NONE
 
@@ -32,13 +34,16 @@ class Paddle:
 			if self.waitLaunch < 0:
 				self.waitLaunch = 0
 
-		if self.modifierTimeEffect > 0:
-			self.modifierTimeEffect -= delta
-			if self.modifierTimeEffect < 0:
-				self.modifierTimeEffect = 0
-				self.modifierSpeed = 1
-				if self.modifierSize != 1:
-					self.modifySize(1)
+		for m in self.modifierInEffect:
+			if m[2] > 0:
+				m[2] -= delta
+				if m[2] < 0:
+					m[2] = 0
+					if m[0] == MODIFIER_PADDLE_TYPE_SPEED:
+						# We invert the modifer
+						self.modifierSpeed = 1 / m [1]
+					if self.modifierSize != 1:
+						self.modifySize(1)
 
 
 	def move(self, dir, delta):

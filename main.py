@@ -209,9 +209,14 @@ class Game:
 					b.state = STATE_RUN
 					pad.waitLaunch = PADDLE_LAUNCH_COOLDOWN
 
+		# Verify if power can be use, and use it if possible
+		for powerUpSubmit in self.teamLeft.powerUpTryUse:
+			pass
+
 
 		if self.powerUp[0] == POWER_UP_TAKE:
-			powerUp = random.randint(0, 11)
+			# Generate power up
+			powerUp = random.randint(0, 12)
 			if self.powerUp[2] < TEAM_MAX_PLAYER:
 				self.teamLeft.paddles[self.powerUp[2]].powerUp = powerUp
 			else:

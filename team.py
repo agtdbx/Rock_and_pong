@@ -32,10 +32,10 @@ class Team:
 
 	def tick(self, delta:float, keyboardState:list, balls:list, updateTime:bool) -> None:
 		# Check power up try to used
-
 		for powerUp in self.powerUpTryUse:
-			# Si [2] == True
-			self.paddles[powerUp[1]].powerUp = POWER_UP_NONE
+			# if a power up is user, remove it to the player
+			if powerUp[2]:
+				self.paddles[powerUp[1]].powerUp = POWER_UP_NONE
 
 		self.powerUpTryUse.clear()
 
@@ -76,3 +76,8 @@ class Team:
 			drawText(win, str(self.paddles[0].powerUp), (WIN_WIDTH - AREA_MARGIN, 70), (255, 255, 255), size=30, align="mid-left")
 			if len(self.paddles) == 2:
 				drawText(win, str(self.paddles[1].powerUp), (WIN_WIDTH - AREA_MARGIN, WIN_HEIGHT - 70), (255, 255, 255), size=30, align="mid-left")
+
+
+	def affectPaddleSize(self, size):
+		for p in self.paddles:
+			p.modifySize(size)

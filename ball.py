@@ -46,8 +46,8 @@ class Ball:
 		self.modifierSkipCollision = False
 		self.modifierPhatomBall = False
 		self.modifierPhatomBallTimer = 0
-		self.modifierZigZagBall = False
-		self.modifierZigZagBallTimer = 0
+		self.modifierWaveBall = False
+		self.modifierWaveBallTimer = 0
 
 		self.lastPositions = [(x, y) for _ in range(BALL_TRAIL_LENGTH)]
 		self.lastColors = [BALL_COLOR for _ in range(BALL_TRAIL_LENGTH)]
@@ -72,8 +72,8 @@ class Ball:
 		self.modifierSkipCollision = False
 		self.modifierPhatomBall = False
 		self.modifierPhatomBallTimer = 0
-		self.modifierZigZagBall = False
-		self.modifierZigZagBallTimer = 0
+		self.modifierWaveBall = False
+		self.modifierWaveBallTimer = 0
 
 
 	def modifySize(self, modifier):
@@ -91,7 +91,7 @@ class Ball:
 			if not self.modifierPhatomBall or int(self.modifierPhatomBallTimer * 5) % 2:
 				pg.draw.circle(win, color, self.lastPositions[i], (self.radius * gradiant) * self.modifierSize)
 
-		if not self.modifierPhatomBall or int(self.modifierPhatomBallTimer * 5) % 2:
+		if not self.modifierPhatomBall or int(self.modifierPhatomBallTimer * POWER_UP_BALL_INVISIBLE_SPEED_FACTOR) % 2:
 			win.blit(self.sprite, (self.pos.x - (self.radius * self.modifierSize), self.pos.y - (self.radius * self.modifierSize)))
 		self.hitbox.draw(win)
 
@@ -116,16 +116,16 @@ class Ball:
 	def updateTime(self, detla):
 		if self.modifierPhatomBall:
 			self.modifierPhatomBallTimer += detla
-		if self.modifierZigZagBall:
-			self.modifierZigZagBallTimer += detla
+		if self.modifierWaveBall:
+			self.modifierWaveBallTimer += detla
 
 
 	def getRealDirection(self) -> Vec2:
-		if not self.modifierZigZagBall:
+		if not self.modifierWaveBall:
 			return self.direction
 
 		realDirection = self.direction.dup()
-		realDirection.rotate(45 * math.sin(self.modifierZigZagBallTimer * 20))
+		realDirection.rotate(POWER_UP_BALL_WAVE_DEGREES * math.sin(self.modifierWaveBallTimer * POWER_UP_BALL_WAVE_SPEED_FACTOR))
 
 		return realDirection
 
@@ -268,8 +268,8 @@ class Ball:
 					self.speed += BALL_WALL_ACCELERATION
 					if self.speed > BALL_MAX_SPEED:
 						self.speed = BALL_MAX_SPEED
-					self.modifierZigZagBall = False
-					self.modifierZigZagBallTimer = 0
+					self.modifierWaveBall = False
+					self.modifierWaveBallTimer = 0
 					self.modifierSpeed = 1
 					return True
 		return False
@@ -309,14 +309,14 @@ class Ball:
 		ball.direction = self.direction.dup()
 
 		# Set new speed
-		self.speed /= 2
+		self.speed /= POWER_UP_DUPLICATION_BALL_SPEED_REDUCE_FACTOR
 		if self.speed < BALL_MIN_SPEED:
 			self.speed = BALL_MIN_SPEED
 		ball.speed = self.speed
 
 		# Rotate both balls
-		self.direction.rotate(30)
-		ball.direction.rotate(-30)
+		self.direction.rotate(POWER_UP_DUPLICATION_BALL_DEGREES_DEVIATON)
+		ball.direction.rotate(-POWER_UP_DUPLICATION_BALL_DEGREES_DEVIATON)
 
 		# Set RUN state
 		ball.state = STATE_RUN
@@ -330,7 +330,7 @@ class Ball:
 		ball.modifierSkipCollision = self.modifierSkipCollision
 		ball.modifierPhatomBall = self.modifierPhatomBall
 		ball.modifierPhatomBallTimer = self.modifierPhatomBallTimer
-		ball.modifierZigZagBall = self.modifierZigZagBall
-		ball.modifierZigZagBallTimer = self.modifierZigZagBallTimer
+		ball.modifierWaveBall = self.modifierWaveBall
+		ball.modifierWaveBallTimer = self.modifierWaveBallTimer
 
 		return ball
