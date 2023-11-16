@@ -7,7 +7,7 @@ class Vec2:
 
 
 	def __str__(self) -> str:
-		return "<vec2:{x:+.2f},{y:+.2f}>".format(x=self.x, y=self.y)
+		return "<{x:+.2f},{y:+.2f}>".format(x=self.x, y=self.y)
 
 
 	def add(self, vec) -> None:
@@ -120,16 +120,15 @@ def getNormalOfSegment(vec1, vec2) -> Vec2:
 	return vec
 
 
-def reflectionAlongVec2(normal, vec) -> Vec2:
-	dot = vec2Dot(normal, vec)
-	if (dot >= 0):
+def reflectionAlongVec2(normal:Vec2, vec:Vec2) -> Vec2:
+	if (vec2Dot(normal, vec) >= 0):
 		normal.multiply(-1)
 
 	divider = vec2Dot(vec, vec)
 	if (divider == 0):
 		return (vec)
 	vecProjOnNormal = normal.dup()
-	vecProjOnNormal.multiply(vec2Dot(vec, normal) / divider)
+	vecProjOnNormal.multiply(vec2Dot(normal, vec) / divider)
 
 	vecProjOnNormal.multiply(2)
 	reflectedVec = vec2Sub(vec, vecProjOnNormal)
@@ -137,3 +136,25 @@ def reflectionAlongVec2(normal, vec) -> Vec2:
 	reflectedVec.normalize()
 
 	return reflectedVec
+
+
+# def reflectionAlongVec2WithCenterRepulsion(normal:Vec2, vec:Vec2, outOfCenter:Vec2) -> Vec2:
+# 	if (vec2Dot(normal, vec) >= 0):
+# 		normal.multiply(-1)
+
+# 	divider = vec2Dot(vec, vec)
+# 	if (divider == 0):
+# 		return (vec)
+# 	vecProjOnNormal = normal.dup()
+# 	vecProjOnNormal.multiply(vec2Dot(normal, vec) / divider)
+
+# 	vecProjOnNormal.multiply(2)
+# 	reflectedVec = vec2Sub(vec, vecProjOnNormal)
+
+# 	# Repulsion factor
+# 	outOfCenter.multiply(0.1)
+# 	reflectedVec.add(outOfCenter)
+
+# 	reflectedVec.normalize()
+
+# 	return reflectedVec

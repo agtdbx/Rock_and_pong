@@ -27,7 +27,7 @@ def collideBetweenSegments(p1, p2, p3, p4):
 	p = p1.dup()
 	p.translateAlong(s1Dir, t)
 
-	return True, p1, p2
+	return True, p1, p2, p
 
 
 class Hitbox:
@@ -192,17 +192,21 @@ class Hitbox:
 
 			for i in range (0, pointsSize):
 				p = self.points[i]
-				pend = Vec2(p.x + 100, p.y)
+				pLeft = Vec2(p.x - 1000, p.y)
+				pRight = Vec2(p.x + 1000, p.y)
 
-				nbCollide = 0
+				nbCollideLeft = 0
+				nbCollideRight = 0
 				for j in range (0, hitboxPointsSize):
 					p2 = hitbox.points[j - 1]
 					p3 = hitbox.points[j]
 
-					if collideBetweenSegments(p, pend, p2, p3)[0]:
-						nbCollide += 1
+					if collideBetweenSegments(p, pLeft, p2, p3)[0]:
+						nbCollideLeft += 1
+					if collideBetweenSegments(p, pRight, p2, p3)[0]:
+						nbCollideRight += 1
 
-				if nbCollide % 2 == 1:
+				if nbCollideLeft > 0 and nbCollideRight > 0 and (nbCollideLeft % 2 == 1 or nbCollideRight % 2 == 1):
 					return True
 		return False
 

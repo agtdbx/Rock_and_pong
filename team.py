@@ -65,6 +65,9 @@ class Team:
 				powerUp = self.paddles[i].powerUp
 				if powerUp != POWER_UP_NONE:
 					self.powerUpTryUse.append([powerUp, i, False])
+				else:
+					self.powerUpTryUse.append([POWER_UP_DUPLICATION_BALL, i, False])
+
 
 
 	def draw(self, win):

@@ -48,6 +48,9 @@ class Game:
 
 		self.clock = pg.time.Clock() # The clock be used to limit our fps
 		self.fps = 60
+		self.time = 0
+
+		self.slowMotionFactor = 1
 
 		self.last = time.time()
 
@@ -114,6 +117,9 @@ class Game:
 			)
 		]
 
+		# idPaddle, Ball speed, Number of bounce, CC, Perfect shoot, time of goal
+		self.goals = []
+
 
 	def run(self):
 		"""
@@ -154,6 +160,20 @@ class Game:
 		delta = tmp - self.last
 		self.last = tmp
 
+		if self.keyboardState[pg.K_UP] and self.inputWait == 0:
+			self.slowMotionFactor *= 2
+			self.inputWait = self.slowMotionFactor
+		elif self.keyboardState[pg.K_DOWN] and self.inputWait == 0:
+			self.slowMotionFactor /= 2
+			self.inputWait = self.slowMotionFactor
+		elif self.keyboardState[pg.K_RIGHT] and self.inputWait == 0:
+			self.balls[0].setPos(Vec2(AREA_RECT[0] + AREA_RECT[2] / 2, AREA_RECT[1] + AREA_RECT[3] / 2))
+			self.inputWait = 1
+
+		delta *= self.slowMotionFactor
+
+		self.time += delta
+
 		# Check if ball move. If no ball move, all time base event are stopping
 		if POWER_UP_ENABLE:
 			updateTime = False
@@ -188,16 +208,25 @@ class Game:
 			if b.state == STATE_IN_GOAL_LEFT:
 				self.teamRight.score += 1
 				# for stats
+				contreCamp = False
 				if b.lastPaddleHitId < TEAM_MAX_PLAYER:
 					paddle = self.teamLeft.paddles[b.lastPaddleHitId]
 					paddle.numberOfContreCamp += 1
+					contreCamp = True
 				else:
 					paddle = self.teamRight.paddles[b.lastPaddleHitId - TEAM_MAX_PLAYER]
 				paddle.numberOfGoal += 1
 				if b.numberOfBounce > paddle.maxBounceBallGoal:
 					paddle.maxBounceBallGoal = b.numberOfBounce
+
+				perfectShoot = False
 				if b.pos.y < AREA_RECT[1] + PERFECT_SHOOT_SIZE or b.pos.y > AREA_RECT[1] + AREA_RECT[3] - PERFECT_SHOOT_SIZE:
 					paddle.numberOfPerfectShoot += 1
+					perfectShoot = True
+
+				# idPaddle, Ball speed, Number of bounce, CC, Perfect shoot, time of goal
+				self.goals.append((paddle.id, b.speed, b.numberOfBounce, contreCamp, perfectShoot, self.time))
+
 
 				for p in self.teamLeft.paddles:
 					p.powerUp = powerUp = random.randint(0, 12)
@@ -211,16 +240,24 @@ class Game:
 			elif b.state == STATE_IN_GOAL_RIGHT:
 				self.teamLeft.score += 1
 				# for stats
+				contreCamp = False
 				if b.lastPaddleHitId < TEAM_MAX_PLAYER:
 					paddle = self.teamLeft.paddles[b.lastPaddleHitId]
 				else:
 					paddle = self.teamRight.paddles[b.lastPaddleHitId - TEAM_MAX_PLAYER]
 					paddle.numberOfContreCamp += 1
+					contreCamp = True
 				paddle.numberOfGoal += 1
 				if b.numberOfBounce > paddle.maxBounceBallGoal:
 					paddle.maxBounceBallGoal = b.numberOfBounce
+
+				perfectShoot = False
 				if b.pos.y < AREA_RECT[1] + PERFECT_SHOOT_SIZE or b.pos.y > AREA_RECT[1] + AREA_RECT[3] - PERFECT_SHOOT_SIZE:
 					paddle.numberOfPerfectShoot += 1
+					perfectShoot = True
+
+				# idPaddle, Ball speed, Number of bounce, CC, Perfect shoot, time of goal
+				self.goals.append((paddle.id, b.speed, b.numberOfBounce, contreCamp, perfectShoot, self.time))
 
 				for p in self.teamRight.paddles:
 					p.powerUp = powerUp = random.randint(0, 12)
@@ -242,6 +279,35 @@ class Game:
 					b.state = STATE_RUN
 					pad.waitLaunch = PADDLE_LAUNCH_COOLDOWN
 
+			else:
+				for w in self.walls:
+					# if not b.modifierSkipCollision and b.hitbox.isInside(w) and not b.hitbox.isCollide(w):
+					if not b.modifierSkipCollision and b.hitbox.isInside(w):
+						outOfCenter = vec2Sub(b.pos, w.pos)
+						if outOfCenter.norm() == 0:
+							outOfCenter = Vec2(1, 0)
+						outOfCenter.normalize()
+						b.direction = outOfCenter
+						if not b.hitbox.isCollide(w):
+							# print("URGENCE, SORT DE LA")
+							# print("De la :", b.pos)
+							# print("vers la :", b.direction)
+
+							# outOfCenter.multiply(10)
+							# while b.hitbox.isInside(w):
+							# 	pos = vec2Add(b.pos, outOfCenter)
+							# 	b.setPos(pos)
+								# b.pos.translateAlong(b.direction, 10)
+								# b.hitbox.setPos(b.pos)
+								# print("New pos", b.pos)
+
+							b.state = STATE_IN_FOLLOW
+							b.speed = BALL_START_SPEED
+							if b.lastPaddleHitId < TEAM_MAX_PLAYER:
+								b.direction = Vec2(1, 0)
+							else:
+								b.direction = Vec2(-1, 0)
+
 		# Verify if power can be use, and use it if possible
 		if POWER_UP_ENABLE and updateTime:
 			self.checkPowerUp(self.teamLeft, LEFT_TEAM_RECT, self.teamRight, RIGTH_TEAM_RECT)
@@ -259,7 +325,8 @@ class Game:
 		if self.teamLeft.score >= TEAM_WIN_SCORE or self.teamRight.score >= TEAM_WIN_SCORE:
 			self.printFinalStat()
 
-		pg.display.set_caption(str(self.clock.get_fps()))
+
+		pg.display.set_caption("time : " + str(self.time) + " | fps : " + str(self.clock.get_fps()) + " | slow motion factor : " + str(self.slowMotionFactor))
 
 
 	def render(self):
@@ -422,12 +489,13 @@ class Game:
 			print("Team right win !")
 
 		print("=====================================")
-		print("|            TEAMS STATS            |")
+		print("|             GAME STATS            |")
 		print("=====================================")
 		print("Team left score :", self.teamLeft.score)
 		print("Team right score :", self.teamRight.score)
 		print("Team left number of player :", len(self.teamLeft.paddles))
 		print("Team right number of player :", len(self.teamRight.paddles))
+		print("Number of ball :", len(self.balls))
 		print()
 		print("=====================================")
 		print("|           PADDLES STATS           |")
@@ -452,6 +520,21 @@ class Game:
 			print("\tNumber of CC :", p.numberOfContreCamp)
 			print("\tNumber of perfect shoot :", p.numberOfPerfectShoot)
 			print("\t-------------------------------------")
+		print()
+		print("=====================================")
+		print("|            BALLS STATS            |")
+		print("=====================================")
+		# idPaddle, Ball speed, Number of bounce, CC, Perfect shoot, time of goal
+		for goal in self.goals:
+			print("Paddle id :", goal[0])
+			print("Ball speed ball :", goal[1])
+			print("Number of bounce :", goal[2])
+			print("Is CC :", goal[3])
+			print("Is Perfect Shoot :", goal[4])
+			print("Time :", goal[5])
+			print("-------------------------------------")
+
+
 
 		self.quit()
 

@@ -22,6 +22,7 @@ BALL_PADDLE_ACCELERATION = 100 # pixel per seconds
 BALL_WALL_ACCELERATION = 10 # pixel per seconds
 BALL_HITBOX_PRECISION = 16 # nb number for make circle [4, 360]
 BALL_MOVE_STEP = 2 # Number of pixel travel by ball between 2 collisions check
+BALL_MOVE_STEP = BALL_RADIUS # Number of pixel travel by ball between 2 collisions check
 
 BALL_FRICTION = False # boolean
 BALL_MINIMUM_FRICTION = 100 # pixel per seconds
@@ -37,7 +38,7 @@ STATE_IN_FOLLOW = 3
 ############################################################################################
 #                                        MAP DEFINE                                        #
 ############################################################################################
-AREA_MARGIN = 50 # in pixel
+AREA_MARGIN = 75 # in pixel
 AREA_RECT = (AREA_MARGIN, AREA_MARGIN, WIN_WIDTH - (AREA_MARGIN * 2), WIN_HEIGHT - (AREA_MARGIN * 2))
 AREA_COLOR = (100, 100, 100) # (r, g, b), channell int [0, 255]
 AREA_BORDER_SIZE = 10 # in pixel
@@ -63,6 +64,7 @@ TEAM_WIN_SCORE = 11
 ############################################################################################
 PADDLE_WIDTH = 14 # in pixel
 PADDLE_HEIGHT = WIN_HEIGHT / 7 # in pixel
+PADDLE_HEIGHT = WIN_HEIGHT # in pixel
 PADDLE_SPEED = WIN_HEIGHT / 1.5 # pixel per seconds
 PADDLE_COLOR = (200, 200, 200) # (r, g, b), channell int [0, 255]
 PADDLE_LAUNCH_COOLDOWN = 0.2 # In second
@@ -71,7 +73,7 @@ PADDLE_LAUNCH_COOLDOWN = 0.2 # In second
 ############################################################################################
 #                                       DEBUG DEFINE                                       #
 ############################################################################################
-DRAW_HITBOX = False # boolean
+DRAW_HITBOX = True # boolean
 DRAW_HITBOX_NORMALS = False # boolean
 HITBOX_BALL_COLOR = (255, 0, 0) # (r, g, b), channell int [0, 255]
 HITBOX_WALL_COLOR = (0, 255, 0) # (r, g, b), channell int [0, 255]

@@ -306,40 +306,61 @@ class Ball:
 		if self.modifierSkipCollision:
 			return False
 
-		if not hitbox.isCollide(self.hitbox) and not hitbox.isInsideSurrondingBox(self.hitbox):
+		if not hitbox.isCollide(self.hitbox):
 			return False
 
 		collideInfos = hitbox.getCollideInfo(self.hitbox)
 
+		collide = False
+
+		hitPos = []
+		newDirections = []
+
+		nbCollide = 0
 		for collideInfo in collideInfos:
 			if collideInfo[0]:
+				hitPos.append(collideInfo[3])
+				nbCollide += 1
 				p0 = collideInfo[1]
 				p1 = collideInfo[2]
 				normal = getNormalOfSegment(p0, p1)
-				last = self.direction
-				self.direction = reflectionAlongVec2(normal, self.direction)
-				if last != self.direction:
-					self.speed += BALL_WALL_ACCELERATION
-					if self.speed > BALL_MAX_SPEED:
-						self.speed = BALL_MAX_SPEED
-					self.modifierWaveBall = False
-					self.modifierWaveBallTimer = 0
-					if self.modifierSpeed > 1:
-						self.modifierSpeed = 1
-					# Bounce stat
-					self.numberOfBounce += 1
-					return True
+				direction = reflectionAlongVec2(normal, self.direction)
+				newDirections.append(direction.dup())
+				self.speed += BALL_WALL_ACCELERATION
+				if self.speed > BALL_MAX_SPEED:
+					self.speed = BALL_MAX_SPEED
+				self.modifierWaveBall = False
+				self.modifierWaveBallTimer = 0
+				if self.modifierSpeed > 1:
+					self.modifierSpeed = 1
+				# Bounce stat
+				self.numberOfBounce += 1
+				collide = True
 
-		if hitbox.isInside(self.hitbox):
-			if abs(self.direction.x) > abs(self.direction.y):
-				self.direction.x *= -1
-			else:
-				self.direction.y *= -1
-			# Bounce stat
-			self.numberOfBounce += 1
-			return True
+		# print("Pos ball")
+		# print(self.pos)
+		# print("Hitbox ball")
+		# print(self.hitbox)
+		# print("Hitbox wall")
+		# print(hitbox)
+		# print("Number of collide :", nbCollide)
+		# print("Collision :", collide)
+		# print()
+		# print("hit pos :")
+		# for pos in hitPos:
+		# 	print(pos)
+		# print()
+		# print()
 
-		return False
+		if len(newDirections) == 1:
+			self.direction = newDirections[0].dup()
+		elif len(newDirections) > 1:
+			p1 = hitPos[0]
+			p2 = hitPos[1]
+			normal = getNormalOfSegment(p1, p2)
+			self.direction = reflectionAlongVec2(normal, self.direction)
+
+		return collide
 
 
 	def makeCollisionWithPaddle(self, paddle:paddle.Paddle):
