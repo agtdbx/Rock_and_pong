@@ -30,6 +30,13 @@ class Paddle:
 
 		self.powerUpInCharge = []
 
+		# For stats
+		self.numberOfGoal = 0
+		self.maxSpeedBallTouch = 0
+		self.maxBounceBallGoal = 0
+		self.numberOfContreCamp = 0
+		self.numberOfPerfectShoot = 0
+
 
 	def updateTimes(self, delta):
 		if self.waitLaunch > 0:

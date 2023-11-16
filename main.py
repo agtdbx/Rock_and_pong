@@ -167,6 +167,9 @@ class Game:
 			if self.inputWait < 0:
 				self.inputWait = 0
 
+		if not updateTime:
+			self.powerUp[0] = POWER_UP_SPAWN_COOLDOWN
+
 		if updateTime and self.powerUp[0] > POWER_UP_VISIBLE:
 			self.powerUp[0] -= delta
 			if self.powerUp[0] <= POWER_UP_VISIBLE:
@@ -184,6 +187,20 @@ class Game:
 			# if the ball is in left goal
 			if b.state == STATE_IN_GOAL_LEFT:
 				self.teamRight.score += 1
+				# for stats
+				if b.lastPaddleHitId < TEAM_MAX_PLAYER:
+					paddle = self.teamLeft.paddles[b.lastPaddleHitId]
+					paddle.numberOfContreCamp += 1
+				else:
+					paddle = self.teamRight.paddles[b.lastPaddleHitId - TEAM_MAX_PLAYER]
+				paddle.numberOfGoal += 1
+				if b.numberOfBounce > paddle.maxBounceBallGoal:
+					paddle.maxBounceBallGoal = b.numberOfBounce
+				if b.pos.y < AREA_RECT[1] + PERFECT_SHOOT_SIZE or b.pos.y > AREA_RECT[1] + AREA_RECT[3] - PERFECT_SHOOT_SIZE:
+					paddle.numberOfPerfectShoot += 1
+
+				for p in self.teamLeft.paddles:
+					p.powerUp = powerUp = random.randint(0, 12)
 				b.direction = Vec2(1, 0)
 				b.speed = BALL_START_SPEED
 				b.state = STATE_IN_FOLLOW
@@ -193,6 +210,20 @@ class Game:
 			# if the ball is in right goal
 			elif b.state == STATE_IN_GOAL_RIGHT:
 				self.teamLeft.score += 1
+				# for stats
+				if b.lastPaddleHitId < TEAM_MAX_PLAYER:
+					paddle = self.teamLeft.paddles[b.lastPaddleHitId]
+				else:
+					paddle = self.teamRight.paddles[b.lastPaddleHitId - TEAM_MAX_PLAYER]
+					paddle.numberOfContreCamp += 1
+				paddle.numberOfGoal += 1
+				if b.numberOfBounce > paddle.maxBounceBallGoal:
+					paddle.maxBounceBallGoal = b.numberOfBounce
+				if b.pos.y < AREA_RECT[1] + PERFECT_SHOOT_SIZE or b.pos.y > AREA_RECT[1] + AREA_RECT[3] - PERFECT_SHOOT_SIZE:
+					paddle.numberOfPerfectShoot += 1
+
+				for p in self.teamRight.paddles:
+					p.powerUp = powerUp = random.randint(0, 12)
 				b.direction = Vec2(-1, 0)
 				b.speed = BALL_START_SPEED
 				b.state = STATE_IN_FOLLOW
@@ -224,6 +255,9 @@ class Game:
 				else:
 					self.teamRight.paddles[self.powerUp[2] - TEAM_MAX_PLAYER].powerUp = powerUp
 				self.powerUp[0] = POWER_UP_SPAWN_COOLDOWN
+
+		if self.teamLeft.score >= TEAM_WIN_SCORE or self.teamRight.score >= TEAM_WIN_SCORE:
+			self.printFinalStat()
 
 		pg.display.set_caption(str(self.clock.get_fps()))
 
@@ -327,12 +361,13 @@ class Game:
 				powerUpTryUse[2] = True
 
 			elif powerUpTryUse[0] == POWER_UP_DUPLICATION_BALL:
-				newBalls = []
-				for b in self.balls:
-					if b.state == STATE_RUN:
-						newBalls.append(b.dup())
-				self.balls.extend(newBalls)
-				powerUpTryUse[2] = True
+				if ennemyTeamAreaNoBall:
+					newBalls = []
+					for b in self.balls:
+						if b.state == STATE_RUN:
+							newBalls.append(b.dup())
+					self.balls.extend(newBalls)
+					powerUpTryUse[2] = True
 
 			elif powerUpTryUse[0] == POWER_UP_BALL_SLOW:
 				ballPowerUp.append(POWER_UP_BALL_SLOW)
@@ -351,20 +386,20 @@ class Game:
 				powerUpTryUse[2] = True
 
 			elif powerUpTryUse[0] == POWER_UP_PADDLE_FAST:
-				powerUpTryUse[2] = True
 				team.applyPowerUpToPaddles(POWER_UP_PADDLE_FAST)
+				powerUpTryUse[2] = True
 
 			elif powerUpTryUse[0] == POWER_UP_PADDLE_SLOW:
-				powerUpTryUse[2] = True
 				ennemyTeam.applyPowerUpToPaddles(POWER_UP_PADDLE_SLOW)
+				powerUpTryUse[2] = True
 
 			elif powerUpTryUse[0] == POWER_UP_PADDLE_BIG:
-				powerUpTryUse[2] = True
 				team.applyPowerUpToPaddles(POWER_UP_PADDLE_BIG)
+				powerUpTryUse[2] = True
 
 			elif powerUpTryUse[0] == POWER_UP_PADDLE_LITTLE:
-				powerUpTryUse[2] = True
 				ennemyTeam.applyPowerUpToPaddles(POWER_UP_PADDLE_LITTLE)
+				powerUpTryUse[2] = True
 
 		for b in self.balls:
 			for powerUp in ballPowerUp:
@@ -378,6 +413,47 @@ class Game:
 					b.addPowerUpEffect(POWER_UP_BALL_BIG)
 				elif powerUp == POWER_UP_BALL_LITTLE:
 					b.addPowerUpEffect(POWER_UP_BALL_LITTLE)
+
+
+	def printFinalStat(self):
+		if self.teamLeft.score > self.teamRight.score:
+			print("Team left win !")
+		else:
+			print("Team right win !")
+
+		print("=====================================")
+		print("|            TEAMS STATS            |")
+		print("=====================================")
+		print("Team left score :", self.teamLeft.score)
+		print("Team right score :", self.teamRight.score)
+		print("Team left number of player :", len(self.teamLeft.paddles))
+		print("Team right number of player :", len(self.teamRight.paddles))
+		print()
+		print("=====================================")
+		print("|           PADDLES STATS           |")
+		print("=====================================")
+		print("Team left players :")
+		print("\t-------------------------------------")
+		for p in self.teamLeft.paddles:
+			print("\tPaddle id :", p.id)
+			print("\tNumber of goal :", p.numberOfGoal)
+			print("\tMax speed ball touch :", p.maxSpeedBallTouch)
+			print("\tMax bounce of goal ball :", p.maxBounceBallGoal)
+			print("\tNumber of CC :", p.numberOfContreCamp)
+			print("\tNumber of perfect shoot :", p.numberOfPerfectShoot)
+			print("\t-------------------------------------")
+		print("Team right players :")
+		print("\t-------------------------------------")
+		for p in self.teamRight.paddles:
+			print("\tPaddle id :", p.id)
+			print("\tNumber of goal :", p.numberOfGoal)
+			print("\tMax speed ball touch :", p.maxSpeedBallTouch)
+			print("\tMax bounce of goal ball :", p.maxBounceBallGoal)
+			print("\tNumber of CC :", p.numberOfContreCamp)
+			print("\tNumber of perfect shoot :", p.numberOfPerfectShoot)
+			print("\t-------------------------------------")
+
+		self.quit()
 
 
 

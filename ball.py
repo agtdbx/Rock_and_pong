@@ -59,6 +59,9 @@ class Ball:
 
 		self.lastPaddleHitId = 1
 
+		# For stat
+		self.numberOfBounce = 0
+
 
 	def resetHitbox(self):
 		self.hitbox.setPos(self.pos)
@@ -300,7 +303,10 @@ class Ball:
 
 
 	def makeCollisionWithWall(self, hitbox:hitbox.Hitbox):
-		if self.modifierSkipCollision or not hitbox.isCollide(self.hitbox):
+		if self.modifierSkipCollision:
+			return False
+
+		if not hitbox.isCollide(self.hitbox) and not hitbox.isInsideSurrondingBox(self.hitbox):
 			return False
 
 		collideInfos = hitbox.getCollideInfo(self.hitbox)
@@ -320,7 +326,19 @@ class Ball:
 					self.modifierWaveBallTimer = 0
 					if self.modifierSpeed > 1:
 						self.modifierSpeed = 1
+					# Bounce stat
+					self.numberOfBounce += 1
 					return True
+
+		if hitbox.isInside(self.hitbox):
+			if abs(self.direction.x) > abs(self.direction.y):
+				self.direction.x *= -1
+			else:
+				self.direction.y *= -1
+			# Bounce stat
+			self.numberOfBounce += 1
+			return True
+
 		return False
 
 
@@ -328,6 +346,15 @@ class Ball:
 		if not paddle.hitbox.isCollide(self.hitbox):
 			return False
 
+		# Speed stat
+		realSpeed = self.speed * self.modifierSpeed
+		if realSpeed > paddle.maxSpeedBallTouch:
+			paddle.maxSpeedBallTouch = realSpeed
+
+		# Bounce stat
+		self.numberOfBounce = 0
+
+		# New dir of ball
 		diffY = self.pos.y - paddle.pos.y
 		diffY /= (paddle.h * paddle.modifierSize) / 2
 
@@ -339,11 +366,18 @@ class Ball:
 		newDir.normalize()
 		self.direction = newDir
 
+		# Accelerate ball after hit paddle
 		self.speed += BALL_PADDLE_ACCELERATION
 		if self.speed > BALL_MAX_SPEED:
 			self.speed = BALL_MAX_SPEED
 
 		self.lastPaddleHitId = paddle.id
+
+		# Reset modifier
+		self.modifierSkipCollision = False
+
+		self.modifierInvisibleBall = False
+		self.modifierInvisibleBallTimer = 0
 
 		self.modifierWaveBall = False
 		self.modifierWaveBallTimer = 0
@@ -403,6 +437,8 @@ class Ball:
 		ball.modifierWaveBallTimer = self.modifierWaveBallTimer
 
 		ball.powerUpEffects = self.powerUpEffects
+
+		ball.numberOfBounce = self.numberOfBounce
 
 		return ball
 
