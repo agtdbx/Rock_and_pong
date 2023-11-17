@@ -51,6 +51,19 @@ PADDLE_HEIGHT = 140 # in pixel
 PADDLE_SPEED = 650 # pixel per seconds
 PADDLE_LAUNCH_COOLDOWN = 0.2 # In second
 
+PADDLES_KEYS_STATE = [
+	False, False, False, False, # Left Player 1
+	False, False, False, False, # Left Player 2
+	False, False, False, False, # Right Player 1
+	False, False, False, False, # Right Player 2
+]
+
+# Key index defines
+KEY_UP = 0
+KEY_DOWN = 1
+KEY_POWER_UP = 2
+KEY_LAUNCH_BALL = 3
+
 
 ############################################################################################
 #                                       POWER UP DEFINE                                    #
@@ -114,3 +127,15 @@ POWER_UP_PADDLE_BIG_TIME_EFFECT = 10 # in seconds
 POWER_UP_PADDLE_LITTLE = 12 # any time - all ennemy team paddle - limited time effect
 POWER_UP_PADDLE_LITTLE_SIZE_FACTOR = 2 # divide the size
 POWER_UP_PADDLE_LITTLE_TIME_EFFECT = 10 # in seconds
+
+
+############################################################################################
+#                                    COMMUNICATION DEFINE                                  #
+############################################################################################
+CLIENT_MSG_TYPE_USER_EVENT = 0
+# Content of user event :
+# (id_paddle, id_paddle_team, id_key, key_action [True = press, False = release])
+
+CLIENT_MSG_TYPE_DISCONNECTION = 1
+
+

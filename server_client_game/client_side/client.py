@@ -60,6 +60,8 @@ class Client:
 		self.teamLeft = team.Team(1, TEAM_LEFT)
 		self.teamRight = team.Team(1, TEAM_RIGHT)
 
+		self.paddlesKeyState = PADDLES_KEYS_STATE.copy()
+
 		# Ball creation
 		self.balls = [ball.Ball(WIN_WIDTH / 2, WIN_HEIGHT / 2)]
 
@@ -121,6 +123,12 @@ class Client:
 
 		self.ballNumber = 0
 
+		# For communications
+		# (Message type, message content)
+		self.messageForServer = []
+		# (Message type, message content)
+		self.messageFromServer = []
+
 
 	def run(self):
 		"""
@@ -132,6 +140,24 @@ class Client:
 			self.tick()
 			self.render()
 			self.clock.tick(self.fps)
+
+
+	def step(self):
+		"""
+		This method is the main function of the game
+		Call it in a while, it need to be re call until self.runMainLoop equals to False
+		"""
+		# Clear the message for server
+		self.messageForServer.clear()
+		# Game loop
+		if self.runMainLoop:
+			self.input()
+			self.tick()
+			self.render()
+			self.clock.tick(self.fps)
+
+		# After compute it, clear message from the server
+		self.messageFromServer.clear()
 
 
 	def input(self):
@@ -151,6 +177,41 @@ class Client:
 		# Press espace to quit
 		if self.keyboardState[pg.K_ESCAPE]:
 			self.quit()
+
+		# Update paddles keys
+		for i in range(4):
+			paddleId = i
+			teamId = TEAM_LEFT
+			if paddleId >= TEAM_MAX_PLAYER:
+				paddleId -= TEAM_MAX_PLAYER
+				teamId = TEAM_RIGHT
+			if self.keyboardState[PLAYER_KEYS[i][KEY_UP]] and not self.paddlesKeyState[i * 4 + KEY_UP]:
+				self.paddlesKeyState[i * 4 + KEY_UP] = True
+				self.messageForServer.append((CLIENT_MSG_TYPE_USER_EVENT, (i, paddleId, teamId, KEY_UP, True)))
+			elif not self.keyboardState[PLAYER_KEYS[i][KEY_UP]] and self.paddlesKeyState[i * 4 + KEY_UP]:
+				self.paddlesKeyState[i * 4 + KEY_UP] = False
+				self.messageForServer.append((CLIENT_MSG_TYPE_USER_EVENT, (i, paddleId, teamId, KEY_UP, False)))
+
+			if self.keyboardState[PLAYER_KEYS[i][KEY_DOWN]] and not self.paddlesKeyState[i * 4 + KEY_DOWN]:
+				self.paddlesKeyState[i * 4 + KEY_DOWN] = True
+				self.messageForServer.append((CLIENT_MSG_TYPE_USER_EVENT, (i, paddleId, teamId, KEY_DOWN, True)))
+			elif not self.keyboardState[PLAYER_KEYS[i][KEY_DOWN]] and self.paddlesKeyState[i * 4 + KEY_DOWN]:
+				self.paddlesKeyState[i * 4 + KEY_DOWN] = False
+				self.messageForServer.append((CLIENT_MSG_TYPE_USER_EVENT, (i, paddleId, teamId, KEY_DOWN, False)))
+
+			if self.keyboardState[PLAYER_KEYS[i][KEY_POWER_UP]] and not self.paddlesKeyState[i * 4 + KEY_POWER_UP]:
+				self.paddlesKeyState[i * 4 + KEY_POWER_UP] = True
+				self.messageForServer.append((CLIENT_MSG_TYPE_USER_EVENT, (i, paddleId, teamId, KEY_POWER_UP, True)))
+			elif not self.keyboardState[PLAYER_KEYS[i][KEY_POWER_UP]] and self.paddlesKeyState[i * 4 + KEY_POWER_UP]:
+				self.paddlesKeyState[i * 4 + KEY_POWER_UP] = False
+				self.messageForServer.append((CLIENT_MSG_TYPE_USER_EVENT, (i, paddleId, teamId, KEY_POWER_UP, False)))
+
+			if self.keyboardState[PLAYER_KEYS[i][KEY_LAUNCH_BALL]] and not self.paddlesKeyState[i * 4 + KEY_LAUNCH_BALL]:
+				self.paddlesKeyState[i * 4 + KEY_LAUNCH_BALL] = True
+				self.messageForServer.append((CLIENT_MSG_TYPE_USER_EVENT, (i, paddleId, teamId, KEY_LAUNCH_BALL, True)))
+			elif not self.keyboardState[PLAYER_KEYS[i][KEY_LAUNCH_BALL]] and self.paddlesKeyState[i * 4 + KEY_LAUNCH_BALL]:
+				self.paddlesKeyState[i * 4 + KEY_LAUNCH_BALL] = False
+				self.messageForServer.append((CLIENT_MSG_TYPE_USER_EVENT, (i, paddleId, teamId, KEY_LAUNCH_BALL, False)))
 
 
 	def tick(self):
@@ -185,8 +246,8 @@ class Client:
 				self.powerUp[0] = POWER_UP_VISIBLE
 				self.createPowerUp()
 
-		self.teamLeft.tick(delta, self.keyboardState, updateTime)
-		self.teamRight.tick(delta, self.keyboardState, updateTime)
+		self.teamLeft.tick(delta, self.paddlesKeyState, updateTime)
+		self.teamRight.tick(delta, self.paddlesKeyState, updateTime)
 
 		ballToDelete = []
 
@@ -212,7 +273,10 @@ class Client:
 					pad = self.teamRight.paddles[b.lastPaddleHitId]
 				b.setPos(pad.pos.dup())
 				b.pos.translateAlong(b.direction.dup(), PADDLE_WIDTH * 2)
-				if self.keyboardState[PLAYER_KEYS[pad.id][KEY_LAUNCH_BALL]] and pad.waitLaunch == 0:
+				id = pad.id
+				if pad.team == TEAM_RIGHT:
+					id += TEAM_MAX_PLAYER
+				if self.paddlesKeyState[id * 4 + KEY_LAUNCH_BALL] and pad.waitLaunch == 0:
 					b.state = STATE_RUN
 					pad.waitLaunch = PADDLE_LAUNCH_COOLDOWN
 

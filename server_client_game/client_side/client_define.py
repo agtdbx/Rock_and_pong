@@ -56,12 +56,6 @@ POWER_UP_BALL_INVISIBLE_COLOR = (200, 200, 0) # in seconds
 ############################################################################################
 #                                      CLIENT DEFINE                                       #
 ############################################################################################
-# Key index defines
-KEY_UP = 0
-KEY_DOWN = 1
-KEY_POWER_UP = 2
-KEY_LAUNCH_BALL = 3
-
 # PLAYERS KEYS QWERTY
 PLAYER_KEYS = [
 	(pg.K_q, pg.K_a, pg.K_z, pg.K_SPACE), # L1 player
