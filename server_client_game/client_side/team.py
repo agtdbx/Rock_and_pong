@@ -1,7 +1,6 @@
-from define import *
-from pg_utils import *
-
-import paddle
+from client_side.client_define import *
+from client_side.pg_utils import *
+import client_side.paddle as paddle
 
 class Team:
 	def __init__(self, numberOfPlayers:int, team:int) -> None:
@@ -71,19 +70,19 @@ class Team:
 			p.draw(win)
 
 		if self.team == TEAM_LEFT:
-			drawText(win, "SCORE : " + str(self.score), (AREA_MARGIN, AREA_MARGIN / 2), (255, 255, 255), size=30, align="mid-left")
+			drawText(win, "SCORE : " + str(self.score), (75, 75 / 2), (255, 255, 255), size=30, align="mid-left")
 
-			drawText(win, str(self.paddles[0].powerUp), (AREA_MARGIN, 70), (255, 255, 255), size=30, align="mid-right")
+			drawText(win, str(self.paddles[0].powerUp), (75, 70), (255, 255, 255), size=30, align="mid-right")
 			if len(self.paddles) == 2:
-				drawText(win, str(self.paddles[1].powerUp), (AREA_MARGIN, WIN_HEIGHT - 70), (255, 255, 255), size=30, align="mid-right")
+				drawText(win, str(self.paddles[1].powerUp), (75, WIN_HEIGHT - 70), (255, 255, 255), size=30, align="mid-right")
 
 
 		else:
-			drawText(win, "SCORE : " + str(self.score), (WIN_WIDTH - AREA_MARGIN, AREA_MARGIN / 2), (255, 255, 255), size=30, align="mid-right")
+			drawText(win, "SCORE : " + str(self.score), (WIN_WIDTH - 75, 75 / 2), (255, 255, 255), size=30, align="mid-right")
 
-			drawText(win, str(self.paddles[0].powerUp), (WIN_WIDTH - AREA_MARGIN, 70), (255, 255, 255), size=30, align="mid-left")
+			drawText(win, str(self.paddles[0].powerUp), (WIN_WIDTH - 75, 70), (255, 255, 255), size=30, align="mid-left")
 			if len(self.paddles) == 2:
-				drawText(win, str(self.paddles[1].powerUp), (WIN_WIDTH - AREA_MARGIN, WIN_HEIGHT - 70), (255, 255, 255), size=30, align="mid-left")
+				drawText(win, str(self.paddles[1].powerUp), (WIN_WIDTH - 75, WIN_HEIGHT - 70), (255, 255, 255), size=30, align="mid-left")
 
 
 	def applyPowerUpToPaddles(self, powerUp):

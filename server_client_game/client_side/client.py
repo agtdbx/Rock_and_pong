@@ -1,8 +1,8 @@
-from define import *
-from vec2 import *
-import hitbox
-import team
-import ball
+from client_side.client_define import *
+from client_side.vec2 import *
+import client_side.hitbox as hitbox
+import client_side.team as team
+import client_side.ball as ball
 
 import pygame as pg
 import random
@@ -33,7 +33,7 @@ def createObstacle(x:int, y:int, listPoint:list, color:tuple) -> hitbox.Hitbox:
 
 
 
-class Game:
+class Client:
 	def __init__(self):
 		"""
 		This method define all variables needed by the program
@@ -142,7 +142,7 @@ class Game:
 		for event in pg.event.get():
 			# If the event it a click on the top right cross, we quit the game
 			if event.type == pg.QUIT:
-				self.printFinalStat()
+				self.quit()
 
 		self.keyboardState = pg.key.get_pressed()
 		self.mouseState = pg.mouse.get_pressed()
@@ -150,7 +150,7 @@ class Game:
 
 		# Press espace to quit
 		if self.keyboardState[pg.K_ESCAPE]:
-			self.printFinalStat()
+			self.quit()
 
 
 	def tick(self):
@@ -250,7 +250,12 @@ class Game:
 				self.powerUp[0] = POWER_UP_SPAWN_COOLDOWN
 
 		if self.teamLeft.score >= TEAM_WIN_SCORE or self.teamRight.score >= TEAM_WIN_SCORE:
-			self.printFinalStat()
+			self.quit()
+
+		testLen = len(self.balls)
+		if testLen!= self.ballNumber:
+			self.ballNumber = testLen
+			print("Number of balls :",self.ballNumber)
 
 		pg.display.set_caption("time : " + str(self.time) + " | fps : " + str(self.clock.get_fps()))
 
@@ -481,64 +486,3 @@ class Game:
 		ball.modifierSkipCollision = False
 		ball.lastPaddleHitId = random.choice(self.teamRight.paddles).id
 		ball.lastPaddleTeam = TEAM_RIGHT
-
-
-	def printFinalStat(self):
-		if self.teamLeft.score > self.teamRight.score:
-			print("Team left win !")
-		else:
-			print("Team right win !")
-
-		print("=====================================")
-		print("|             GAME STATS            |")
-		print("=====================================")
-		print("Team left score :", self.teamLeft.score)
-		print("Team right score :", self.teamRight.score)
-		print("Team left number of player :", len(self.teamLeft.paddles))
-		print("Team right number of player :", len(self.teamRight.paddles))
-		print("Number of ball :", len(self.balls))
-		print()
-		print("=====================================")
-		print("|           PADDLES STATS           |")
-		print("=====================================")
-		print("Team left players :")
-		print("\t----------------------------")
-		for p in self.teamLeft.paddles:
-			print("\tPaddle id :", p.id)
-			print("\tNumber of goal :", p.numberOfGoal)
-			print("\tMax speed ball touch :", p.maxSpeedBallTouch)
-			print("\tMax bounce of goal ball :", p.maxBounceBallGoal)
-			print("\tNumber of CC :", p.numberOfContreCamp)
-			print("\tNumber of perfect shoot :", p.numberOfPerfectShoot)
-			print("\t----------------------------")
-		print("Team right players :")
-		print("\t----------------------------")
-		for p in self.teamRight.paddles:
-			print("\tPaddle id :", p.id)
-			print("\tNumber of goal :", p.numberOfGoal)
-			print("\tMax speed ball touch :", p.maxSpeedBallTouch)
-			print("\tMax bounce of goal ball :", p.maxBounceBallGoal)
-			print("\tNumber of CC :", p.numberOfContreCamp)
-			print("\tNumber of perfect shoot :", p.numberOfPerfectShoot)
-			print("\t----------------------------")
-		print()
-		print("=====================================")
-		print("|            BALLS STATS            |")
-		print("=====================================")
-		# idPaddle, paddleTeam, Ball speed, Number of bounce, CC, Perfect shoot, time of goal
-		for goal in self.goals:
-			print("Paddle id :", goal[0])
-			print("Paddle team :", goal[1])
-			print("Ball speed ball :", goal[2])
-			print("Number of bounce :", goal[3])
-			print("Is CC :", goal[4])
-			print("Is Perfect Shoot :", goal[5])
-			print("Time :", goal[6])
-			print("----------------------------")
-
-		self.quit()
-
-
-
-
-Game().run() # Start game

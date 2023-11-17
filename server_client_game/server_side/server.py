@@ -1,20 +1,19 @@
 from define import *
-from vec2 import *
-import hitbox
-import team
-import ball
+from server_side.vec2 import *
+import server_side.hitbox as hitbox
+import server_side.team as team
+import server_side.ball as ball
 
-import pygame as pg
 import random
 import time
 import sys
 
 
-def createWall(x, y, w, h, color) -> hitbox.Hitbox:
+def createWall(x, y, w, h) -> hitbox.Hitbox:
 	halfW = w / 2
 	halfH = h / 2
 
-	hit = hitbox.Hitbox(x, y, HITBOX_WALL_COLOR, color)
+	hit = hitbox.Hitbox(x, y)
 	hit.addPoint(-halfW, -halfH)
 	hit.addPoint(halfW, -halfH)
 	hit.addPoint(halfW, halfH)
@@ -23,8 +22,8 @@ def createWall(x, y, w, h, color) -> hitbox.Hitbox:
 	return hit
 
 
-def createObstacle(x:int, y:int, listPoint:list, color:tuple) -> hitbox.Hitbox:
-	hit = hitbox.Hitbox(x, y, HITBOX_WALL_COLOR, color)
+def createObstacle(x:int, y:int, listPoint:list) -> hitbox.Hitbox:
+	hit = hitbox.Hitbox(x, y)
 
 	for p in listPoint:
 		hit.addPoint(p[0], p[1])
@@ -33,24 +32,16 @@ def createObstacle(x:int, y:int, listPoint:list, color:tuple) -> hitbox.Hitbox:
 
 
 
-class Game:
+class Server:
 	def __init__(self):
 		"""
 		This method define all variables needed by the program
 		"""
-		# Start of pygame
-		pg.init()
-
-		# We remove the toolbar of the window's height
-		self.winSize = ((WIN_WIDTH, WIN_HEIGHT))
-		# We create the window
-		self.win = pg.display.set_mode(self.winSize, pg.RESIZABLE)
-
-		self.clock = pg.time.Clock() # The clock be used to limit our fps
 		self.fps = 60
 		self.time = 0
 
 		self.last = time.time()
+		self.delta = 1 / 60
 
 		self.runMainLoop = True
 
@@ -61,7 +52,7 @@ class Game:
 		self.teamRight = team.Team(1, TEAM_RIGHT)
 
 		# Ball creation
-		self.balls = [ball.Ball(WIN_WIDTH / 2, WIN_HEIGHT / 2)]
+		self.balls = [ball.Ball(0, 0)]
 
 		# Ball begin left side
 		if random.random() > 0.5:
@@ -73,7 +64,7 @@ class Game:
 			self.balls[0].lastPaddleTeam = TEAM_RIGHT
 
 		# Power up creation
-		self.powerUp = [POWER_UP_SPAWN_COOLDOWN, hitbox.Hitbox(0, 0, (0, 0, 200), POWER_UP_HITBOX_COLOR), -1]
+		self.powerUp = [POWER_UP_SPAWN_COOLDOWN, hitbox.Hitbox(0, 0), -1]
 		for p in ball.getPointOfCircle(POWER_UP_HITBOX_RADIUS, POWER_UP_HITBOX_PRECISION, 0):
 			self.powerUp[1].addPoint(p[0], p[1])
 
@@ -81,38 +72,33 @@ class Game:
 		self.walls = [
 			# Wall up
 			createWall(
-				AREA_RECT[0] + AREA_RECT[2] / 2,
-			 	AREA_RECT[1] + AREA_BORDER_SIZE / 2,
-				AREA_RECT[2],
-				AREA_BORDER_SIZE,
-				(50, 50, 50)
+				AREA_SIZE[0] / 2,
+			 	AREA_BORDER_SIZE / 2,
+				AREA_SIZE[0],
+				AREA_BORDER_SIZE
 			),
 			# Wall down
 			createWall(
-				AREA_RECT[0] + AREA_RECT[2] / 2,
-				AREA_RECT[1] + AREA_RECT[3] - AREA_BORDER_SIZE / 2,
-				AREA_RECT[2],
-				AREA_BORDER_SIZE,
-				(50, 50, 50)
+				AREA_SIZE[0] / 2,
+				AREA_SIZE[1] - AREA_BORDER_SIZE / 2,
+				AREA_SIZE[0],
+				AREA_BORDER_SIZE
 			),
 			# Obstables
 			createObstacle(
-				AREA_RECT[0] + AREA_RECT[2] / 2,
-				AREA_RECT[1],
+				AREA_SIZE[0] / 2,
+				0,
 				[(-300, 0), (300, 0), (275, 50), (75, 75), (0, 125), (-75, 75), (-275, 50)],
-				(150, 150, 0)
 			),
 			createObstacle(
-				AREA_RECT[0] + AREA_RECT[2] / 2,
-				AREA_RECT[1] + AREA_RECT[3],
+				AREA_SIZE[0] / 2,
+				AREA_SIZE[1],
 				[(-300, 0), (300, 0), (275, -50), (0, -25), (-275, -50)],
-				(150, 150, 0)
 			),
 			createObstacle(
-				AREA_RECT[0] + AREA_RECT[2] / 2,
-				AREA_RECT[1] + AREA_RECT[3] / 2,
+				AREA_SIZE[0] / 2,
+				AREA_SIZE[1] / 2,
 				ball.getPointOfCircle(100, 32, 360 / 64),
-				(150, 150, 0)
 			)
 		]
 
@@ -127,30 +113,22 @@ class Game:
 		This method is the main loop of the game
 		"""
 		# Game loop
+		targetTime = 1 / self.fps
 		while self.runMainLoop:
 			self.input()
 			self.tick()
-			self.render()
-			self.clock.tick(self.fps)
+			print("targetTime :", targetTime, "| deltaTime :", self.delta)
+			timeToSleep = max(0, targetTime - self.delta)
+			print("timeToSleep :", timeToSleep)
+			time.sleep(timeToSleep)
 
 
 	def input(self):
 		"""
 		The method catch user's inputs, as key presse or a mouse click
 		"""
-		# We check each event
-		for event in pg.event.get():
-			# If the event it a click on the top right cross, we quit the game
-			if event.type == pg.QUIT:
-				self.printFinalStat()
-
-		self.keyboardState = pg.key.get_pressed()
-		self.mouseState = pg.mouse.get_pressed()
-		self.mousePos = pg.mouse.get_pos()
-
-		# Press espace to quit
-		if self.keyboardState[pg.K_ESCAPE]:
-			self.printFinalStat()
+		# Pass input recieved from client
+		pass
 
 
 	def tick(self):
@@ -158,10 +136,10 @@ class Game:
 		This is the method where all calculations will be done
 		"""
 		tmp = time.time()
-		delta = tmp - self.last
+		self.delta = tmp - self.last
 		self.last = tmp
 
-		self.time += delta
+		self.time += self.delta
 
 		# Check if ball move. If no ball move, all time base event are stopping
 		if POWER_UP_ENABLE:
@@ -172,7 +150,7 @@ class Game:
 					break
 
 		if self.inputWait > 0:
-			self.inputWait -= delta
+			self.inputWait -= self.delta
 			if self.inputWait < 0:
 				self.inputWait = 0
 
@@ -180,21 +158,21 @@ class Game:
 			self.powerUp[0] = POWER_UP_SPAWN_COOLDOWN
 
 		if updateTime and self.powerUp[0] > POWER_UP_VISIBLE:
-			self.powerUp[0] -= delta
+			self.powerUp[0] -= self.delta
 			if self.powerUp[0] <= POWER_UP_VISIBLE:
 				self.powerUp[0] = POWER_UP_VISIBLE
 				self.createPowerUp()
 
-		self.teamLeft.tick(delta, self.keyboardState, updateTime)
-		self.teamRight.tick(delta, self.keyboardState, updateTime)
+		# self.teamLeft.tick(self.delta, self.keyboardState, updateTime)
+		# self.teamRight.tick(self.delta, self.keyboardState, updateTime)
 
 		ballToDelete = []
 
 		for i in range(len(self.balls)):
 			b = self.balls[i]
-			b.updatePosition(delta, self.teamLeft.paddles, self.teamRight.paddles, self.walls, self.powerUp)
+			b.updatePosition(self.delta, self.teamLeft.paddles, self.teamRight.paddles, self.walls, self.powerUp)
 			if updateTime:
-				b.updateTime(delta)
+				b.updateTime(self.delta)
 
 			# if the ball is in left goal
 			if b.state == STATE_IN_GOAL_LEFT:
@@ -212,9 +190,9 @@ class Game:
 					pad = self.teamRight.paddles[b.lastPaddleHitId]
 				b.setPos(pad.pos.dup())
 				b.pos.translateAlong(b.direction.dup(), PADDLE_WIDTH * 2)
-				if self.keyboardState[PLAYER_KEYS[pad.id][KEY_LAUNCH_BALL]] and pad.waitLaunch == 0:
-					b.state = STATE_RUN
-					pad.waitLaunch = PADDLE_LAUNCH_COOLDOWN
+				# if self.keyboardState[PLAYER_KEYS[pad.id][KEY_LAUNCH_BALL]] and pad.waitLaunch == 0:
+				# 	b.state = STATE_RUN
+				# 	pad.waitLaunch = PADDLE_LAUNCH_COOLDOWN
 
 			# case of ball is Moving
 			else:
@@ -252,53 +230,11 @@ class Game:
 		if self.teamLeft.score >= TEAM_WIN_SCORE or self.teamRight.score >= TEAM_WIN_SCORE:
 			self.printFinalStat()
 
-		pg.display.set_caption("time : " + str(self.time) + " | fps : " + str(self.clock.get_fps()))
-
-
-	def render(self):
-		"""
-		This is the method where all graphic update will be done
-		"""
-		# We clean our screen with one color
-		self.win.fill((0, 0, 0))
-
-		# Draw area
-		pg.draw.rect(self.win, AREA_COLOR, AREA_RECT)
-		# pg.draw.rect(self.win, LEFT_TEAM_COLOR, LEFT_TEAM_RECT)
-		# pg.draw.rect(self.win, MIDDLE_COLOR, MIDDLE_RECT)
-		# pg.draw.rect(self.win, RIGTH_TEAM_COLOR, RIGTH_TEAM_RECT)
-
-		# Draw walls
-		for w in self.walls:
-			w.drawFill(self.win)
-			if DRAW_HITBOX:
-				w.draw(self.win)
-
-		# Power up draw
-		if self.powerUp[0] == POWER_UP_VISIBLE:
-			self.powerUp[1].drawFill(self.win)
-			if DRAW_HITBOX:
-				self.powerUp[1].draw(self.win)
-
-		# Draw ball
-		for b in self.balls:
-			b.draw(self.win)
-
-		# Draw team
-		self.teamLeft.draw(self.win)
-		self.teamRight.draw(self.win)
-
-		# We update the drawing.
-		# Before the function call, any changes will be not visible
-		pg.display.update()
-
 
 	def quit(self):
 		"""
 		This is the quit method
 		"""
-		# Pygame quit
-		pg.quit()
 		sys.exit()
 
 
@@ -309,7 +245,7 @@ class Game:
 			collide = False
 
 			x = random.randint(LEFT_TEAM_RECT[0] + LEFT_TEAM_RECT[2], RIGTH_TEAM_RECT[0])
-			y = random.randint(AREA_RECT[1], AREA_RECT[1] + AREA_RECT[3])
+			y = random.randint(0, AREA_SIZE[1])
 
 			self.powerUp[1].setPos(Vec2(x, y))
 
@@ -424,7 +360,7 @@ class Game:
 			paddle.maxBounceBallGoal = ball.numberOfBounce
 
 		perfectShoot = False
-		if ball.pos.y < AREA_RECT[1] + PERFECT_SHOOT_SIZE or ball.pos.y > AREA_RECT[1] + AREA_RECT[3] - PERFECT_SHOOT_SIZE:
+		if ball.pos.y < PERFECT_SHOOT_SIZE or ball.pos.y > AREA_SIZE[1] - PERFECT_SHOOT_SIZE:
 			paddle.numberOfPerfectShoot += 1
 			perfectShoot = True
 
@@ -461,7 +397,7 @@ class Game:
 			paddle.maxBounceBallGoal = ball.numberOfBounce
 
 		perfectShoot = False
-		if ball.pos.y < AREA_RECT[1] + PERFECT_SHOOT_SIZE or ball.pos.y > AREA_RECT[1] + AREA_RECT[3] - PERFECT_SHOOT_SIZE:
+		if ball.pos.y < PERFECT_SHOOT_SIZE or ball.pos.y > AREA_SIZE[1] - PERFECT_SHOOT_SIZE:
 			paddle.numberOfPerfectShoot += 1
 			perfectShoot = True
 
@@ -537,8 +473,3 @@ class Game:
 			print("----------------------------")
 
 		self.quit()
-
-
-
-
-Game().run() # Start game
