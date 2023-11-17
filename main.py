@@ -120,6 +120,8 @@ class Game:
 		# idPaddle, Ball speed, Number of bounce, CC, Perfect shoot, time of goal
 		self.goals = []
 
+		self.ballNumber = 0
+
 
 	def run(self):
 		"""
@@ -162,14 +164,13 @@ class Game:
 
 		if self.keyboardState[pg.K_UP] and self.inputWait == 0:
 			self.slowMotionFactor *= 2
-			self.inputWait = self.slowMotionFactor
+			self.inputWait = 0.1 * self.slowMotionFactor
 		elif self.keyboardState[pg.K_DOWN] and self.inputWait == 0:
 			self.slowMotionFactor /= 2
-			self.inputWait = self.slowMotionFactor
+			self.inputWait = 0.1 * self.slowMotionFactor
 		elif self.keyboardState[pg.K_RIGHT] and self.inputWait == 0:
-			self.balls[0].setPos(Vec2(AREA_RECT[0] + AREA_RECT[2] / 2, AREA_RECT[1] + AREA_RECT[3] / 2))
-			self.inputWait = 1
-
+			self.balls[0].setPos(Vec2(AREA_RECT[0] + AREA_RECT[2] / 2 - 5, AREA_RECT[1] + AREA_RECT[3] / 2 + 10))
+			self.inputWait = 0.1 * self.slowMotionFactor
 		delta *= self.slowMotionFactor
 
 		self.time += delta
@@ -289,24 +290,10 @@ class Game:
 						outOfCenter.normalize()
 						b.direction = outOfCenter
 						if not b.hitbox.isCollide(w):
-							# print("URGENCE, SORT DE LA")
-							# print("De la :", b.pos)
-							# print("vers la :", b.direction)
-
-							# outOfCenter.multiply(10)
-							# while b.hitbox.isInside(w):
-							# 	pos = vec2Add(b.pos, outOfCenter)
-							# 	b.setPos(pos)
-								# b.pos.translateAlong(b.direction, 10)
-								# b.hitbox.setPos(b.pos)
-								# print("New pos", b.pos)
-
-							b.state = STATE_IN_FOLLOW
-							b.speed = BALL_START_SPEED
-							if b.lastPaddleHitId < TEAM_MAX_PLAYER:
-								b.direction = Vec2(1, 0)
-							else:
-								b.direction = Vec2(-1, 0)
+							dir = outOfCenter.dup()
+							dir.multiply(BALL_RADIUS * 2 + 5)
+							pos = vec2Add(b.pos, dir)
+							b.setPos(pos)
 
 		# Verify if power can be use, and use it if possible
 		if POWER_UP_ENABLE and updateTime:
@@ -325,6 +312,10 @@ class Game:
 		if self.teamLeft.score >= TEAM_WIN_SCORE or self.teamRight.score >= TEAM_WIN_SCORE:
 			self.printFinalStat()
 
+		testLen = len(self.balls)
+		if testLen!= self.ballNumber:
+			self.ballNumber = testLen
+			print("Number of balls :",self.ballNumber)
 
 		pg.display.set_caption("time : " + str(self.time) + " | fps : " + str(self.clock.get_fps()) + " | slow motion factor : " + str(self.slowMotionFactor))
 

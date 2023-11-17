@@ -132,7 +132,6 @@ class Ball:
 			if self.modifierStopBallTimer < 0:
 				self.modifierStopBallTimer = 0
 
-
 		powerUpEffectToRemove = []
 
 		for i in range(len(self.powerUpEffects)):
