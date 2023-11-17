@@ -29,7 +29,6 @@ class Paddle:
 		self.powerUpEffects = []
 
 		self.powerUp = POWER_UP_NONE
-		self.powerUp = 0
 
 		self.powerUpInCharge = []
 

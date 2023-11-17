@@ -142,7 +142,7 @@ class Game:
 		for event in pg.event.get():
 			# If the event it a click on the top right cross, we quit the game
 			if event.type == pg.QUIT:
-				self.quit()
+				self.printFinalStat()
 
 		self.keyboardState = pg.key.get_pressed()
 		self.mouseState = pg.mouse.get_pressed()
@@ -150,7 +150,7 @@ class Game:
 
 		# Press espace to quit
 		if self.keyboardState[pg.K_ESCAPE]:
-			self.quit()
+			self.printFinalStat()
 
 
 	def tick(self):
@@ -188,18 +188,21 @@ class Game:
 		self.teamLeft.tick(delta, self.keyboardState, self.balls, updateTime)
 		self.teamRight.tick(delta, self.keyboardState, self.balls, updateTime)
 
-		for b in self.balls:
+		ballToDelete = []
+
+		for i in range(len(self.balls)):
+			b = self.balls[i]
 			b.updatePosition(delta, self.teamLeft.paddles, self.teamRight.paddles, self.walls, self.powerUp)
 			if updateTime:
 				b.updateTime(delta)
 
 			# if the ball is in left goal
 			if b.state == STATE_IN_GOAL_LEFT:
-				self.ballInLeftGoal(b)
+				self.ballInLeftGoal(b, i, ballToDelete)
 
 			# if the ball is in right goal
 			elif b.state == STATE_IN_GOAL_RIGHT:
-				self.ballInRightGoal(b)
+				self.ballInRightGoal(b, i, ballToDelete)
 
 			# case of ball follow player
 			elif b.state == STATE_IN_FOLLOW:
@@ -213,6 +216,7 @@ class Game:
 					b.state = STATE_RUN
 					pad.waitLaunch = PADDLE_LAUNCH_COOLDOWN
 
+			# case of ball is Moving
 			else:
 				for w in self.walls:
 					# if not b.modifierSkipCollision and b.hitbox.isInside(w) and not b.hitbox.isCollide(w):
@@ -227,6 +231,9 @@ class Game:
 							dir.multiply(BALL_RADIUS * 2 + 5)
 							pos = vec2Add(b.pos, dir)
 							b.setPos(pos)
+
+		for i in range(len(ballToDelete)):
+			self.balls.pop(ballToDelete[i] - i)
 
 		# Verify if power can be use, and use it if possible
 		if POWER_UP_ENABLE and updateTime:
@@ -406,7 +413,7 @@ class Game:
 					b.addPowerUpEffect(POWER_UP_BALL_LITTLE)
 
 
-	def ballInLeftGoal(self, ball:ball.Ball):
+	def ballInLeftGoal(self, ball:ball.Ball, i:int, ballToDelete:list):
 		self.teamRight.score += 1
 		# for stats
 		contreCamp = False
@@ -431,6 +438,11 @@ class Game:
 
 		for p in self.teamLeft.paddles:
 			p.powerUp = powerUp = random.randint(0, 12)
+
+		if len(self.balls) - len(ballToDelete) > 1:
+			ballToDelete.append(i)
+			return
+
 		ball.direction = Vec2(1, 0)
 		ball.speed = BALL_START_SPEED
 		ball.state = STATE_IN_FOLLOW
@@ -439,7 +451,7 @@ class Game:
 		ball.lastPaddleTeam = TEAM_LEFT
 
 
-	def ballInRightGoal(self, ball:ball.Ball):
+	def ballInRightGoal(self, ball:ball.Ball, i:int, ballToDelete:list):
 		self.teamLeft.score += 1
 		# for stats
 		contreCamp = False
@@ -463,6 +475,11 @@ class Game:
 
 		for p in self.teamRight.paddles:
 			p.powerUp = random.randint(0, 12)
+
+		if len(self.balls) - len(ballToDelete) > 1:
+			ballToDelete.append(i)
+			return
+
 		ball.direction = Vec2(-1, 0)
 		ball.speed = BALL_START_SPEED
 		ball.state = STATE_IN_FOLLOW
@@ -490,7 +507,7 @@ class Game:
 		print("|           PADDLES STATS           |")
 		print("=====================================")
 		print("Team left players :")
-		print("\t---------------------------")
+		print("\t----------------------------")
 		for p in self.teamLeft.paddles:
 			print("\tPaddle id :", p.id)
 			print("\tNumber of goal :", p.numberOfGoal)
@@ -498,9 +515,9 @@ class Game:
 			print("\tMax bounce of goal ball :", p.maxBounceBallGoal)
 			print("\tNumber of CC :", p.numberOfContreCamp)
 			print("\tNumber of perfect shoot :", p.numberOfPerfectShoot)
-			print("\t---------------------------")
+			print("\t----------------------------")
 		print("Team right players :")
-		print("\t---------------------------")
+		print("\t----------------------------")
 		for p in self.teamRight.paddles:
 			print("\tPaddle id :", p.id)
 			print("\tNumber of goal :", p.numberOfGoal)
@@ -508,7 +525,7 @@ class Game:
 			print("\tMax bounce of goal ball :", p.maxBounceBallGoal)
 			print("\tNumber of CC :", p.numberOfContreCamp)
 			print("\tNumber of perfect shoot :", p.numberOfPerfectShoot)
-			print("\t---------------------------")
+			print("\t----------------------------")
 		print()
 		print("=====================================")
 		print("|            BALLS STATS            |")
@@ -522,9 +539,7 @@ class Game:
 			print("Is CC :", goal[4])
 			print("Is Perfect Shoot :", goal[5])
 			print("Time :", goal[6])
-			print("---------------------------")
-
-
+			print("----------------------------")
 
 		self.quit()
 
