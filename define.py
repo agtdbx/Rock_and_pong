@@ -58,13 +58,14 @@ PERFECT_SHOOT_SIZE = BALL_RADIUS * 4 # in pixel
 ############################################################################################
 TEAM_MAX_PLAYER = 2
 TEAM_WIN_SCORE = 11
+TEAM_LEFT = 0
+TEAM_RIGHT = 1
 
 ############################################################################################
 #                                       PADDLE DEFINE                                      #
 ############################################################################################
 PADDLE_WIDTH = 14 # in pixel
 PADDLE_HEIGHT = WIN_HEIGHT / 7 # in pixel
-PADDLE_HEIGHT = WIN_HEIGHT # in pixel
 PADDLE_SPEED = WIN_HEIGHT / 1.5 # pixel per seconds
 PADDLE_COLOR = (200, 200, 200) # (r, g, b), channell int [0, 255]
 PADDLE_LAUNCH_COOLDOWN = 0.2 # In second
@@ -73,7 +74,7 @@ PADDLE_LAUNCH_COOLDOWN = 0.2 # In second
 ############################################################################################
 #                                       DEBUG DEFINE                                       #
 ############################################################################################
-DRAW_HITBOX = True # boolean
+DRAW_HITBOX = False # boolean
 DRAW_HITBOX_NORMALS = False # boolean
 HITBOX_BALL_COLOR = (255, 0, 0) # (r, g, b), channell int [0, 255]
 HITBOX_WALL_COLOR = (0, 255, 0) # (r, g, b), channell int [0, 255]

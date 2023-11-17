@@ -4,27 +4,25 @@ from pg_utils import *
 import paddle
 
 class Team:
-	def __init__(self, numberOfPlayers:int, leftSide:bool) -> None:
+	def __init__(self, numberOfPlayers:int, team:int) -> None:
 		if numberOfPlayers < 1:
 			numberOfPlayers = 1
 		elif numberOfPlayers > TEAM_MAX_PLAYER:
 			numberOfPlayers = TEAM_MAX_PLAYER
 
-		self.leftSide = leftSide
+		self.team = team
 
-		if leftSide:
+		if self.team == TEAM_LEFT:
 			xPos = AREA_RECT[0] + AREA_BORDER_SIZE * 2
-			id = 0
 		else:
 			xPos = AREA_RECT[0] + AREA_RECT[2] - AREA_BORDER_SIZE * 2
-			id = TEAM_MAX_PLAYER
 
 		self.paddles = []
 		if numberOfPlayers == 1:
-			self.paddles.append(paddle.Paddle(xPos, AREA_RECT[1] + AREA_RECT[3] // 2, id))
+			self.paddles.append(paddle.Paddle(xPos, AREA_RECT[1] + AREA_RECT[3] // 2, 0, self.team))
 		else:
-			self.paddles.append(paddle.Paddle(xPos, AREA_RECT[1] + AREA_RECT[3] // 3, id))
-			self.paddles.append(paddle.Paddle(xPos, AREA_RECT[1] + AREA_RECT[3] // 3 * 2, id + 1))
+			self.paddles.append(paddle.Paddle(xPos, AREA_RECT[1] + AREA_RECT[3] // 3, 0, self.team))
+			self.paddles.append(paddle.Paddle(xPos, AREA_RECT[1] + AREA_RECT[3] // 3 * 2, 1, self.team))
 
 		self.score = 0
 		# list of power up who try to use : [power up id, paddle id, power up used (bool)]
@@ -54,7 +52,7 @@ class Team:
 				self.paddles[i].updateTimes(delta)
 
 			keyId = i
-			if not self.leftSide:
+			if self.team == TEAM_RIGHT:
 				keyId += TEAM_MAX_PLAYER
 
 			if keyboardState[PLAYER_KEYS[keyId][KEY_UP]]:
@@ -65,8 +63,6 @@ class Team:
 				powerUp = self.paddles[i].powerUp
 				if powerUp != POWER_UP_NONE:
 					self.powerUpTryUse.append([powerUp, i, False])
-				else:
-					self.powerUpTryUse.append([POWER_UP_DUPLICATION_BALL, i, False])
 
 
 
@@ -74,7 +70,7 @@ class Team:
 		for p in self.paddles:
 			p.draw(win)
 
-		if self.leftSide:
+		if self.team == TEAM_LEFT:
 			drawText(win, "SCORE : " + str(self.score), (AREA_MARGIN, AREA_MARGIN / 2), (255, 255, 255), size=30, align="mid-left")
 
 			drawText(win, str(self.paddles[0].powerUp), (AREA_MARGIN, 70), (255, 255, 255), size=30, align="mid-right")

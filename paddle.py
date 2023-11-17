@@ -3,7 +3,7 @@ from vec2 import *
 import hitbox
 
 class Paddle:
-	def	__init__(self, x, y, id) -> None:
+	def	__init__(self, x, y, id, team) -> None:
 		self.id = id
 		self.pos = Vec2(x, y)
 		self.w = PADDLE_WIDTH
@@ -17,6 +17,8 @@ class Paddle:
 		self.hitbox.addPoint(self.halfW, self.halfH)
 		self.hitbox.addPoint(-self.halfW, self.halfH)
 
+		self.team = team
+
 		self.waitLaunch = 0
 		self.waitUsePowerUp = 0
 
@@ -27,6 +29,7 @@ class Paddle:
 		self.powerUpEffects = []
 
 		self.powerUp = POWER_UP_NONE
+		self.powerUp = 0
 
 		self.powerUpInCharge = []
 

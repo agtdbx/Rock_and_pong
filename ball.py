@@ -57,7 +57,8 @@ class Ball:
 		self.lastColors = [BALL_COLOR for _ in range(BALL_TRAIL_LENGTH)]
 		self.state = STATE_IN_FOLLOW
 
-		self.lastPaddleHitId = 1
+		self.lastPaddleHitId = 0
+		self.lastPaddleTeam = TEAM_LEFT
 
 		# For stat
 		self.numberOfBounce = 0
@@ -328,28 +329,9 @@ class Ball:
 				self.speed += BALL_WALL_ACCELERATION
 				if self.speed > BALL_MAX_SPEED:
 					self.speed = BALL_MAX_SPEED
-				self.modifierWaveBall = False
-				self.modifierWaveBallTimer = 0
-				if self.modifierSpeed > 1:
-					self.modifierSpeed = 1
 				# Bounce stat
 				self.numberOfBounce += 1
 				collide = True
-
-		# print("Pos ball")
-		# print(self.pos)
-		# print("Hitbox ball")
-		# print(self.hitbox)
-		# print("Hitbox wall")
-		# print(hitbox)
-		# print("Number of collide :", nbCollide)
-		# print("Collision :", collide)
-		# print()
-		# print("hit pos :")
-		# for pos in hitPos:
-		# 	print(pos)
-		# print()
-		# print()
 
 		if len(newDirections) == 1:
 			self.direction = newDirections[0].dup()
@@ -392,6 +374,7 @@ class Ball:
 			self.speed = BALL_MAX_SPEED
 
 		self.lastPaddleHitId = paddle.id
+		self.lastPaddleTeam = paddle.team
 
 		# Reset modifier
 		self.modifierSkipCollision = False
@@ -446,6 +429,7 @@ class Ball:
 
 		# Get info of last paddle touch
 		ball.lastPaddleHitId = self.lastPaddleHitId
+		ball.lastPaddleTeam = self.lastPaddleTeam
 
 		# Dup power up effects
 		if self.modifierSize != 1:
