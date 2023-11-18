@@ -56,11 +56,12 @@ class Client:
 
 		self.inputWait = 0
 
+		# Creation of state list for player keys
+		self.paddlesKeyState = PADDLES_KEYS_STATE.copy()
+
 		# Team creation
 		self.teamLeft = team.Team(1, TEAM_LEFT)
 		self.teamRight = team.Team(1, TEAM_RIGHT)
-
-		self.paddlesKeyState = PADDLES_KEYS_STATE.copy()
 
 		# Ball creation
 		self.balls = [ball.Ball(WIN_WIDTH / 2, WIN_HEIGHT / 2)]
@@ -154,7 +155,7 @@ class Client:
 			self.input()
 			self.tick()
 			self.render()
-			self.clock.tick(self.fps)
+			# self.clock.tick(self.fps)
 
 		# After compute it, clear message from the server
 		self.messageFromServer.clear()
@@ -180,38 +181,63 @@ class Client:
 
 		# Update paddles keys
 		for i in range(4):
-			paddleId = i
 			teamId = TEAM_LEFT
-			if paddleId >= TEAM_MAX_PLAYER:
-				paddleId -= TEAM_MAX_PLAYER
+			if i >= TEAM_MAX_PLAYER:
 				teamId = TEAM_RIGHT
+			# {id_paddle, id_key, key_action [True = press, False = release]}
+			templateContent = {"paddleId" : i, "keyId" : 0, "keyAction" : True}
+
 			if self.keyboardState[PLAYER_KEYS[i][KEY_UP]] and not self.paddlesKeyState[i * 4 + KEY_UP]:
 				self.paddlesKeyState[i * 4 + KEY_UP] = True
-				self.messageForServer.append((CLIENT_MSG_TYPE_USER_EVENT, (i, paddleId, teamId, KEY_UP, True)))
+				content = templateContent.copy()
+				content["keyId"] = KEY_UP
+				content["keyAction"] = True
+				self.messageForServer.append((CLIENT_MSG_TYPE_USER_EVENT, content))
 			elif not self.keyboardState[PLAYER_KEYS[i][KEY_UP]] and self.paddlesKeyState[i * 4 + KEY_UP]:
 				self.paddlesKeyState[i * 4 + KEY_UP] = False
-				self.messageForServer.append((CLIENT_MSG_TYPE_USER_EVENT, (i, paddleId, teamId, KEY_UP, False)))
+				content = templateContent.copy()
+				content["keyId"] = KEY_UP
+				content["keyAction"] = False
+				self.messageForServer.append((CLIENT_MSG_TYPE_USER_EVENT, content))
 
 			if self.keyboardState[PLAYER_KEYS[i][KEY_DOWN]] and not self.paddlesKeyState[i * 4 + KEY_DOWN]:
 				self.paddlesKeyState[i * 4 + KEY_DOWN] = True
-				self.messageForServer.append((CLIENT_MSG_TYPE_USER_EVENT, (i, paddleId, teamId, KEY_DOWN, True)))
+				content = templateContent.copy()
+				content["keyId"] = KEY_DOWN
+				content["keyAction"] = True
+				self.messageForServer.append((CLIENT_MSG_TYPE_USER_EVENT, content))
 			elif not self.keyboardState[PLAYER_KEYS[i][KEY_DOWN]] and self.paddlesKeyState[i * 4 + KEY_DOWN]:
 				self.paddlesKeyState[i * 4 + KEY_DOWN] = False
-				self.messageForServer.append((CLIENT_MSG_TYPE_USER_EVENT, (i, paddleId, teamId, KEY_DOWN, False)))
+				content = templateContent.copy()
+				content["keyId"] = KEY_DOWN
+				content["keyAction"] = False
+				self.messageForServer.append((CLIENT_MSG_TYPE_USER_EVENT, content))
 
 			if self.keyboardState[PLAYER_KEYS[i][KEY_POWER_UP]] and not self.paddlesKeyState[i * 4 + KEY_POWER_UP]:
 				self.paddlesKeyState[i * 4 + KEY_POWER_UP] = True
-				self.messageForServer.append((CLIENT_MSG_TYPE_USER_EVENT, (i, paddleId, teamId, KEY_POWER_UP, True)))
+				content = templateContent.copy()
+				content["keyId"] = KEY_POWER_UP
+				content["keyAction"] = True
+				self.messageForServer.append((CLIENT_MSG_TYPE_USER_EVENT, content))
 			elif not self.keyboardState[PLAYER_KEYS[i][KEY_POWER_UP]] and self.paddlesKeyState[i * 4 + KEY_POWER_UP]:
 				self.paddlesKeyState[i * 4 + KEY_POWER_UP] = False
-				self.messageForServer.append((CLIENT_MSG_TYPE_USER_EVENT, (i, paddleId, teamId, KEY_POWER_UP, False)))
+				content = templateContent.copy()
+				content["keyId"] = KEY_POWER_UP
+				content["keyAction"] = False
+				self.messageForServer.append((CLIENT_MSG_TYPE_USER_EVENT, content))
 
 			if self.keyboardState[PLAYER_KEYS[i][KEY_LAUNCH_BALL]] and not self.paddlesKeyState[i * 4 + KEY_LAUNCH_BALL]:
 				self.paddlesKeyState[i * 4 + KEY_LAUNCH_BALL] = True
-				self.messageForServer.append((CLIENT_MSG_TYPE_USER_EVENT, (i, paddleId, teamId, KEY_LAUNCH_BALL, True)))
+				content = templateContent.copy()
+				content["keyId"] = KEY_LAUNCH_BALL
+				content["keyAction"] = True
+				self.messageForServer.append((CLIENT_MSG_TYPE_USER_EVENT, content))
 			elif not self.keyboardState[PLAYER_KEYS[i][KEY_LAUNCH_BALL]] and self.paddlesKeyState[i * 4 + KEY_LAUNCH_BALL]:
 				self.paddlesKeyState[i * 4 + KEY_LAUNCH_BALL] = False
-				self.messageForServer.append((CLIENT_MSG_TYPE_USER_EVENT, (i, paddleId, teamId, KEY_LAUNCH_BALL, False)))
+				content = templateContent.copy()
+				content["keyId"] = KEY_LAUNCH_BALL
+				content["keyAction"] = False
+				self.messageForServer.append((CLIENT_MSG_TYPE_USER_EVENT, content))
 
 
 	def tick(self):
@@ -367,8 +393,9 @@ class Client:
 		This is the quit method
 		"""
 		# Pygame quit
+		self.runMainLoop = False
 		pg.quit()
-		sys.exit()
+		# sys.exit()
 
 
 	def createPowerUp(self):

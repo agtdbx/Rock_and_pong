@@ -47,6 +47,9 @@ class Server:
 
 		self.inputWait = 0
 
+		# Creation of state list for player keys
+		self.paddlesKeyState = PADDLES_KEYS_STATE.copy()
+
 		# Team creation
 		self.teamLeft = team.Team(1, TEAM_LEFT)
 		self.teamRight = team.Team(1, TEAM_RIGHT)
@@ -107,6 +110,12 @@ class Server:
 
 		self.ballNumber = 0
 
+		# For communications
+		# (Message type, message content)
+		self.messageForClients = []
+		# (Message type, message content)
+		self.messageFromClients = []
+
 
 	def run(self):
 		"""
@@ -117,10 +126,30 @@ class Server:
 		while self.runMainLoop:
 			self.input()
 			self.tick()
-			print("targetTime :", targetTime, "| deltaTime :", self.delta)
+			# print("targetTime :", targetTime, "| deltaTime :", self.delta)
 			timeToSleep = max(0, targetTime - self.delta)
-			print("timeToSleep :", timeToSleep)
+			# print("timeToSleep :", timeToSleep)
 			time.sleep(timeToSleep)
+
+
+	def step(self):
+		"""
+		This method is the main function of the game
+		Call it in a while, it need to be re call until self.runMainLoop equals to False
+		"""
+		# Clear the message for server
+		self.messageForClients.clear()
+
+		# Game loop
+		targetTime = 1 / self.fps
+		if self.runMainLoop:
+			self.input()
+			self.tick()
+			# timeToSleep = max(0, targetTime - self.delta)
+			# time.sleep(timeToSleep)
+
+		# After compute it, clear message from the server
+		self.messageFromClients.clear()
 
 
 	def input(self):
@@ -128,7 +157,13 @@ class Server:
 		The method catch user's inputs, as key presse or a mouse click
 		"""
 		# Pass input recieved from client
-		pass
+		for message in self.messageFromClients:
+			if message[0] == CLIENT_MSG_TYPE_USER_EVENT:
+				content = message[1]
+				# Content of user event :
+				# # {id_paddle, id_key, key_action [True = press, False = release]}
+				self.paddlesKeyState[content["paddleId"] * 4 + content["keyId"]] = content["keyAction"]
+				print("User event recieved :", content)
 
 
 	def tick(self):
@@ -163,8 +198,8 @@ class Server:
 				self.powerUp[0] = POWER_UP_VISIBLE
 				self.createPowerUp()
 
-		# self.teamLeft.tick(self.delta, self.keyboardState, updateTime)
-		# self.teamRight.tick(self.delta, self.keyboardState, updateTime)
+		self.teamLeft.tick(self.delta, self.paddlesKeyState, updateTime)
+		self.teamRight.tick(self.delta, self.paddlesKeyState, updateTime)
 
 		ballToDelete = []
 
@@ -235,7 +270,8 @@ class Server:
 		"""
 		This is the quit method
 		"""
-		sys.exit()
+		self.runMainLoop = False
+		# sys.exit()
 
 
 	def createPowerUp(self):

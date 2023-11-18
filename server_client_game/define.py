@@ -134,7 +134,7 @@ POWER_UP_PADDLE_LITTLE_TIME_EFFECT = 10 # in seconds
 ############################################################################################
 CLIENT_MSG_TYPE_USER_EVENT = 0
 # Content of user event :
-# (id_paddle, id_paddle_team, id_key, key_action [True = press, False = release])
+# {id_paddle, id_key, key_action [True = press, False = release]}
 
 CLIENT_MSG_TYPE_DISCONNECTION = 1
 

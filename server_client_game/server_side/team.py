@@ -28,7 +28,7 @@ class Team:
 		self.powerUpTryUse = []
 
 
-	def tick(self, delta:float, keyboardState:list, updateTime:bool) -> None:
+	def tick(self, delta:float, paddlesKeyState:list, updateTime:bool) -> None:
 		# Check power up try to used
 		for powerUp in self.powerUpTryUse:
 			# if a power up is user, remove it to the player
@@ -54,14 +54,14 @@ class Team:
 			if self.team == TEAM_RIGHT:
 				keyId += TEAM_MAX_PLAYER
 
-			# if keyboardState[PLAYER_KEYS[keyId][KEY_UP]]:
-			# 	self.paddles[i].move("up", delta)
-			# if keyboardState[PLAYER_KEYS[keyId][KEY_DOWN]]:
-			# 	self.paddles[i].move("down", delta)
-			# if keyboardState[PLAYER_KEYS[keyId][KEY_POWER_UP]]:
-			# 	powerUp = self.paddles[i].powerUp
-			# 	if powerUp != POWER_UP_NONE:
-			# 		self.powerUpTryUse.append([powerUp, i, False])
+			if paddlesKeyState[keyId * 4 + KEY_UP]:
+				self.paddles[i].move("up", delta)
+			if paddlesKeyState[keyId * 4 + KEY_DOWN]:
+				self.paddles[i].move("down", delta)
+			if paddlesKeyState[keyId * 4 + KEY_POWER_UP]:
+				powerUp = self.paddles[i].powerUp
+				if powerUp != POWER_UP_NONE:
+					self.powerUpTryUse.append([powerUp, i, False])
 
 
 	def applyPowerUpToPaddles(self, powerUp):
