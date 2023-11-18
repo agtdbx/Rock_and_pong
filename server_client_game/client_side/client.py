@@ -38,7 +38,7 @@ class Client:
 		"""
 		This method define all variables needed by the program
 		"""
-		# Start of pygame
+		# Init pygame
 		pg.init()
 
 		# We remove the toolbar of the window's height
@@ -169,7 +169,7 @@ class Client:
 		for event in pg.event.get():
 			# If the event it a click on the top right cross, we quit the game
 			if event.type == pg.QUIT:
-				self.quit()
+				self.runMainLoop = False
 
 		self.keyboardState = pg.key.get_pressed()
 		self.mouseState = pg.mouse.get_pressed()
@@ -177,7 +177,7 @@ class Client:
 
 		# Press espace to quit
 		if self.keyboardState[pg.K_ESCAPE]:
-			self.quit()
+			self.runMainLoop = False
 
 		# Update paddles keys
 		for i in range(4):

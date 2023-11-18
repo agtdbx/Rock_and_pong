@@ -18,3 +18,5 @@ while client.runMainLoop:
 
 	# Give messages from client to server
 	server.messageFromClients.extend(client.messageForServer)
+
+client.quit()
