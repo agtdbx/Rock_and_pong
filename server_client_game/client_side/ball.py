@@ -104,23 +104,6 @@ class Ball:
 		self.hitbox.draw(win)
 
 
-	def affecteDirection(self, mousePos):
-		if self.state != STATE_RUN:
-			return
-
-		vecDir = Vec2(mousePos[0] - self.pos.x, mousePos[1] - self.pos.y)
-		norm = vecDir.norm()
-		vecDir.divide(norm)
-
-		if norm != 0:
-			self.speed += norm
-			if self.speed > BALL_MAX_SPEED:
-				self.speed = BALL_MAX_SPEED
-
-			self.direction.add(vecDir)
-			self.direction.normalize()
-
-
 	def updateTime(self, delta):
 		if self.modifierInvisibleBall:
 			self.modifierInvisibleBallTimer += delta
@@ -405,67 +388,6 @@ class Ball:
 			paddle.powerUpInCharge.clear()
 
 		return True
-
-
-	def dup(self):
-		# Create new ball
-		ball = Ball(self.pos.x, self.pos.y)
-
-		# Dup direction
-		ball.direction = self.direction.dup()
-
-		# Set new speed
-		self.speed /= POWER_UP_DUPLICATION_BALL_SPEED_REDUCE_FACTOR
-		if self.speed < BALL_MIN_SPEED:
-			self.speed = BALL_MIN_SPEED
-		ball.speed = self.speed
-
-		# Rotate both balls
-		self.direction.rotate(POWER_UP_DUPLICATION_BALL_DEGREES_DEVIATON)
-		ball.direction.rotate(-POWER_UP_DUPLICATION_BALL_DEGREES_DEVIATON)
-
-		# Set RUN state
-		ball.state = STATE_RUN
-
-		# Get info of last paddle touch
-		ball.lastPaddleHitId = self.lastPaddleHitId
-		ball.lastPaddleTeam = self.lastPaddleTeam
-
-		# Dup power up effects
-		if self.modifierSize != 1:
-			ball.modifySize(self.modifierSize)
-		ball.modifierSkipCollision = self.modifierSkipCollision
-		ball.modifierInvisibleBall = self.modifierInvisibleBall
-		ball.modifierInvisibleBallTimer = self.modifierInvisibleBallTimer
-		ball.modifierWaveBall = self.modifierWaveBall
-		ball.modifierWaveBallTimer = self.modifierWaveBallTimer
-
-		ball.powerUpEffects = self.powerUpEffects
-
-		ball.numberOfBounce = self.numberOfBounce
-
-		return ball
-
-
-	def addPowerUpEffect(self, powerUp):
-		powerUpEffect = None
-
-		if powerUp == POWER_UP_BALL_SLOW:
-			powerUpEffect = [powerUp, POWER_UP_BALL_SLOW_TIME_EFFECT]
-			self.modifierSpeed /= POWER_UP_BALL_SLOW_SPEED_FACTOR
-
-		elif powerUp == POWER_UP_BALL_BIG:
-			powerUpEffect = [powerUp, POWER_UP_BALL_BIG_TIME_EFFECT]
-			self.modifierSize *= POWER_UP_BALL_BIG_SIZE_FACTOR
-			self.modifySize(self.modifierSize)
-
-		elif powerUp == POWER_UP_BALL_LITTLE:
-			powerUpEffect = [powerUp, POWER_UP_BALL_LITTLE_TIME_EFFECT]
-			self.modifierSize /= POWER_UP_BALL_LITTLE_SIZE_FACTOR
-			self.modifySize(self.modifierSize)
-
-		if powerUpEffect != None:
-			self.powerUpEffects.append(powerUpEffect)
 
 
 	def setModifierByState(self, state:dict):

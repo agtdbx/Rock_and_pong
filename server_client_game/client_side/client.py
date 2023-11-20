@@ -294,9 +294,6 @@ class Client:
 
 		# Verify if power can be use, and use it if possible
 		if self.powerUpEnable and updateTime:
-			self.checkPowerUp(self.teamLeft, LEFT_TEAM_RECT, self.teamRight, RIGTH_TEAM_RECT)
-			self.checkPowerUp(self.teamRight, RIGTH_TEAM_RECT, self.teamLeft, LEFT_TEAM_RECT)
-
 			if self.powerUp[0] == POWER_UP_TAKE:
 				# Generate power up
 				powerUp = random.randint(0, 12)
@@ -308,11 +305,6 @@ class Client:
 
 		if self.teamLeft.score >= TEAM_WIN_SCORE or self.teamRight.score >= TEAM_WIN_SCORE:
 			self.quit()
-
-		testLen = len(self.balls)
-		if testLen!= self.ballNumber:
-			self.ballNumber = testLen
-			print("Number of balls :",self.ballNumber)
 
 		pg.display.set_caption("time : " + str(self.time) + " | fps : " + str(self.clock.get_fps()))
 
@@ -380,95 +372,6 @@ class Client:
 				collide = self.powerUp[1].isInsideSurrondingBox(hit)
 				if collide:
 					break
-
-
-	def checkPowerUp(self, team:team.Team, teamArea:tuple, ennemyTeam:team.Team, ennemyTeamArea:tuple):
-		teamAreaNoBall = True
-		ennemyTeamAreaNoBall = True
-
-		for b in self.balls:
-			if b.state == STATE_RUN:
-				if b.pos.x >= teamArea[0] and b.pos.x <= teamArea[0] + teamArea[2]:
-					teamAreaNoBall = False
-				elif b.pos.x >= ennemyTeamArea[0] and b.pos.x <= ennemyTeamArea[0] + ennemyTeamArea[2]:
-					ennemyTeamAreaNoBall = False
-
-				if not teamAreaNoBall and not ennemyTeamAreaNoBall:
-					break
-
-		ballPowerUp = []
-
-		# powerUpTryUse = [power up id, paddle id, power up used (bool)]
-		for powerUpTryUse in team.powerUpTryUse:
-			if powerUpTryUse[0] == POWER_UP_BALL_FAST:
-				if teamAreaNoBall:
-					powerUpTryUse[2] = True
-
-			elif powerUpTryUse[0] == POWER_UP_BALL_WAVE:
-				if teamAreaNoBall:
-					powerUpTryUse[2] = True
-
-			elif powerUpTryUse[0] == POWER_UP_BALL_INVISIBLE:
-				if teamAreaNoBall:
-					powerUpTryUse[2] = True
-
-			elif powerUpTryUse[0] == POWER_UP_BALL_NO_COLLISION:
-				ballPowerUp.append(POWER_UP_BALL_NO_COLLISION)
-				powerUpTryUse[2] = True
-
-			elif powerUpTryUse[0] == POWER_UP_DUPLICATION_BALL:
-				if ennemyTeamAreaNoBall:
-					newBalls = []
-					for b in self.balls:
-						if b.state == STATE_RUN:
-							newBalls.append(b.dup())
-					self.balls.extend(newBalls)
-					powerUpTryUse[2] = True
-
-			elif powerUpTryUse[0] == POWER_UP_BALL_SLOW:
-				ballPowerUp.append(POWER_UP_BALL_SLOW)
-				powerUpTryUse[2] = True
-
-			elif powerUpTryUse[0] == POWER_UP_BALL_STOP:
-				ballPowerUp.append(POWER_UP_BALL_STOP)
-				powerUpTryUse[2] = True
-
-			elif powerUpTryUse[0] == POWER_UP_BALL_BIG:
-				ballPowerUp.append(POWER_UP_BALL_BIG)
-				powerUpTryUse[2] = True
-
-			elif powerUpTryUse[0] == POWER_UP_BALL_LITTLE:
-				ballPowerUp.append(POWER_UP_BALL_LITTLE)
-				powerUpTryUse[2] = True
-
-			elif powerUpTryUse[0] == POWER_UP_PADDLE_FAST:
-				team.applyPowerUpToPaddles(POWER_UP_PADDLE_FAST)
-				powerUpTryUse[2] = True
-
-			elif powerUpTryUse[0] == POWER_UP_PADDLE_SLOW:
-				ennemyTeam.applyPowerUpToPaddles(POWER_UP_PADDLE_SLOW)
-				powerUpTryUse[2] = True
-
-			elif powerUpTryUse[0] == POWER_UP_PADDLE_BIG:
-				team.applyPowerUpToPaddles(POWER_UP_PADDLE_BIG)
-				powerUpTryUse[2] = True
-
-			elif powerUpTryUse[0] == POWER_UP_PADDLE_LITTLE:
-				ennemyTeam.applyPowerUpToPaddles(POWER_UP_PADDLE_LITTLE)
-				powerUpTryUse[2] = True
-
-		for b in self.balls:
-			for powerUp in ballPowerUp:
-				if powerUp == POWER_UP_BALL_NO_COLLISION:
-					b.modifierSkipCollision = True
-				elif powerUp == POWER_UP_BALL_SLOW:
-					b.addPowerUpEffect(POWER_UP_BALL_SLOW)
-				elif powerUp == POWER_UP_BALL_STOP:
-					b.modifierStopBallTimer += POWER_UP_BALL_STOP_TIMER_EFFECT
-				elif powerUp == POWER_UP_BALL_BIG:
-					b.addPowerUpEffect(POWER_UP_BALL_BIG)
-				elif powerUp == POWER_UP_BALL_LITTLE:
-					b.addPowerUpEffect(POWER_UP_BALL_LITTLE)
 
 
 	def ballInLeftGoal(self, ball:ball.Ball, i:int, ballToDelete:list):
@@ -578,7 +481,7 @@ class Client:
 	def parseMessageForPaddles(self, messageContent:list[dict]):
 		# Content of paddles :
 		# [
-		# 	{id_paddle, id_team, position:[x, y], size:[w, h], powerUp}
+		# 	{id_paddle, id_team, position:[x, y], size:[w, h], powerUp, powerUpInCharge}
 		# ]
 		for content in messageContent:
 			x = AREA_RECT[0] + content["position"][0]
@@ -589,11 +492,13 @@ class Client:
 				self.teamLeft.paddles[content["id_paddle"]].w = content["size"][0]
 				self.teamLeft.paddles[content["id_paddle"]].h = content["size"][1]
 				self.teamLeft.paddles[content["id_paddle"]].powerUp = content["powerUp"]
+				self.teamLeft.paddles[content["id_paddle"]].powerUpInCharge = content["powerUpInCharge"]
 			else:
 				self.teamRight.paddles[content["id_paddle"]].setPos(x, y)
 				self.teamRight.paddles[content["id_paddle"]].w = content["size"][0]
 				self.teamRight.paddles[content["id_paddle"]].h = content["size"][1]
 				self.teamRight.paddles[content["id_paddle"]].powerUp = content["powerUp"]
+				self.teamRight.paddles[content["id_paddle"]].powerUpInCharge = content["powerUpInCharge"]
 
 
 	def parseMessageForBalls(self, messageContent:list[dict]):

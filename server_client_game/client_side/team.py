@@ -29,22 +29,6 @@ class Team:
 
 
 	def tick(self, delta:float, paddlesKeyState:list, updateTime:bool) -> None:
-		# Check power up try to used
-		for powerUp in self.powerUpTryUse:
-			# if a power up is user, remove it to the player
-			if powerUp[2]:
-				if powerUp[0] == POWER_UP_BALL_FAST:
-					self.paddles[powerUp[1]].powerUpInCharge.append(POWER_UP_BALL_FAST)
-				elif powerUp[0] == POWER_UP_BALL_WAVE:
-					self.paddles[powerUp[1]].powerUpInCharge.append(POWER_UP_BALL_WAVE)
-				elif powerUp[0] == POWER_UP_BALL_INVISIBLE and self.paddles[powerUp[1]].waitUsePowerUp == 0:
-					self.paddles[powerUp[1]].powerUpInCharge.append(POWER_UP_BALL_INVISIBLE)
-					self.paddles[powerUp[1]].waitUsePowerUp = POWER_UP_USE_COOLDOWN
-
-				self.paddles[powerUp[1]].powerUp = POWER_UP_NONE
-
-		self.powerUpTryUse.clear()
-
 		# Check input
 		for i in range(len(self.paddles)):
 			if updateTime:
@@ -58,10 +42,6 @@ class Team:
 				self.paddles[i].move("up", delta)
 			if paddlesKeyState[keyId * 4 + KEY_DOWN]:
 				self.paddles[i].move("down", delta)
-			if paddlesKeyState[keyId * 4 + KEY_POWER_UP]:
-				powerUp = self.paddles[i].powerUp
-				if powerUp != POWER_UP_NONE:
-					self.powerUpTryUse.append([powerUp, i, False])
 
 
 	def draw(self, win):

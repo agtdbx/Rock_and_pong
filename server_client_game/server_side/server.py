@@ -546,20 +546,20 @@ class Server:
 	def createMessageInfoPaddles(self):
 		# Content of paddles :
 		# [
-		# 	{id_paddle, id_team, position:[x, y], size:[w, h], powerUp}
+		# 	{id_paddle, id_team, position:[x, y], size:[w, h], powerUp, powerUpInCharge}
 		# ]
 		content = []
 
 		# Left team paddles
 		for paddle in self.teamLeft.paddles:
 			paddleInfo = {"id_paddle" : paddle.id, "id_team" : TEAM_LEFT, "position" : paddle.pos.asTupple(),
-				 			"size" : (paddle.w, paddle.h), "powerUp" : paddle.powerUp}
+				 			"size" : (paddle.w, paddle.h), "powerUp" : paddle.powerUp, "powerUpInCharge" : paddle.powerUpInCharge}
 			content.append(paddleInfo)
 
 		# Right team paddles
 		for paddle in self.teamRight.paddles:
 			paddleInfo = {"id_paddle" : paddle.id, "id_team" : TEAM_RIGHT, "position" : paddle.pos.asTupple(),
-							"size" : (paddle.w, paddle.h), "powerUp" : paddle.powerUp}
+							"size" : (paddle.w, paddle.h), "powerUp" : paddle.powerUp, "powerUpInCharge" : paddle.powerUpInCharge}
 			content.append(paddleInfo)
 
 		message = [SERVER_MSG_TYPE_UPDATE_PADDLES, content]

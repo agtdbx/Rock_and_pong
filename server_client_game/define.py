@@ -147,7 +147,7 @@ SERVER_MSG_TYPE_CREATE_START_INFO = 0
 SERVER_MSG_TYPE_UPDATE_PADDLES = 1
 # Content of paddles :
 # [
-# 	{id_paddle, id_team, position:[x, y], size:[w, h], powerUp}
+# 	{id_paddle, id_team, position:[x, y], size:[w, h], powerUp, powerUpInCharge}
 # ]
 
 SERVER_MSG_TYPE_UPDATE_BALLS = 2
