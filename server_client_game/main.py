@@ -1,8 +1,11 @@
 import client_side.client
 import server_side.server
 
+server = server_side.server.Server(powerUpEnable=True)
 client = client_side.client.Client()
-server = server_side.server.Server()
+
+# Give messages from server to client
+client.messageFromServer.extend(server.messageForClients)
 
 while client.runMainLoop:
 	# Run server step for make all calculation
@@ -18,3 +21,4 @@ while client.runMainLoop:
 	server.messageFromClients.extend(client.messageForServer)
 
 client.quit()
+server.printFinalStat()

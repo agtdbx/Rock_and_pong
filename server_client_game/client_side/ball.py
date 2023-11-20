@@ -466,3 +466,14 @@ class Ball:
 
 		if powerUpEffect != None:
 			self.powerUpEffects.append(powerUpEffect)
+
+
+	def setModifierByState(self, state:dict):
+		self.modifierSpeed = state["modifierSpeed"]
+		self.modifierSize = state["modifierSize"]
+		self.modifierStopBallTimer = state["modifierStopBallTimer"]
+		self.modifierSkipCollision = state["modifierSkipCollision"]
+		self.modifierInvisibleBall = state["modifierInvisibleBall"]
+		self.modifierInvisibleBallTimer = state["modifierInvisibleBallTimer"]
+		self.modifierWaveBall = state["modifierWaveBall"]
+		self.modifierWaveBallTimer = state["modifierWaveBallTimer"]

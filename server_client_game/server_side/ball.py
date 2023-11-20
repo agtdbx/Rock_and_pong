@@ -339,8 +339,6 @@ class Ball:
 				if powerUp == POWER_UP_BALL_FAST:
 					self.modifierSpeed *= POWER_UP_BALL_FAST_FACTOR
 					self.modifierStopBallTimer = POWER_UP_BALL_FAST_TIME_STOP
-					for i in range(len(self.lastPositions)):
-						self.lastPositions[i] = self.pos.asTupple()
 
 				elif powerUp == POWER_UP_BALL_WAVE:
 					self.modifierWaveBall = True
@@ -412,3 +410,28 @@ class Ball:
 
 		if powerUpEffect != None:
 			self.powerUpEffects.append(powerUpEffect)
+
+
+	def getModiferState(self):
+		state = {
+			"modifierSpeed" : self.modifierSpeed,
+			"modifierSize" : self.modifierSize,
+			"modifierStopBallTimer" : self.modifierStopBallTimer,
+			"modifierSkipCollision" : self.modifierSkipCollision,
+			"modifierInvisibleBall" : self.modifierInvisibleBall,
+			"modifierInvisibleBallTimer" : self.modifierInvisibleBallTimer,
+			"modifierWaveBall" : self.modifierWaveBall,
+			"modifierWaveBallTimer" : self.modifierWaveBallTimer,
+		}
+		return state
+
+
+	def setModifierByState(self, state:dict):
+		self.modifierSpeed = state["modifierSpeed"]
+		self.modifierSize = state["modifierSize"]
+		self.modifierStopBallTimer = state["modifierStopBallTimer"]
+		self.modifierSkipCollision = state["modifierSkipCollision"]
+		self.modifierInvisibleBall = state["modifierInvisibleBall"]
+		self.modifierInvisibleBallTimer = state["modifierInvisibleBallTimer"]
+		self.modifierWaveBall = state["modifierWaveBall"]
+		self.modifierWaveBallTimer = state["modifierWaveBallTimer"]

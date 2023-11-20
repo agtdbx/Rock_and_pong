@@ -33,7 +33,7 @@ def createObstacle(x:int, y:int, listPoint:list, color) -> hitbox.Hitbox:
 
 
 class Server:
-	def __init__(self):
+	def __init__(self, powerUpEnable):
 		"""
 		This method define all variables needed by the program
 		"""
@@ -67,6 +67,7 @@ class Server:
 			self.balls[0].lastPaddleTeam = TEAM_RIGHT
 
 		# Power up creation
+		self.powerUpEnable = powerUpEnable
 		self.powerUp = [POWER_UP_SPAWN_COOLDOWN, hitbox.Hitbox(0, 0, (0, 0, 0)), -1]
 		for p in ball.getPointOfCircle(POWER_UP_HITBOX_RADIUS, POWER_UP_HITBOX_PRECISION, 0):
 			self.powerUp[1].addPoint(p[0], p[1])
@@ -121,7 +122,7 @@ class Server:
 		# (Message type, message content)
 		self.messageFromClients = []
 
-		self.createMessageForObstacle()
+		self.createMessageStartInfo()
 
 
 	def run(self):
@@ -158,6 +159,12 @@ class Server:
 		# After compute it, clear message from the server
 		self.messageFromClients.clear()
 
+		# Create new message for clients
+		self.createMessageInfoPaddles()
+		self.createMessageInfoBalls()
+		if self.powerUp:
+			self.createMessageInfoPowerUp()
+
 
 	def input(self):
 		"""
@@ -170,7 +177,6 @@ class Server:
 				# Content of user event :
 				# # {id_paddle, id_key, key_action [True = press, False = release]}
 				self.paddlesKeyState[content["paddleId"] * 4 + content["keyId"]] = content["keyAction"]
-				print("User event recieved :", content)
 
 
 	def tick(self):
@@ -184,7 +190,7 @@ class Server:
 		self.time += self.delta
 
 		# Check if ball move. If no ball move, all time base event are stopping
-		if POWER_UP_ENABLE:
+		if self.powerUpEnable:
 			updateTime = False
 			for b in self.balls:
 				if b.state == STATE_RUN:
@@ -232,9 +238,12 @@ class Server:
 					pad = self.teamRight.paddles[b.lastPaddleHitId]
 				b.setPos(pad.pos.dup())
 				b.pos.translateAlong(b.direction.dup(), PADDLE_WIDTH * 2)
-				# if self.keyboardState[PLAYER_KEYS[pad.id][KEY_LAUNCH_BALL]] and pad.waitLaunch == 0:
-				# 	b.state = STATE_RUN
-				# 	pad.waitLaunch = PADDLE_LAUNCH_COOLDOWN
+				id = pad.id
+				if pad.team == TEAM_RIGHT:
+					id += TEAM_MAX_PLAYER
+				if self.paddlesKeyState[id * 4 + KEY_LAUNCH_BALL] and pad.waitLaunch == 0:
+					b.state = STATE_RUN
+					pad.waitLaunch = PADDLE_LAUNCH_COOLDOWN
 
 			# case of ball is Moving
 			else:
@@ -256,7 +265,7 @@ class Server:
 			self.balls.pop(ballToDelete[i] - i)
 
 		# Verify if power can be use, and use it if possible
-		if POWER_UP_ENABLE and updateTime:
+		if self.powerUpEnable and updateTime:
 			self.checkPowerUp(self.teamLeft, LEFT_TEAM_RECT, self.teamRight, RIGTH_TEAM_RECT)
 			self.checkPowerUp(self.teamRight, RIGTH_TEAM_RECT, self.teamLeft, LEFT_TEAM_RECT)
 
@@ -278,7 +287,6 @@ class Server:
 		This is the quit method
 		"""
 		self.runMainLoop = False
-		# sys.exit()
 
 
 	def createPowerUp(self):
@@ -518,17 +526,71 @@ class Server:
 		self.quit()
 
 
-	def createMessageForObstacle(self):
+	def createMessageStartInfo(self):
 		# Content of obstacles :
-		# [
-		# 	{position:[x, y], points:[[x, y]], color:(r, g, b)}
-		# ]
-		content = []
+		# {
+		# 	obstables : [ {position:[x, y], points:[[x, y]], color:(r, g, b)} ]
+		# 	powerUp : True or False
+		# }
+		content = {"obstacles" : [], "powerUp" : self.powerUpEnable}
 
 		for wall in self.walls:
 			obstacle = {"position" : wall.pos.asTupple(),"points" : wall.getPointsCenter(), "color" : wall.color}
-			content.append(obstacle)
+			content["obstacles"].append(obstacle)
 
-		message = [SERVER_MSG_TYPE_OBSTACLES, content]
+		message = [SERVER_MSG_TYPE_CREATE_START_INFO, content]
+
+		self.messageForClients.append(message)
+
+
+	def createMessageInfoPaddles(self):
+		# Content of paddles :
+		# [
+		# 	{id_paddle, id_team, position:[x, y], size:[w, h], powerUp}
+		# ]
+		content = []
+
+		# Left team paddles
+		for paddle in self.teamLeft.paddles:
+			paddleInfo = {"id_paddle" : paddle.id, "id_team" : TEAM_LEFT, "position" : paddle.pos.asTupple(),
+				 			"size" : (paddle.w, paddle.h), "powerUp" : paddle.powerUp}
+			content.append(paddleInfo)
+
+		# Right team paddles
+		for paddle in self.teamRight.paddles:
+			paddleInfo = {"id_paddle" : paddle.id, "id_team" : TEAM_RIGHT, "position" : paddle.pos.asTupple(),
+							"size" : (paddle.w, paddle.h), "powerUp" : paddle.powerUp}
+			content.append(paddleInfo)
+
+		message = [SERVER_MSG_TYPE_UPDATE_PADDLES, content]
+
+		self.messageForClients.append(message)
+
+
+	def createMessageInfoBalls(self):
+		# Content of balls :
+		# [
+		# 	{position:[x, y], direction:[x, y], speed, radius, state, last_paddle_hit_info:[id, team], modifier_state}
+		# ]
+		content = []
+
+		# Right team paddles
+		for ball in self.balls:
+			ballInfo = {"position" : ball.pos.asTupple(), "direction" : ball.direction.asTupple(), "speed" : ball.speed,
+				 			"radius" : ball.radius, "state" : ball.state, "last_paddle_hit_info" : [ball.lastPaddleHitId, ball.lastPaddleTeam],
+							"modifier_state" : ball.getModiferState()}
+			content.append(ballInfo)
+
+		message = [SERVER_MSG_TYPE_UPDATE_BALLS, content]
+
+		self.messageForClients.append(message)
+
+
+	def createMessageInfoPowerUp(self):
+		# Content of power up :
+		# {position:[x, y], state}
+		content = {"position" : self.powerUp[1].pos.asTupple(), "state" :  self.powerUp[0]}
+
+		message = [SERVER_MSG_TYPE_UPDATE_POWER_UP, content]
 
 		self.messageForClients.append(message)

@@ -76,48 +76,13 @@ class Client:
 			self.balls[0].lastPaddleTeam = TEAM_RIGHT
 
 		# Power up creation
+		self.powerUpEnable = False
 		self.powerUp = [POWER_UP_SPAWN_COOLDOWN, hitbox.Hitbox(0, 0, (0, 0, 200), POWER_UP_HITBOX_COLOR), -1]
 		for p in ball.getPointOfCircle(POWER_UP_HITBOX_RADIUS, POWER_UP_HITBOX_PRECISION, 0):
 			self.powerUp[1].addPoint(p[0], p[1])
 
 		# Walls creation
-		self.walls = [
-			# Wall up
-			createWall(
-				AREA_RECT[0] + AREA_RECT[2] / 2,
-			 	AREA_RECT[1] + AREA_BORDER_SIZE / 2,
-				AREA_RECT[2],
-				AREA_BORDER_SIZE,
-				(50, 50, 50)
-			),
-			# Wall down
-			createWall(
-				AREA_RECT[0] + AREA_RECT[2] / 2,
-				AREA_RECT[1] + AREA_RECT[3] - AREA_BORDER_SIZE / 2,
-				AREA_RECT[2],
-				AREA_BORDER_SIZE,
-				(50, 50, 50)
-			),
-			# Obstables
-			createObstacle(
-				AREA_RECT[0] + AREA_RECT[2] / 2,
-				AREA_RECT[1],
-				[(-300, 0), (300, 0), (275, 50), (75, 75), (0, 125), (-75, 75), (-275, 50)],
-				(150, 150, 0)
-			),
-			createObstacle(
-				AREA_RECT[0] + AREA_RECT[2] / 2,
-				AREA_RECT[1] + AREA_RECT[3],
-				[(-300, 0), (300, 0), (275, -50), (0, -25), (-275, -50)],
-				(150, 150, 0)
-			),
-			createObstacle(
-				AREA_RECT[0] + AREA_RECT[2] / 2,
-				AREA_RECT[1] + AREA_RECT[3] / 2,
-				ball.getPointOfCircle(100, 32, 360 / 64),
-				(150, 150, 0)
-			)
-		]
+		self.walls = []
 
 		# idPaddle, paddleTeam, Ball speed, Number of bounce, CC, Perfect shoot, time of goal
 		self.goals = []
@@ -150,6 +115,8 @@ class Client:
 		"""
 		# Clear the message for server
 		self.messageForServer.clear()
+
+		self.parseMessageFromServer()
 		# Game loop
 		if self.runMainLoop:
 			self.input()
@@ -251,7 +218,7 @@ class Client:
 		self.time += delta
 
 		# Check if ball move. If no ball move, all time base event are stopping
-		if POWER_UP_ENABLE:
+		if self.powerUpEnable:
 			updateTime = False
 			for b in self.balls:
 				if b.state == STATE_RUN:
@@ -326,7 +293,7 @@ class Client:
 			self.balls.pop(ballToDelete[i] - i)
 
 		# Verify if power can be use, and use it if possible
-		if POWER_UP_ENABLE and updateTime:
+		if self.powerUpEnable and updateTime:
 			self.checkPowerUp(self.teamLeft, LEFT_TEAM_RECT, self.teamRight, RIGTH_TEAM_RECT)
 			self.checkPowerUp(self.teamRight, RIGTH_TEAM_RECT, self.teamLeft, LEFT_TEAM_RECT)
 
@@ -394,7 +361,7 @@ class Client:
 		"""
 		# Pygame quit
 		self.runMainLoop = False
-		pg.quit()
+		# pg.quit()
 		# sys.exit()
 
 
@@ -581,17 +548,98 @@ class Client:
 
 	def parseMessageFromServer(self):
 		for message in self.messageFromServer:
-			if message[0] == SERVER_MSG_TYPE_OBSTACLES:
-				self.parseMessageForObstacle(message[1])
+			if message[0] == SERVER_MSG_TYPE_CREATE_START_INFO:
+				self.parseMessageStartInfo(message[1])
+			elif message[0] == SERVER_MSG_TYPE_UPDATE_PADDLES:
+				self.parseMessageForPaddles(message[1])
+			elif message[0] == SERVER_MSG_TYPE_UPDATE_BALLS:
+				self.parseMessageForBalls(message[1])
+			elif message[0] == SERVER_MSG_TYPE_UPDATE_POWER_UP:
+				self.parseMessageForPowerUp(message[1])
 
 
-	def parseMessageForObstacle(self, messageContent:list[dict]):
+	def parseMessageStartInfo(self, messageContent:list[dict]):
 		# Content of obstacles :
-		# [
-		# 	{position:[x, y], points:[[x, y]], color:(r, g, b)}
-		# ]
+		# {
+		# 	obstables : [ {position:[x, y], points:[[x, y]], color:(r, g, b)} ]
+		# 	powerUp : True or False
+		# }
 		self.walls.clear()
 
-		for content in messageContent:
-			obstacle = createObstacle(content["pos"][0], content["pos"][1], content["points"], content["color"])
+		for content in messageContent["obstacles"]:
+			x = AREA_RECT[0] + content["position"][0]
+			y = AREA_RECT[1] + content["position"][1]
+			obstacle = createObstacle(x, y, content["points"], content["color"])
 			self.walls.append(obstacle)
+
+		self.powerUpEnable = messageContent["powerUp"]
+
+
+	def parseMessageForPaddles(self, messageContent:list[dict]):
+		# Content of paddles :
+		# [
+		# 	{id_paddle, id_team, position:[x, y], size:[w, h], powerUp}
+		# ]
+		for content in messageContent:
+			x = AREA_RECT[0] + content["position"][0]
+			y = AREA_RECT[1] + content["position"][1]
+
+			if content["id_team"] == TEAM_LEFT:
+				self.teamLeft.paddles[content["id_paddle"]].setPos(x, y)
+				self.teamLeft.paddles[content["id_paddle"]].w = content["size"][0]
+				self.teamLeft.paddles[content["id_paddle"]].h = content["size"][1]
+				self.teamLeft.paddles[content["id_paddle"]].powerUp = content["powerUp"]
+			else:
+				self.teamRight.paddles[content["id_paddle"]].setPos(x, y)
+				self.teamRight.paddles[content["id_paddle"]].w = content["size"][0]
+				self.teamRight.paddles[content["id_paddle"]].h = content["size"][1]
+				self.teamRight.paddles[content["id_paddle"]].powerUp = content["powerUp"]
+
+
+	def parseMessageForBalls(self, messageContent:list[dict]):
+		# Content of balls :
+		# [
+		# 	{position:[x, y], direction:[x, y], speed, radius, state, last_paddle_hit_info:[id, team], modifier_state}
+		# ]
+		i = 0
+		numberOfMessageBall = len(messageContent)
+		while i < numberOfMessageBall:
+			content = messageContent[i]
+			x = AREA_RECT[0] + content["position"][0]
+			y = AREA_RECT[1] + content["position"][1]
+
+			# Update ball if exist
+			if i < len(self.balls):
+				b = self.balls[i]
+				b.direction = Vec2(content["direction"][0], content["direction"][1])
+				b.speed = content["speed"]
+				b.radius = content["radius"]
+				b.state = content["state"]
+				b.lastPaddleHitId = content["last_paddle_hit_info"][0]
+				b.lastPaddleTeam = content["last_paddle_hit_info"][1]
+				b.setModifierByState(content["modifier_state"])
+
+			# Create a new one instead
+			else:
+				b = ball.Ball(x, y)
+				b.direction = Vec2(content["direction"][0], content["direction"][1])
+				b.speed = content["speed"]
+				b.radius = content["radius"]
+				b.state = content["state"]
+				b.lastPaddleHitId = content["last_paddle_hit_info"][0]
+				b.lastPaddleTeam = content["last_paddle_hit_info"][1]
+				b.setModifierByState(content["modifier_state"])
+				self.balls.append(b)
+
+			i += 1
+
+
+	def parseMessageForPowerUp(self, messageContent:list[dict]):
+		# Content of balls :
+		# {position:[x, y], state}
+		x = AREA_RECT[0] + messageContent["position"][0]
+		y = AREA_RECT[1] + messageContent["position"][1]
+
+		self.powerUp[0] = messageContent["state"]
+		self.powerUp[1].setPos(Vec2(x, y))
+

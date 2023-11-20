@@ -151,3 +151,8 @@ class Paddle:
 
 		if powerUpEffect != None:
 			self.powerUpEffects.append(powerUpEffect)
+
+
+	def setPos(self, x, y):
+		self.pos = Vec2(x, y)
+		self.hitbox.setPos(Vec2(x, y))

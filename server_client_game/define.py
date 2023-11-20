@@ -68,7 +68,6 @@ KEY_LAUNCH_BALL = 3
 ############################################################################################
 #                                       POWER UP DEFINE                                    #
 ############################################################################################
-POWER_UP_ENABLE = True
 # Power up object state
 POWER_UP_HITBOX_RADIUS = 24 # in pixel
 POWER_UP_HITBOX_PRECISION = 8 # number of point to make the circle hitbox
@@ -138,20 +137,25 @@ CLIENT_MSG_TYPE_USER_EVENT = 0
 
 CLIENT_MSG_TYPE_DISCONNECTION = 1
 
-SERVER_MSG_TYPE_OBSTACLES = 0
+SERVER_MSG_TYPE_CREATE_START_INFO = 0
 # Content of obstacles :
-# [
-# 	{position:[x, y], points:[[x, y]], color:(r, g, b)}
-# ]
+# {
+# 	obstables : [ {position:[x, y], points:[[x, y]], color:(r, g, b)} ]
+# 	powerUp : True or False
+# }
 
-SERVER_MSG_TYPE_PADDLES = 1
+SERVER_MSG_TYPE_UPDATE_PADDLES = 1
 # Content of paddles :
 # [
-# 	{id_padddle, id_team, position:[x, y], size:[w, h]}
+# 	{id_paddle, id_team, position:[x, y], size:[w, h], powerUp}
 # ]
 
-SERVER_MSG_TYPE_BALLS = 2
+SERVER_MSG_TYPE_UPDATE_BALLS = 2
 # Content of balls :
 # [
-# 	{position:[x, y], direction:[x, y], radius, skip_collision:bool}
+# 	{position:[x, y], direction:[x, y], speed, radius, state, last_paddle_hit_info:[id, team], modifier_state}
 # ]
+
+SERVER_MSG_TYPE_UPDATE_POWER_UP = 3
+# Content of power up :
+# {position:[x, y], state}
