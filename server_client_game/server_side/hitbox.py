@@ -30,7 +30,7 @@ def collideBetweenSegments(p1, p2, p3, p4):
 
 
 class Hitbox:
-	def __init__(self, x, y):
+	def __init__(self, x, y, color):
 		self.pos = Vec2(x, y)
 
 		self.rect = [0, 0, 0, 0]
@@ -38,6 +38,8 @@ class Hitbox:
 		self.rotation = 0
 
 		self.points = []
+
+		self.color = color
 
 
 	def __str__(self):
@@ -51,6 +53,24 @@ class Hitbox:
 
 	def clearPoints(self):
 		self.points.clear()
+
+
+	def getPoints(self) -> list[tuple[int, int]]:
+		points = []
+
+		for p in self.points:
+			points.append(p.asTupple())
+
+		return points
+
+
+	def getPointsCenter(self) -> list[tuple[int, int]]:
+		points = []
+
+		for p in self.points:
+			points.append(p.asTuppleCenter(self.pos.x, self.pos.y))
+
+		return points
 
 
 	def computeSurroundingRect(self):

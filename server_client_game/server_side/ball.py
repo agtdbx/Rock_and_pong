@@ -25,7 +25,7 @@ class Ball:
 		self.direction = Vec2(1, 0)
 
 		# Hitbox creation
-		self.hitbox = hitbox.Hitbox(self.pos.x, self.pos.y)
+		self.hitbox = hitbox.Hitbox(self.pos.x, self.pos.y, (200, 200, 200))
 		self.hitbox.setPos(self.pos)
 		points = getPointOfCircle(self.radius, BALL_HITBOX_PRECISION, 360 / (BALL_HITBOX_PRECISION * 2))
 

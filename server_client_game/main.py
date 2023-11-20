@@ -4,8 +4,6 @@ import server_side.server
 client = client_side.client.Client()
 server = server_side.server.Server()
 
-# client.run()
-
 while client.runMainLoop:
 	# Run server step for make all calculation
 	server.step()

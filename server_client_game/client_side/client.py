@@ -577,3 +577,21 @@ class Client:
 		ball.modifierSkipCollision = False
 		ball.lastPaddleHitId = random.choice(self.teamRight.paddles).id
 		ball.lastPaddleTeam = TEAM_RIGHT
+
+
+	def parseMessageFromServer(self):
+		for message in self.messageFromServer:
+			if message[0] == SERVER_MSG_TYPE_OBSTACLES:
+				self.parseMessageForObstacle(message[1])
+
+
+	def parseMessageForObstacle(self, messageContent:list[dict]):
+		# Content of obstacles :
+		# [
+		# 	{position:[x, y], points:[[x, y]], color:(r, g, b)}
+		# ]
+		self.walls.clear()
+
+		for content in messageContent:
+			obstacle = createObstacle(content["pos"][0], content["pos"][1], content["points"], content["color"])
+			self.walls.append(obstacle)

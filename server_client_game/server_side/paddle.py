@@ -11,7 +11,7 @@ class Paddle:
 		self.halfW = PADDLE_WIDTH / 2
 		self.halfH = PADDLE_HEIGHT / 2
 
-		self.hitbox = hitbox.Hitbox(x, y)
+		self.hitbox = hitbox.Hitbox(x, y, (150, 150, 150))
 		self.hitbox.addPoint(-self.halfW, -self.halfH)
 		self.hitbox.addPoint(self.halfW, -self.halfH)
 		self.hitbox.addPoint(self.halfW, self.halfH)

@@ -138,4 +138,20 @@ CLIENT_MSG_TYPE_USER_EVENT = 0
 
 CLIENT_MSG_TYPE_DISCONNECTION = 1
 
+SERVER_MSG_TYPE_OBSTACLES = 0
+# Content of obstacles :
+# [
+# 	{position:[x, y], points:[[x, y]], color:(r, g, b)}
+# ]
 
+SERVER_MSG_TYPE_PADDLES = 1
+# Content of paddles :
+# [
+# 	{id_padddle, id_team, position:[x, y], size:[w, h]}
+# ]
+
+SERVER_MSG_TYPE_BALLS = 2
+# Content of balls :
+# [
+# 	{position:[x, y], direction:[x, y], radius, skip_collision:bool}
+# ]

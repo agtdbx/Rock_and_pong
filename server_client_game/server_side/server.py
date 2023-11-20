@@ -9,11 +9,11 @@ import time
 import sys
 
 
-def createWall(x, y, w, h) -> hitbox.Hitbox:
+def createWall(x, y, w, h, color) -> hitbox.Hitbox:
 	halfW = w / 2
 	halfH = h / 2
 
-	hit = hitbox.Hitbox(x, y)
+	hit = hitbox.Hitbox(x, y, color)
 	hit.addPoint(-halfW, -halfH)
 	hit.addPoint(halfW, -halfH)
 	hit.addPoint(halfW, halfH)
@@ -22,8 +22,8 @@ def createWall(x, y, w, h) -> hitbox.Hitbox:
 	return hit
 
 
-def createObstacle(x:int, y:int, listPoint:list) -> hitbox.Hitbox:
-	hit = hitbox.Hitbox(x, y)
+def createObstacle(x:int, y:int, listPoint:list, color) -> hitbox.Hitbox:
+	hit = hitbox.Hitbox(x, y, color)
 
 	for p in listPoint:
 		hit.addPoint(p[0], p[1])
@@ -67,7 +67,7 @@ class Server:
 			self.balls[0].lastPaddleTeam = TEAM_RIGHT
 
 		# Power up creation
-		self.powerUp = [POWER_UP_SPAWN_COOLDOWN, hitbox.Hitbox(0, 0), -1]
+		self.powerUp = [POWER_UP_SPAWN_COOLDOWN, hitbox.Hitbox(0, 0, (0, 0, 0)), -1]
 		for p in ball.getPointOfCircle(POWER_UP_HITBOX_RADIUS, POWER_UP_HITBOX_PRECISION, 0):
 			self.powerUp[1].addPoint(p[0], p[1])
 
@@ -78,30 +78,35 @@ class Server:
 				AREA_SIZE[0] / 2,
 			 	AREA_BORDER_SIZE / 2,
 				AREA_SIZE[0],
-				AREA_BORDER_SIZE
+				AREA_BORDER_SIZE,
+				(50, 50, 50)
 			),
 			# Wall down
 			createWall(
 				AREA_SIZE[0] / 2,
 				AREA_SIZE[1] - AREA_BORDER_SIZE / 2,
 				AREA_SIZE[0],
-				AREA_BORDER_SIZE
+				AREA_BORDER_SIZE,
+				(50, 50, 50)
 			),
 			# Obstables
 			createObstacle(
 				AREA_SIZE[0] / 2,
 				0,
 				[(-300, 0), (300, 0), (275, 50), (75, 75), (0, 125), (-75, 75), (-275, 50)],
+				(200, 200, 0)
 			),
 			createObstacle(
 				AREA_SIZE[0] / 2,
 				AREA_SIZE[1],
 				[(-300, 0), (300, 0), (275, -50), (0, -25), (-275, -50)],
+				(200, 200, 0)
 			),
 			createObstacle(
 				AREA_SIZE[0] / 2,
 				AREA_SIZE[1] / 2,
 				ball.getPointOfCircle(100, 32, 360 / 64),
+				(200, 0, 200)
 			)
 		]
 
@@ -115,6 +120,8 @@ class Server:
 		self.messageForClients = []
 		# (Message type, message content)
 		self.messageFromClients = []
+
+		self.createMessageForObstacle()
 
 
 	def run(self):
@@ -509,3 +516,19 @@ class Server:
 			print("----------------------------")
 
 		self.quit()
+
+
+	def createMessageForObstacle(self):
+		# Content of obstacles :
+		# [
+		# 	{position:[x, y], points:[[x, y]], color:(r, g, b)}
+		# ]
+		content = []
+
+		for wall in self.walls:
+			obstacle = {"position" : wall.pos.asTupple(),"points" : wall.getPointsCenter(), "color" : wall.color}
+			content.append(obstacle)
+
+		message = [SERVER_MSG_TYPE_OBSTACLES, content]
+
+		self.messageForClients.append(message)
