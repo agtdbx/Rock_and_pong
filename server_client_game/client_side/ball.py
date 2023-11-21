@@ -91,13 +91,17 @@ class Ball:
 
 
 	def draw(self, win):
-		for i in range(BALL_TRAIL_LENGTH):
-			gradiant = i / BALL_TRAIL_LENGTH
-			color = (int(self.lastColors[i][0] * BALL_TRAIL_OPACITY),
-					int(self.lastColors[i][1] * BALL_TRAIL_OPACITY),
-					int(self.lastColors[i][2] * BALL_TRAIL_OPACITY))
-			if not self.modifierInvisibleBall or int(self.modifierInvisibleBallTimer * 5) % 2:
-				pg.draw.circle(win, color, self.lastPositions[i], (self.radius * gradiant) * self.modifierSize)
+		if self.state == STATE_RUN:
+			for i in range(BALL_TRAIL_LENGTH):
+				gradiant = i / BALL_TRAIL_LENGTH
+				color = (int(self.lastColors[i][0] * BALL_TRAIL_OPACITY),
+						int(self.lastColors[i][1] * BALL_TRAIL_OPACITY),
+						int(self.lastColors[i][2] * BALL_TRAIL_OPACITY))
+				if not self.modifierInvisibleBall or int(self.modifierInvisibleBallTimer * 5) % 2:
+					pg.draw.circle(win, color, self.lastPositions[i], (self.radius * gradiant) * self.modifierSize)
+		elif self.lastPositions[-1] != self.pos.asTupple():
+			for i in range(BALL_TRAIL_LENGTH):
+				self.lastPositions[i] = self.pos.asTupple()
 
 		if not self.modifierInvisibleBall or int(self.modifierInvisibleBallTimer * POWER_UP_BALL_INVISIBLE_SPEED_FACTOR) % 2:
 			win.blit(self.sprite, (self.pos.x - (self.radius * self.modifierSize), self.pos.y - (self.radius * self.modifierSize)))
@@ -392,7 +396,9 @@ class Ball:
 
 	def setModifierByState(self, state:dict):
 		self.modifierSpeed = state["modifierSpeed"]
-		self.modifierSize = state["modifierSize"]
+		if self.modifierSize != state["modifierSize"]:
+			self.modifierSize = state["modifierSize"]
+			self.modifySize(self.modifierSize)
 		self.modifierStopBallTimer = state["modifierStopBallTimer"]
 		self.modifierSkipCollision = state["modifierSkipCollision"]
 		self.modifierInvisibleBall = state["modifierInvisibleBall"]

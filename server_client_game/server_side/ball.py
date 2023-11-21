@@ -169,9 +169,9 @@ class Ball:
 			collision = False
 
 			# Collision with powerUp
-			if powerUp[0] == POWER_UP_VISIBLE and self.hitbox.isCollide(powerUp[1]):
-				powerUp[0] = POWER_UP_TAKE
-				powerUp[2] = self.lastPaddleHitId
+			if powerUp["state"] == POWER_UP_VISIBLE and self.hitbox.isCollide(powerUp["hitbox"]):
+				powerUp["state"] = POWER_UP_TAKE
+				powerUp["paddleWhoGet"] = (self.lastPaddleHitId, self.lastPaddleTeam)
 
 			# Collision with paddle
 			for p in paddlesLeft:
@@ -229,13 +229,6 @@ class Ball:
 			# Affect position along direction and
 			self.pos = newpos.dup()
 			self.hitbox.setPos(self.pos)
-
-		if self.speed < BALL_MAX_SPEED / 2:
-			green_gradient = 1 - self.speed / BALL_MAX_SPEED
-			blue_gradient = 1 - self.speed / BALL_MAX_SPEED
-		else:
-			green_gradient = self.speed / BALL_MAX_SPEED
-			blue_gradient = 1 - self.speed / BALL_MAX_SPEED
 
 		# Friction
 		if BALL_FRICTION and self.speed > 0:
@@ -428,7 +421,9 @@ class Ball:
 
 	def setModifierByState(self, state:dict):
 		self.modifierSpeed = state["modifierSpeed"]
-		self.modifierSize = state["modifierSize"]
+		if self.modifierSize != state["modifierSize"]:
+			self.modifierSize = state["modifierSize"]
+			self.modifySize(self.modifierSize)
 		self.modifierStopBallTimer = state["modifierStopBallTimer"]
 		self.modifierSkipCollision = state["modifierSkipCollision"]
 		self.modifierInvisibleBall = state["modifierInvisibleBall"]

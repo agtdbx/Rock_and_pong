@@ -131,12 +131,23 @@ POWER_UP_PADDLE_LITTLE_TIME_EFFECT = 10 # in seconds
 ############################################################################################
 #                                    COMMUNICATION DEFINE                                  #
 ############################################################################################
+#====================#
+# MESSAGE DEFINITION #
+#====================#
+# [<message type>, <message content>]
+
+
+#==================#
+# CLIENT TO SERVER #
+#==================#
 CLIENT_MSG_TYPE_USER_EVENT = 0
 # Content of user event :
 # {id_paddle, id_key, key_action [True = press, False = release]}
 
-CLIENT_MSG_TYPE_DISCONNECTION = 1
 
+#==================#
+# SERVER TO CLIENT #
+#==================#
 SERVER_MSG_TYPE_CREATE_START_INFO = 0
 # Content of obstacles :
 # {
@@ -147,7 +158,7 @@ SERVER_MSG_TYPE_CREATE_START_INFO = 0
 SERVER_MSG_TYPE_UPDATE_PADDLES = 1
 # Content of paddles :
 # [
-# 	{id_paddle, id_team, position:[x, y], size:[w, h], powerUp, powerUpInCharge}
+# 	{id_paddle, id_team, position:[x, y], modifierSize, powerUp, powerUpInCharge}
 # ]
 
 SERVER_MSG_TYPE_UPDATE_BALLS = 2
@@ -156,6 +167,16 @@ SERVER_MSG_TYPE_UPDATE_BALLS = 2
 # 	{position:[x, y], direction:[x, y], speed, radius, state, last_paddle_hit_info:[id, team], modifier_state}
 # ]
 
-SERVER_MSG_TYPE_UPDATE_POWER_UP = 3
+SERVER_MSG_TYPE_DELETE_BALLS = 3
+# Content of delete balls :
+# [id_ball]
+
+SERVER_MSG_TYPE_UPDATE_POWER_UP = 4
 # Content of power up :
 # {position:[x, y], state}
+# Content of delete balls :
+# [id_ball]
+
+SERVER_MSG_TYPE_SCORE_UPDATE = 5
+# Content of power up :
+# {leftTeam, rightTeam}

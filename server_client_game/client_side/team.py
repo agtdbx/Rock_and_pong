@@ -44,24 +44,23 @@ class Team:
 				self.paddles[i].move("down", delta)
 
 
-	def draw(self, win):
+	def draw(self, win, powerUpEnable):
 		for p in self.paddles:
 			p.draw(win)
 
 		if self.team == TEAM_LEFT:
 			drawText(win, "SCORE : " + str(self.score), (75, 75 / 2), (255, 255, 255), size=30, align="mid-left")
-
-			drawText(win, str(self.paddles[0].powerUp), (75, 70), (255, 255, 255), size=30, align="mid-right")
-			if len(self.paddles) == 2:
-				drawText(win, str(self.paddles[1].powerUp), (75, WIN_HEIGHT - 70), (255, 255, 255), size=30, align="mid-right")
-
+			if powerUpEnable:
+				drawText(win, str(self.paddles[0].powerUp), (50, 70), (255, 255, 255), size=30, align="mid-right")
+				if len(self.paddles) == 2:
+					drawText(win, str(self.paddles[1].powerUp), (50, WIN_HEIGHT - 70), (255, 255, 255), size=30, align="mid-right")
 
 		else:
 			drawText(win, "SCORE : " + str(self.score), (WIN_WIDTH - 75, 75 / 2), (255, 255, 255), size=30, align="mid-right")
-
-			drawText(win, str(self.paddles[0].powerUp), (WIN_WIDTH - 75, 70), (255, 255, 255), size=30, align="mid-left")
-			if len(self.paddles) == 2:
-				drawText(win, str(self.paddles[1].powerUp), (WIN_WIDTH - 75, WIN_HEIGHT - 70), (255, 255, 255), size=30, align="mid-left")
+			if powerUpEnable:
+				drawText(win, str(self.paddles[0].powerUp), (WIN_WIDTH - 50, 70), (255, 255, 255), size=30, align="mid-left")
+				if len(self.paddles) == 2:
+					drawText(win, str(self.paddles[1].powerUp), (WIN_WIDTH - 50, WIN_HEIGHT - 70), (255, 255, 255), size=30, align="mid-left")
 
 
 	def applyPowerUpToPaddles(self, powerUp):

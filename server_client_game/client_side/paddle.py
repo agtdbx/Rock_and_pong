@@ -128,31 +128,6 @@ class Paddle:
 			self.hitbox.draw(win)
 
 
-	def addPowerUpEffect(self, powerUp):
-		powerUpEffect = None
-
-		if powerUp == POWER_UP_PADDLE_FAST:
-			powerUpEffect = [powerUp, POWER_UP_PADDLE_FAST_TIME_EFFECT]
-			self.modifierSpeed *= POWER_UP_PADDLE_FAST_SPEED_FACTOR
-
-		elif powerUp == POWER_UP_PADDLE_SLOW:
-			powerUpEffect = [powerUp, POWER_UP_PADDLE_SLOW_TIME_EFFECT]
-			self.modifierSpeed /= POWER_UP_PADDLE_SLOW_SPEED_FACTOR
-
-		elif powerUp == POWER_UP_PADDLE_BIG:
-			powerUpEffect = [powerUp, POWER_UP_PADDLE_BIG_TIME_EFFECT]
-			self.modifierSize *= POWER_UP_PADDLE_BIG_SIZE_FACTOR
-			self.modifySize(self.modifierSize)
-
-		elif powerUp == POWER_UP_PADDLE_LITTLE:
-			powerUpEffect = [powerUp, POWER_UP_PADDLE_LITTLE_TIME_EFFECT]
-			self.modifierSize /= POWER_UP_PADDLE_LITTLE_SIZE_FACTOR
-			self.modifySize(self.modifierSize)
-
-		if powerUpEffect != None:
-			self.powerUpEffects.append(powerUpEffect)
-
-
 	def setPos(self, x, y):
 		self.pos = Vec2(x, y)
 		self.hitbox.setPos(Vec2(x, y))

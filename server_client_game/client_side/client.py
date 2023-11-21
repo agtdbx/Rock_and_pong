@@ -148,9 +148,6 @@ class Client:
 
 		# Update paddles keys
 		for i in range(4):
-			teamId = TEAM_LEFT
-			if i >= TEAM_MAX_PLAYER:
-				teamId = TEAM_RIGHT
 			# {id_paddle, id_key, key_action [True = press, False = release]}
 			templateContent = {"paddleId" : i, "keyId" : 0, "keyAction" : True}
 
@@ -218,12 +215,11 @@ class Client:
 		self.time += delta
 
 		# Check if ball move. If no ball move, all time base event are stopping
-		if self.powerUpEnable:
-			updateTime = False
-			for b in self.balls:
-				if b.state == STATE_RUN:
-					updateTime = True
-					break
+		updateTime = False
+		for b in self.balls:
+			if b.state == STATE_RUN:
+				updateTime = True
+				break
 
 		if self.inputWait > 0:
 			self.inputWait -= delta
@@ -233,78 +229,13 @@ class Client:
 		if not updateTime and self.powerUp[0] != POWER_UP_SPAWN_COOLDOWN:
 			self.powerUp[0] = POWER_UP_SPAWN_COOLDOWN
 
-		if updateTime and self.powerUp[0] > POWER_UP_VISIBLE:
-			self.powerUp[0] -= delta
-			if self.powerUp[0] <= POWER_UP_VISIBLE:
-				self.powerUp[0] = POWER_UP_VISIBLE
-				self.createPowerUp()
-
 		self.teamLeft.tick(delta, self.paddlesKeyState, updateTime)
 		self.teamRight.tick(delta, self.paddlesKeyState, updateTime)
 
-		ballToDelete = []
-
-		for i in range(len(self.balls)):
-			b = self.balls[i]
+		for b in self.balls:
 			b.updatePosition(delta, self.teamLeft.paddles, self.teamRight.paddles, self.walls, self.powerUp)
 			if updateTime:
 				b.updateTime(delta)
-
-			# if the ball is in left goal
-			if b.state == STATE_IN_GOAL_LEFT:
-				self.ballInLeftGoal(b, i, ballToDelete)
-
-			# if the ball is in right goal
-			elif b.state == STATE_IN_GOAL_RIGHT:
-				self.ballInRightGoal(b, i, ballToDelete)
-
-			# case of ball follow player
-			elif b.state == STATE_IN_FOLLOW:
-				if b.lastPaddleTeam == TEAM_LEFT:
-					pad = self.teamLeft.paddles[b.lastPaddleHitId]
-				else:
-					pad = self.teamRight.paddles[b.lastPaddleHitId]
-				b.setPos(pad.pos.dup())
-				b.pos.translateAlong(b.direction.dup(), PADDLE_WIDTH * 2)
-				id = pad.id
-				if pad.team == TEAM_RIGHT:
-					id += TEAM_MAX_PLAYER
-				if self.paddlesKeyState[id * 4 + KEY_LAUNCH_BALL] and pad.waitLaunch == 0:
-					b.state = STATE_RUN
-					pad.waitLaunch = PADDLE_LAUNCH_COOLDOWN
-
-			# case of ball is Moving
-			else:
-				for w in self.walls:
-					# if not b.modifierSkipCollision and b.hitbox.isInside(w) and not b.hitbox.isCollide(w):
-					if not b.modifierSkipCollision and b.hitbox.isInside(w):
-						outOfCenter = vec2Sub(b.pos, w.pos)
-						if outOfCenter.norm() == 0:
-							outOfCenter = Vec2(1, 0)
-						outOfCenter.normalize()
-						b.direction = outOfCenter
-						if not b.hitbox.isCollide(w):
-							dir = outOfCenter.dup()
-							dir.multiply(BALL_RADIUS * 2 + 5)
-							pos = vec2Add(b.pos, dir)
-							b.setPos(pos)
-
-		for i in range(len(ballToDelete)):
-			self.balls.pop(ballToDelete[i] - i)
-
-		# Verify if power can be use, and use it if possible
-		if self.powerUpEnable and updateTime:
-			if self.powerUp[0] == POWER_UP_TAKE:
-				# Generate power up
-				powerUp = random.randint(0, 12)
-				if b.lastPaddleTeam == TEAM_LEFT:
-					self.teamLeft.paddles[self.powerUp[2]].powerUp = powerUp
-				else:
-					self.teamRight.paddles[self.powerUp[2]].powerUp = powerUp
-				self.powerUp[0] = POWER_UP_SPAWN_COOLDOWN
-
-		if self.teamLeft.score >= TEAM_WIN_SCORE or self.teamRight.score >= TEAM_WIN_SCORE:
-			self.quit()
 
 		pg.display.set_caption("time : " + str(self.time) + " | fps : " + str(self.clock.get_fps()))
 
@@ -339,8 +270,8 @@ class Client:
 			b.draw(self.win)
 
 		# Draw team
-		self.teamLeft.draw(self.win)
-		self.teamRight.draw(self.win)
+		self.teamLeft.draw(self.win, self.powerUpEnable)
+		self.teamRight.draw(self.win, self.powerUpEnable)
 
 		# We update the drawing.
 		# Before the function call, any changes will be not visible
@@ -353,100 +284,8 @@ class Client:
 		"""
 		# Pygame quit
 		self.runMainLoop = False
-		# pg.quit()
-		# sys.exit()
-
-
-	def createPowerUp(self):
-		collide = True
-
-		while collide:
-			collide = False
-
-			x = random.randint(LEFT_TEAM_RECT[0] + LEFT_TEAM_RECT[2], RIGTH_TEAM_RECT[0])
-			y = random.randint(AREA_RECT[1], AREA_RECT[1] + AREA_RECT[3])
-
-			self.powerUp[1].setPos(Vec2(x, y))
-
-			for hit in self.walls:
-				collide = self.powerUp[1].isInsideSurrondingBox(hit)
-				if collide:
-					break
-
-
-	def ballInLeftGoal(self, ball:ball.Ball, i:int, ballToDelete:list):
-		self.teamRight.score += 1
-		# for stats
-		contreCamp = False
-		if ball.lastPaddleTeam == TEAM_LEFT:
-			paddle = self.teamLeft.paddles[ball.lastPaddleHitId]
-			paddle.numberOfContreCamp += 1
-			contreCamp = True
-		else:
-			paddle = self.teamRight.paddles[ball.lastPaddleHitId]
-		paddle.numberOfGoal += 1
-
-		if ball.numberOfBounce > paddle.maxBounceBallGoal:
-			paddle.maxBounceBallGoal = ball.numberOfBounce
-
-		perfectShoot = False
-		if ball.pos.y < AREA_RECT[1] + PERFECT_SHOOT_SIZE or ball.pos.y > AREA_RECT[1] + AREA_RECT[3] - PERFECT_SHOOT_SIZE:
-			paddle.numberOfPerfectShoot += 1
-			perfectShoot = True
-
-		# idPaddle, paddleTeam, Ball speed, Number of bounce, CC, Perfect shoot, time of goal
-		self.goals.append((paddle.id, paddle.team, ball.speed, ball.numberOfBounce, contreCamp, perfectShoot, self.time))
-
-		for p in self.teamLeft.paddles:
-			p.powerUp = random.randint(0, 12)
-
-		if len(self.balls) - len(ballToDelete) > 1:
-			ballToDelete.append(i)
-			return
-
-		ball.direction = Vec2(1, 0)
-		ball.speed = BALL_START_SPEED
-		ball.state = STATE_IN_FOLLOW
-		ball.modifierSkipCollision = False
-		ball.lastPaddleHitId = random.choice(self.teamLeft.paddles).id
-		ball.lastPaddleTeam = TEAM_LEFT
-
-
-	def ballInRightGoal(self, ball:ball.Ball, i:int, ballToDelete:list):
-		self.teamLeft.score += 1
-		# for stats
-		contreCamp = False
-		if ball.lastPaddleTeam == TEAM_LEFT:
-			paddle = self.teamLeft.paddles[ball.lastPaddleHitId]
-		else:
-			paddle = self.teamRight.paddles[ball.lastPaddleHitId]
-			paddle.numberOfContreCamp += 1
-			contreCamp = True
-		paddle.numberOfGoal += 1
-		if ball.numberOfBounce > paddle.maxBounceBallGoal:
-			paddle.maxBounceBallGoal = ball.numberOfBounce
-
-		perfectShoot = False
-		if ball.pos.y < AREA_RECT[1] + PERFECT_SHOOT_SIZE or ball.pos.y > AREA_RECT[1] + AREA_RECT[3] - PERFECT_SHOOT_SIZE:
-			paddle.numberOfPerfectShoot += 1
-			perfectShoot = True
-
-		# idPaddle, paddleTeam, Ball speed, Number of bounce, CC, Perfect shoot, time of goal
-		self.goals.append((paddle.id, paddle.team, ball.speed, ball.numberOfBounce, contreCamp, perfectShoot, self.time))
-
-		for p in self.teamRight.paddles:
-			p.powerUp = random.randint(0, 12)
-
-		if len(self.balls) - len(ballToDelete) > 1:
-			ballToDelete.append(i)
-			return
-
-		ball.direction = Vec2(-1, 0)
-		ball.speed = BALL_START_SPEED
-		ball.state = STATE_IN_FOLLOW
-		ball.modifierSkipCollision = False
-		ball.lastPaddleHitId = random.choice(self.teamRight.paddles).id
-		ball.lastPaddleTeam = TEAM_RIGHT
+		pg.quit()
+		sys.exit()
 
 
 	def parseMessageFromServer(self):
@@ -457,8 +296,12 @@ class Client:
 				self.parseMessageForPaddles(message[1])
 			elif message[0] == SERVER_MSG_TYPE_UPDATE_BALLS:
 				self.parseMessageForBalls(message[1])
+			elif message[0] == SERVER_MSG_TYPE_DELETE_BALLS:
+				self.parseMessageForDeleteBalls(message[1])
 			elif message[0] == SERVER_MSG_TYPE_UPDATE_POWER_UP:
 				self.parseMessageForPowerUp(message[1])
+			elif message[0] == SERVER_MSG_TYPE_SCORE_UPDATE:
+				self.parseMessageForScore(message[1])
 
 
 	def parseMessageStartInfo(self, messageContent:list[dict]):
@@ -481,7 +324,7 @@ class Client:
 	def parseMessageForPaddles(self, messageContent:list[dict]):
 		# Content of paddles :
 		# [
-		# 	{id_paddle, id_team, position:[x, y], size:[w, h], powerUp, powerUpInCharge}
+		# 	{id_paddle, id_team, position:[x, y], modifierSize, powerUp, powerUpInCharge}
 		# ]
 		for content in messageContent:
 			x = AREA_RECT[0] + content["position"][0]
@@ -489,14 +332,14 @@ class Client:
 
 			if content["id_team"] == TEAM_LEFT:
 				self.teamLeft.paddles[content["id_paddle"]].setPos(x, y)
-				self.teamLeft.paddles[content["id_paddle"]].w = content["size"][0]
-				self.teamLeft.paddles[content["id_paddle"]].h = content["size"][1]
+				if self.teamLeft.paddles[content["id_paddle"]].modifierSize != content["modifierSize"]:
+					self.teamLeft.paddles[content["id_paddle"]].modifySize(content["modifierSize"])
 				self.teamLeft.paddles[content["id_paddle"]].powerUp = content["powerUp"]
 				self.teamLeft.paddles[content["id_paddle"]].powerUpInCharge = content["powerUpInCharge"]
 			else:
 				self.teamRight.paddles[content["id_paddle"]].setPos(x, y)
-				self.teamRight.paddles[content["id_paddle"]].w = content["size"][0]
-				self.teamRight.paddles[content["id_paddle"]].h = content["size"][1]
+				if self.teamRight.paddles[content["id_paddle"]].modifierSize != content["modifierSize"]:
+					self.teamRight.paddles[content["id_paddle"]].modifySize(content["modifierSize"])
 				self.teamRight.paddles[content["id_paddle"]].powerUp = content["powerUp"]
 				self.teamRight.paddles[content["id_paddle"]].powerUpInCharge = content["powerUpInCharge"]
 
@@ -516,6 +359,9 @@ class Client:
 			# Update ball if exist
 			if i < len(self.balls):
 				b = self.balls[i]
+				b.pos.x = x
+				b.pos.y = y
+				b.hitbox.setPos(Vec2(x, y))
 				b.direction = Vec2(content["direction"][0], content["direction"][1])
 				b.speed = content["speed"]
 				b.radius = content["radius"]
@@ -539,6 +385,13 @@ class Client:
 			i += 1
 
 
+	def parseMessageForDeleteBalls(self, messageContent:list[dict]):
+		# Content of delete balls :
+		# [id_ball]
+		for i in range(len(messageContent)):
+			self.balls.pop(messageContent[i] - i)
+
+
 	def parseMessageForPowerUp(self, messageContent:list[dict]):
 		# Content of balls :
 		# {position:[x, y], state}
@@ -548,3 +401,9 @@ class Client:
 		self.powerUp[0] = messageContent["state"]
 		self.powerUp[1].setPos(Vec2(x, y))
 
+
+	def parseMessageForScore(self, messageContent:list[dict]):
+		# Content of power up :
+		# {leftTeam, rightTeam}
+		self.teamLeft.score = messageContent["leftTeam"]
+		self.teamRight.score = messageContent["rightTeam"]

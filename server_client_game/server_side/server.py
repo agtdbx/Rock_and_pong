@@ -6,7 +6,6 @@ import server_side.ball as ball
 
 import random
 import time
-import sys
 
 
 def createWall(x, y, w, h, color) -> hitbox.Hitbox:
@@ -68,9 +67,10 @@ class Server:
 
 		# Power up creation
 		self.powerUpEnable = powerUpEnable
-		self.powerUp = [POWER_UP_SPAWN_COOLDOWN, hitbox.Hitbox(0, 0, (0, 0, 0)), -1]
+		# {state, hitbox, paddleWhoGet:[id, team]}
+		self.powerUp = {"state" : POWER_UP_SPAWN_COOLDOWN, "hitbox" : hitbox.Hitbox(0, 0, (0, 0, 0)), "paddleWhoGet" : (-1, -1)}
 		for p in ball.getPointOfCircle(POWER_UP_HITBOX_RADIUS, POWER_UP_HITBOX_PRECISION, 0):
-			self.powerUp[1].addPoint(p[0], p[1])
+			self.powerUp["hitbox"].addPoint(p[0], p[1])
 
 		# Walls creation
 		self.walls = [
@@ -90,25 +90,25 @@ class Server:
 				AREA_BORDER_SIZE,
 				(50, 50, 50)
 			),
-			# Obstables
-			createObstacle(
-				AREA_SIZE[0] / 2,
-				0,
-				[(-300, 0), (300, 0), (275, 50), (75, 75), (0, 125), (-75, 75), (-275, 50)],
-				(200, 200, 0)
-			),
-			createObstacle(
-				AREA_SIZE[0] / 2,
-				AREA_SIZE[1],
-				[(-300, 0), (300, 0), (275, -50), (0, -25), (-275, -50)],
-				(200, 200, 0)
-			),
-			createObstacle(
-				AREA_SIZE[0] / 2,
-				AREA_SIZE[1] / 2,
-				ball.getPointOfCircle(100, 32, 360 / 64),
-				(200, 0, 200)
-			)
+			# # Obstables
+			# createObstacle(
+			# 	AREA_SIZE[0] / 2,
+			# 	0,
+			# 	[(-300, 0), (300, 0), (275, 50), (75, 75), (0, 125), (-75, 75), (-275, 50)],
+			# 	(200, 200, 0)
+			# ),
+			# createObstacle(
+			# 	AREA_SIZE[0] / 2,
+			# 	AREA_SIZE[1],
+			# 	[(-300, 0), (300, 0), (275, -50), (0, -25), (-275, -50)],
+			# 	(200, 200, 0)
+			# ),
+			# createObstacle(
+			# 	AREA_SIZE[0] / 2,
+			# 	AREA_SIZE[1] / 2,
+			# 	ball.getPointOfCircle(100, 32, 360 / 64),
+			# 	(200, 0, 200)
+			# )
 		]
 
 		# idPaddle, paddleTeam, Ball speed, Number of bounce, CC, Perfect shoot, time of goal
@@ -149,12 +149,9 @@ class Server:
 		self.messageForClients.clear()
 
 		# Game loop
-		targetTime = 1 / self.fps
 		if self.runMainLoop:
 			self.input()
 			self.tick()
-			# timeToSleep = max(0, targetTime - self.delta)
-			# time.sleep(timeToSleep)
 
 		# After compute it, clear message from the server
 		self.messageFromClients.clear()
@@ -162,7 +159,7 @@ class Server:
 		# Create new message for clients
 		self.createMessageInfoPaddles()
 		self.createMessageInfoBalls()
-		if self.powerUp:
+		if self.powerUpEnable:
 			self.createMessageInfoPowerUp()
 
 
@@ -190,25 +187,28 @@ class Server:
 		self.time += self.delta
 
 		# Check if ball move. If no ball move, all time base event are stopping
-		if self.powerUpEnable:
-			updateTime = False
-			for b in self.balls:
-				if b.state == STATE_RUN:
-					updateTime = True
-					break
+		updateTime = False
+		numberOfBall = len(self.balls)
+		for i in range(numberOfBall):
+			if self.balls[i].state == STATE_RUN:
+				updateTime = True
+				break
+
+		if numberOfBall > self.ballNumber:
+			self.ballNumber = numberOfBall
 
 		if self.inputWait > 0:
 			self.inputWait -= self.delta
 			if self.inputWait < 0:
 				self.inputWait = 0
 
-		if not updateTime and self.powerUp[0] != POWER_UP_SPAWN_COOLDOWN:
-			self.powerUp[0] = POWER_UP_SPAWN_COOLDOWN
+		if not updateTime and self.powerUp["state"] != POWER_UP_SPAWN_COOLDOWN:
+			self.powerUp["state"] = POWER_UP_SPAWN_COOLDOWN
 
-		if updateTime and self.powerUp[0] > POWER_UP_VISIBLE:
-			self.powerUp[0] -= self.delta
-			if self.powerUp[0] <= POWER_UP_VISIBLE:
-				self.powerUp[0] = POWER_UP_VISIBLE
+		if updateTime and self.powerUp["state"] > POWER_UP_VISIBLE:
+			self.powerUp["state"] -= self.delta
+			if self.powerUp["state"] <= POWER_UP_VISIBLE:
+				self.powerUp["state"] = POWER_UP_VISIBLE
 				self.createPowerUp()
 
 		self.teamLeft.tick(self.delta, self.paddlesKeyState, updateTime)
@@ -225,10 +225,12 @@ class Server:
 			# if the ball is in left goal
 			if b.state == STATE_IN_GOAL_LEFT:
 				self.ballInLeftGoal(b, i, ballToDelete)
+				self.createMessageInfoScore()
 
 			# if the ball is in right goal
 			elif b.state == STATE_IN_GOAL_RIGHT:
 				self.ballInRightGoal(b, i, ballToDelete)
+				self.createMessageInfoScore()
 
 			# case of ball follow player
 			elif b.state == STATE_IN_FOLLOW:
@@ -261,22 +263,25 @@ class Server:
 							pos = vec2Add(b.pos, dir)
 							b.setPos(pos)
 
-		for i in range(len(ballToDelete)):
-			self.balls.pop(ballToDelete[i] - i)
+		numberOfBallToDelete = len(ballToDelete)
+		if numberOfBallToDelete > 0:
+			self.createMessageDeleteBalls(ballToDelete)
+			for i in range(numberOfBallToDelete):
+				self.balls.pop(ballToDelete[i] - i)
 
 		# Verify if power can be use, and use it if possible
 		if self.powerUpEnable and updateTime:
 			self.checkPowerUp(self.teamLeft, LEFT_TEAM_RECT, self.teamRight, RIGTH_TEAM_RECT)
 			self.checkPowerUp(self.teamRight, RIGTH_TEAM_RECT, self.teamLeft, LEFT_TEAM_RECT)
 
-			if self.powerUp[0] == POWER_UP_TAKE:
+			if self.powerUp["state"] == POWER_UP_TAKE:
 				# Generate power up
 				powerUp = random.randint(0, 12)
-				if b.lastPaddleTeam == TEAM_LEFT:
-					self.teamLeft.paddles[self.powerUp[2]].powerUp = powerUp
+				if self.powerUp["paddleWhoGet"][1] == TEAM_LEFT:
+					self.teamLeft.paddles[self.powerUp["paddleWhoGet"][0]].powerUp = powerUp
 				else:
-					self.teamRight.paddles[self.powerUp[2]].powerUp = powerUp
-				self.powerUp[0] = POWER_UP_SPAWN_COOLDOWN
+					self.teamRight.paddles[self.powerUp["paddleWhoGet"][0]].powerUp = powerUp
+				self.powerUp["state"] = POWER_UP_SPAWN_COOLDOWN
 
 		if self.teamLeft.score >= TEAM_WIN_SCORE or self.teamRight.score >= TEAM_WIN_SCORE:
 			self.printFinalStat()
@@ -298,10 +303,10 @@ class Server:
 			x = random.randint(LEFT_TEAM_RECT[0] + LEFT_TEAM_RECT[2], RIGTH_TEAM_RECT[0])
 			y = random.randint(0, AREA_SIZE[1])
 
-			self.powerUp[1].setPos(Vec2(x, y))
+			self.powerUp["hitbox"].setPos(Vec2(x, y))
 
 			for hit in self.walls:
-				collide = self.powerUp[1].isInsideSurrondingBox(hit)
+				collide = self.powerUp["hitbox"].isInsideSurrondingBox(hit)
 				if collide:
 					break
 
@@ -418,8 +423,9 @@ class Server:
 		# idPaddle, paddleTeam, Ball speed, Number of bounce, CC, Perfect shoot, time of goal
 		self.goals.append((paddle.id, paddle.team, ball.speed, ball.numberOfBounce, contreCamp, perfectShoot, self.time))
 
-		for p in self.teamLeft.paddles:
-			p.powerUp = random.randint(0, 12)
+		if self.powerUpEnable:
+			for p in self.teamLeft.paddles:
+				p.powerUp = random.randint(0, 12)
 
 		if len(self.balls) - len(ballToDelete) > 1:
 			ballToDelete.append(i)
@@ -455,8 +461,9 @@ class Server:
 		# idPaddle, paddleTeam, Ball speed, Number of bounce, CC, Perfect shoot, time of goal
 		self.goals.append((paddle.id, paddle.team, ball.speed, ball.numberOfBounce, contreCamp, perfectShoot, self.time))
 
-		for p in self.teamRight.paddles:
-			p.powerUp = random.randint(0, 12)
+		if self.powerUpEnable:
+			for p in self.teamRight.paddles:
+				p.powerUp = random.randint(0, 12)
 
 		if len(self.balls) - len(ballToDelete) > 1:
 			ballToDelete.append(i)
@@ -484,6 +491,7 @@ class Server:
 		print("Team left number of player :", len(self.teamLeft.paddles))
 		print("Team right number of player :", len(self.teamRight.paddles))
 		print("Number of ball :", len(self.balls))
+		print("Duration of match :", self.time)
 		print()
 		print("=====================================")
 		print("|           PADDLES STATS           |")
@@ -546,20 +554,20 @@ class Server:
 	def createMessageInfoPaddles(self):
 		# Content of paddles :
 		# [
-		# 	{id_paddle, id_team, position:[x, y], size:[w, h], powerUp, powerUpInCharge}
+		# 	{id_paddle, id_team, position:[x, y], modifierSize, powerUp, powerUpInCharge}
 		# ]
 		content = []
 
 		# Left team paddles
 		for paddle in self.teamLeft.paddles:
 			paddleInfo = {"id_paddle" : paddle.id, "id_team" : TEAM_LEFT, "position" : paddle.pos.asTupple(),
-				 			"size" : (paddle.w, paddle.h), "powerUp" : paddle.powerUp, "powerUpInCharge" : paddle.powerUpInCharge}
+				 			"modifierSize" : paddle.modifierSize, "powerUp" : paddle.powerUp, "powerUpInCharge" : paddle.powerUpInCharge.copy()}
 			content.append(paddleInfo)
 
 		# Right team paddles
 		for paddle in self.teamRight.paddles:
 			paddleInfo = {"id_paddle" : paddle.id, "id_team" : TEAM_RIGHT, "position" : paddle.pos.asTupple(),
-							"size" : (paddle.w, paddle.h), "powerUp" : paddle.powerUp, "powerUpInCharge" : paddle.powerUpInCharge}
+							"modifierSize" : paddle.modifierSize, "powerUp" : paddle.powerUp, "powerUpInCharge" : paddle.powerUpInCharge.copy()}
 			content.append(paddleInfo)
 
 		message = [SERVER_MSG_TYPE_UPDATE_PADDLES, content]
@@ -586,11 +594,31 @@ class Server:
 		self.messageForClients.append(message)
 
 
+	def createMessageDeleteBalls(self, ballToDelete:list[int]):
+		# Content of delete balls :
+		# [id_ball]
+		content = ballToDelete.copy()
+
+		message = [SERVER_MSG_TYPE_DELETE_BALLS, content]
+
+		self.messageForClients.append(message)
+
+
 	def createMessageInfoPowerUp(self):
 		# Content of power up :
 		# {position:[x, y], state}
-		content = {"position" : self.powerUp[1].pos.asTupple(), "state" :  self.powerUp[0]}
+		content = {"position" : self.powerUp["hitbox"].pos.asTupple(), "state" :  self.powerUp["state"]}
 
 		message = [SERVER_MSG_TYPE_UPDATE_POWER_UP, content]
+
+		self.messageForClients.append(message)
+
+
+	def createMessageInfoScore(self):
+		# Content of power up :
+		# {leftTeam, rightTeam}
+		content = {"leftTeam" : self.teamLeft.score, "rightTeam" :  self.teamRight.score}
+
+		message = [SERVER_MSG_TYPE_SCORE_UPDATE, content]
 
 		self.messageForClients.append(message)
