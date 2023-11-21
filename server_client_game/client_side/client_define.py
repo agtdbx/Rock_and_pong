@@ -7,13 +7,13 @@ from define import *
 ############################################################################################
 WIN_WIDTH = 1920 # in pixel
 WIN_HEIGHT = 1000 # in pixel
-WIN_CLEAR_COLOR = (0, 0, 0) # (r, g, b), channell int [0, 255]
+WIN_CLEAR_COLOR = (0, 0, 0) # (r, g, b), channel int [0, 255]
 
 
 ############################################################################################
 #                                      BALL DEFINE                                       #
 ############################################################################################
-BALL_COLOR = (255, 255, 255) # (r, g, b), channell int [0, 255]
+BALL_COLOR = (255, 255, 255) # (r, g, b), channel int [0, 255]
 BALL_TRAIL_OPACITY = 0.5 # float [0, 1]
 BALL_TRAIL_LENGTH = 30 # number of cicles in trail
 
@@ -22,7 +22,12 @@ BALL_TRAIL_LENGTH = 30 # number of cicles in trail
 #                                        MAP DEFINE                                        #
 ############################################################################################
 AREA_RECT = ((WIN_WIDTH - AREA_SIZE[0]) // 2, (WIN_HEIGHT - AREA_SIZE[1]) // 2, AREA_SIZE[0], AREA_SIZE[1])
-AREA_COLOR = (100, 100, 100) # (r, g, b), channell int [0, 255]
+AREA_COLOR = (100, 100, 100) # (r, g, b), channel int [0, 255]
+
+AREA_LEFT_TEAM_RECT = (AREA_RECT[0], AREA_RECT[1], SPACE_PART, AREA_SIZE[1])
+AREA_MIDDLE_RECT = (AREA_RECT[0] + SPACE_PART, AREA_RECT[1], AREA_SIZE[0] - SPACE_PART, AREA_SIZE[1])
+AREA_RIGTH_TEAM_RECT = (AREA_RECT[0] + AREA_SIZE[0] - SPACE_PART, AREA_RECT[1], SPACE_PART, AREA_SIZE[1])
+AREA_TEAM_COLOR = (90, 90, 90) # (r, g, b), channel int [0, 255]
 
 
 ############################################################################################
@@ -36,9 +41,9 @@ PADDLE_COLOR = (200, 200, 200) # (r, g, b), channell int [0, 255]
 ############################################################################################
 DRAW_HITBOX = False # boolean
 DRAW_HITBOX_NORMALS = False # boolean
-HITBOX_BALL_COLOR = (255, 0, 0) # (r, g, b), channell int [0, 255]
-HITBOX_WALL_COLOR = (0, 255, 0) # (r, g, b), channell int [0, 255]
-HITBOX_PADDLE_COLOR = (0, 0, 255) # (r, g, b), channell int [0, 255]
+HITBOX_BALL_COLOR = (255, 0, 0) # (r, g, b), channel int [0, 255]
+HITBOX_WALL_COLOR = (0, 255, 0) # (r, g, b), channel int [0, 255]
+HITBOX_PADDLE_COLOR = (0, 0, 255) # (r, g, b), channel int [0, 255]
 
 
 ############################################################################################

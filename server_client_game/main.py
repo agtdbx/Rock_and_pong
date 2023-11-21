@@ -1,7 +1,7 @@
 import client_side.client
 import server_side.server
 
-server = server_side.server.Server(powerUpEnable=False)
+server = server_side.server.Server(powerUpEnable=True)
 client = client_side.client.Client()
 
 # Give messages from server to client

@@ -4,7 +4,7 @@
 BALL_RADIUS = 10 # in pixel
 BALL_START_SPEED = 480 # pixel per seconds
 BALL_MIN_SPEED = 240 # pixel per seconds
-BALL_MAX_SPEED = 3840 # pixel per seconds
+BALL_MAX_SPEED = 1920 # pixel per seconds
 BALL_PADDLE_ACCELERATION = 100 # pixel per seconds
 BALL_WALL_ACCELERATION = 10 # pixel per seconds
 BALL_HITBOX_PRECISION = 16 # nb number for make circle [4, 360]
@@ -48,7 +48,7 @@ TEAM_RIGHT = 1
 ############################################################################################
 PADDLE_WIDTH = 14 # in pixel
 PADDLE_HEIGHT = 140 # in pixel
-PADDLE_SPEED = 650 # pixel per seconds
+PADDLE_SPEED = 800 # pixel per seconds
 PADDLE_LAUNCH_COOLDOWN = 0.2 # In second
 
 PADDLES_KEYS_STATE = [
@@ -148,12 +148,18 @@ CLIENT_MSG_TYPE_USER_EVENT = 0
 #==================#
 # SERVER TO CLIENT #
 #==================#
-SERVER_MSG_TYPE_CREATE_START_INFO = 0
+SERVER_MSG_TYPE_CREATE_START_INFO = -1
 # Content of obstacles :
 # {
 # 	obstables : [ {position:[x, y], points:[[x, y]], color:(r, g, b)} ]
 # 	powerUp : True or False
 # }
+
+SERVER_MSG_TYPE_UPDATE_OBSTACLE = 0
+# Content of obstacles :
+# [
+# 	{id, points:[[x, y]]}
+# ]
 
 SERVER_MSG_TYPE_UPDATE_PADDLES = 1
 # Content of paddles :

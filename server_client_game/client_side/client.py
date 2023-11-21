@@ -237,7 +237,7 @@ class Client:
 			if updateTime:
 				b.updateTime(delta)
 
-		pg.display.set_caption("time : " + str(self.time) + " | fps : " + str(self.clock.get_fps()))
+		pg.display.set_caption("time : " + str(self.time))
 
 
 	def render(self):
@@ -248,10 +248,10 @@ class Client:
 		self.win.fill((0, 0, 0))
 
 		# Draw area
-		pg.draw.rect(self.win, AREA_COLOR, AREA_RECT)
-		# pg.draw.rect(self.win, LEFT_TEAM_COLOR, LEFT_TEAM_RECT)
-		# pg.draw.rect(self.win, MIDDLE_COLOR, MIDDLE_RECT)
-		# pg.draw.rect(self.win, RIGTH_TEAM_COLOR, RIGTH_TEAM_RECT)
+		# pg.draw.rect(self.win, AREA_COLOR, AREA_RECT)
+		pg.draw.rect(self.win, AREA_TEAM_COLOR, AREA_LEFT_TEAM_RECT)
+		pg.draw.rect(self.win, AREA_COLOR, AREA_MIDDLE_RECT)
+		pg.draw.rect(self.win, AREA_TEAM_COLOR, AREA_RIGTH_TEAM_RECT)
 
 		# Draw walls
 		for w in self.walls:
@@ -292,6 +292,8 @@ class Client:
 		for message in self.messageFromServer:
 			if message[0] == SERVER_MSG_TYPE_CREATE_START_INFO:
 				self.parseMessageStartInfo(message[1])
+			elif message[0] == SERVER_MSG_TYPE_UPDATE_OBSTACLE:
+				self.parseMessageForObstacle(message[1])
 			elif message[0] == SERVER_MSG_TYPE_UPDATE_PADDLES:
 				self.parseMessageForPaddles(message[1])
 			elif message[0] == SERVER_MSG_TYPE_UPDATE_BALLS:
@@ -319,6 +321,16 @@ class Client:
 			self.walls.append(obstacle)
 
 		self.powerUpEnable = messageContent["powerUp"]
+
+
+	def parseMessageForObstacle(self, messageContent:list[dict]):
+		# Content of obstacles :
+		# [
+		# 	{id, points:[[x, y]]}
+		# ]
+		for content in messageContent:
+			self.walls[content["id"]].clearPoints()
+			self.walls[content["id"]].addPoints(content["points"])
 
 
 	def parseMessageForPaddles(self, messageContent:list[dict]):

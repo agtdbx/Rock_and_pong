@@ -8,7 +8,7 @@ import random
 import time
 
 
-def createWall(x, y, w, h, color) -> hitbox.Hitbox:
+def createWall(x, y, w, h, color, rotateSpeed=0) -> hitbox.Hitbox:
 	halfW = w / 2
 	halfH = h / 2
 
@@ -18,16 +18,16 @@ def createWall(x, y, w, h, color) -> hitbox.Hitbox:
 	hit.addPoint(halfW, halfH)
 	hit.addPoint(-halfW, halfH)
 
-	return hit
+	return {"hitbox" : hit, "rotateSpeed" : rotateSpeed}
 
 
-def createObstacle(x:int, y:int, listPoint:list, color) -> hitbox.Hitbox:
+def createObstacle(x:int, y:int, listPoint:list, color, rotateSpeed=0) -> hitbox.Hitbox:
 	hit = hitbox.Hitbox(x, y, color)
 
 	for p in listPoint:
 		hit.addPoint(p[0], p[1])
 
-	return hit
+	return {"hitbox" : hit, "rotateSpeed" : rotateSpeed}
 
 
 
@@ -90,24 +90,38 @@ class Server:
 				AREA_BORDER_SIZE,
 				(50, 50, 50)
 			),
-			# # Obstables
+			# Obstables
+			createObstacle(
+				AREA_SIZE[0] / 2,
+				0,
+				[(-300, 0), (300, 0), (275, 50), (75, 75), (0, 125), (-75, 75), (-275, 50)],
+				(200, 200, 0)
+			),
+			createObstacle(
+				AREA_SIZE[0] / 2,
+				AREA_SIZE[1],
+				[(-300, 0), (300, 0), (275, -50), (0, -25), (-275, -50)],
+				(200, 200, 0)
+			),
+			createObstacle(
+				AREA_SIZE[0] / 2,
+				AREA_SIZE[1] / 2,
+				ball.getPointOfCircle(100, 32, 360 / 64),
+				(200, 0, 200)
+			),
 			# createObstacle(
 			# 	AREA_SIZE[0] / 2,
-			# 	0,
-			# 	[(-300, 0), (300, 0), (275, 50), (75, 75), (0, 125), (-75, 75), (-275, 50)],
-			# 	(200, 200, 0)
-			# ),
-			# createObstacle(
-			# 	AREA_SIZE[0] / 2,
-			# 	AREA_SIZE[1],
-			# 	[(-300, 0), (300, 0), (275, -50), (0, -25), (-275, -50)],
-			# 	(200, 200, 0)
+			# 	AREA_SIZE[1] / 2,
+			# 	[(10, 200), (-10, 200), (-10, -200), (10, -200)],
+			# 	(200, 0, 200),
+			# 	360
 			# ),
 			# createObstacle(
 			# 	AREA_SIZE[0] / 2,
 			# 	AREA_SIZE[1] / 2,
-			# 	ball.getPointOfCircle(100, 32, 360 / 64),
-			# 	(200, 0, 200)
+			# 	[(10, 200), (-10, 200), (-10, -200), (10, -200)],
+			# 	(200, 0, 200),
+			# 	180
 			# )
 		]
 
@@ -157,6 +171,7 @@ class Server:
 		self.messageFromClients.clear()
 
 		# Create new message for clients
+		self.createMessageUpdateObstacle()
 		self.createMessageInfoPaddles()
 		self.createMessageInfoBalls()
 		if self.powerUpEnable:
@@ -202,15 +217,18 @@ class Server:
 			if self.inputWait < 0:
 				self.inputWait = 0
 
-		if not updateTime and self.powerUp["state"] != POWER_UP_SPAWN_COOLDOWN:
+		if self.powerUpEnable and not updateTime and self.powerUp["state"] != POWER_UP_SPAWN_COOLDOWN:
 			self.powerUp["state"] = POWER_UP_SPAWN_COOLDOWN
 
-		if updateTime and self.powerUp["state"] > POWER_UP_VISIBLE:
+		if self.powerUpEnable and updateTime and self.powerUp["state"] > POWER_UP_VISIBLE:
 			self.powerUp["state"] -= self.delta
 			if self.powerUp["state"] <= POWER_UP_VISIBLE:
 				self.powerUp["state"] = POWER_UP_VISIBLE
 				self.createPowerUp()
 
+		for w in self.walls:
+			if w["rotateSpeed"] != 0:
+				w["hitbox"].rotate(w["rotateSpeed"] * self.delta)
 		self.teamLeft.tick(self.delta, self.paddlesKeyState, updateTime)
 		self.teamRight.tick(self.delta, self.paddlesKeyState, updateTime)
 
@@ -251,13 +269,13 @@ class Server:
 			else:
 				for w in self.walls:
 					# if not b.modifierSkipCollision and b.hitbox.isInside(w) and not b.hitbox.isCollide(w):
-					if not b.modifierSkipCollision and b.hitbox.isInside(w):
-						outOfCenter = vec2Sub(b.pos, w.pos)
+					if not b.modifierSkipCollision and b.hitbox.isInside(w["hitbox"]):
+						outOfCenter = vec2Sub(b.pos, w["hitbox"].pos)
 						if outOfCenter.norm() == 0:
 							outOfCenter = Vec2(1, 0)
 						outOfCenter.normalize()
 						b.direction = outOfCenter
-						if not b.hitbox.isCollide(w):
+						if not b.hitbox.isCollide(w["hitbox"]):
 							dir = outOfCenter.dup()
 							dir.multiply(BALL_RADIUS * 2 + 5)
 							pos = vec2Add(b.pos, dir)
@@ -305,8 +323,8 @@ class Server:
 
 			self.powerUp["hitbox"].setPos(Vec2(x, y))
 
-			for hit in self.walls:
-				collide = self.powerUp["hitbox"].isInsideSurrondingBox(hit)
+			for w in self.walls:
+				collide = self.powerUp["hitbox"].isInsideSurrondingBox(w["hitbox"])
 				if collide:
 					break
 
@@ -371,7 +389,7 @@ class Server:
 				powerUpTryUse[2] = True
 
 			elif powerUpTryUse[0] == POWER_UP_PADDLE_FAST:
-				team.applyPowerUpToPaddles(POWER_UP_PADDLE_FAST)
+				ennemyTeam.applyPowerUpToPaddles(POWER_UP_PADDLE_FAST)
 				powerUpTryUse[2] = True
 
 			elif powerUpTryUse[0] == POWER_UP_PADDLE_SLOW:
@@ -490,7 +508,7 @@ class Server:
 		print("Team right score :", self.teamRight.score)
 		print("Team left number of player :", len(self.teamLeft.paddles))
 		print("Team right number of player :", len(self.teamRight.paddles))
-		print("Number of ball :", len(self.balls))
+		print("Number of ball :", self.ballNumber)
 		print("Duration of match :", self.time)
 		print()
 		print("=====================================")
@@ -543,10 +561,28 @@ class Server:
 		content = {"obstacles" : [], "powerUp" : self.powerUpEnable}
 
 		for wall in self.walls:
-			obstacle = {"position" : wall.pos.asTupple(),"points" : wall.getPointsCenter(), "color" : wall.color}
+			obstacle = {"position" : wall["hitbox"].pos.asTupple(),"points" : wall["hitbox"].getPointsCenter(), "color" : wall["hitbox"].color}
 			content["obstacles"].append(obstacle)
 
 		message = [SERVER_MSG_TYPE_CREATE_START_INFO, content]
+
+		self.messageForClients.append(message)
+
+
+	def createMessageUpdateObstacle(self):
+		# Content of obstacles :
+		# [
+		# 	{id, points:[[x, y]]}
+		# ]
+		content = []
+
+		for i in range(len(self.walls)):
+			wall = self.walls[i]
+			if wall["rotateSpeed"] != 0:
+				obstacle = {"id" : i, "points" : wall["hitbox"].getPointsCenter()}
+				content.append(obstacle)
+
+		message = [SERVER_MSG_TYPE_UPDATE_OBSTACLE, content]
 
 		self.messageForClients.append(message)
 

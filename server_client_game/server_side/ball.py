@@ -197,7 +197,7 @@ class Ball:
 					newpos = self.pos.dup()
 					newpos.translateAlong(realDirection, step)
 					collision = False
-				collision = self.makeCollisionWithWall(w)
+				collision = self.makeCollisionWithWall(w["hitbox"])
 
 			if collision:
 				realDirection = self.getRealDirection()
