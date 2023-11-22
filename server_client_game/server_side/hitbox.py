@@ -39,8 +39,6 @@ class Hitbox:
 
 		self.points = []
 
-		self.unrotatePoints = []
-
 		self.color = color
 
 
@@ -125,30 +123,7 @@ class Hitbox:
 		if degrees == 0:
 			return
 
-		if len(self.unrotatePoints) == 0:
-			for p in self.points:
-				self.unrotatePoints.append(p.dup())
-
-		while degrees < 0:
-			degrees += 360
-		while degrees > 359:
-			degrees -= 360
-
 		self.rotation += degrees
-
-		if self.rotation < 0:
-			self.rotation += 360
-			degrees = self.rotation
-			self.points.clear()
-			for p in self.unrotatePoints:
-				self.points.append(p.dup())
-
-		elif self.rotation > 359:
-			self.rotation -= 360
-			degrees = self.rotation
-			self.points.clear()
-			for p in self.unrotatePoints:
-				self.points.append(p.dup())
 
 		radiant = degrees * (math.pi / 180)
 		sinTmp = math.sin(radiant)

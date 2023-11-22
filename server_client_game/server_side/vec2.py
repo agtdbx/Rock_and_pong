@@ -48,8 +48,10 @@ class Vec2:
 		self.y -= y
 
 		# Apply rotation
-		self.x = (self.x * cosTmp) - (self.y * sinTmp)
-		self.y = (self.x * sinTmp) + (self.y * cosTmp)
+		tmpX = self.x
+		tmpY = self.y
+		self.x = (tmpX * cosTmp) - (tmpY * sinTmp)
+		self.y = (tmpX * sinTmp) + (tmpY * cosTmp)
 
 		# Uncenter point
 		self.x += x

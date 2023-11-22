@@ -109,20 +109,20 @@ class Server:
 				ball.getPointOfCircle(100, 32, 360 / 64),
 				(200, 0, 200)
 			),
-			# createObstacle(
-			# 	AREA_SIZE[0] / 2,
-			# 	AREA_SIZE[1] / 2,
-			# 	[(10, 200), (-10, 200), (-10, -200), (10, -200)],
-			# 	(200, 0, 200),
-			# 	360
-			# ),
-			# createObstacle(
-			# 	AREA_SIZE[0] / 2,
-			# 	AREA_SIZE[1] / 2,
-			# 	[(10, 200), (-10, 200), (-10, -200), (10, -200)],
-			# 	(200, 0, 200),
-			# 	180
-			# )
+			createObstacle(
+				AREA_SIZE[0] / 2,
+				AREA_SIZE[1] / 2,
+				[(10, 200), (-10, 200), (-10, -200), (10, -200)],
+				(200, 0, 200),
+				360
+			),
+			createObstacle(
+				AREA_SIZE[0] / 2,
+				AREA_SIZE[1] / 2,
+				[(10, 200), (-10, 200), (-10, -200), (10, -200)],
+				(200, 0, 200),
+				-360
+			)
 		]
 
 		# idPaddle, paddleTeam, Ball speed, Number of bounce, CC, Perfect shoot, time of goal
