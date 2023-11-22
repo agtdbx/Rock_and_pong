@@ -3,31 +3,34 @@ from server_side.vec2 import *
 import server_side.hitbox as hitbox
 import server_side.team as team
 import server_side.ball as ball
+import server_side.obstacle as obstacle
 
 import random
 import time
 
 
-def createWall(x, y, w, h, color, rotateSpeed=0) -> hitbox.Hitbox:
-	halfW = w / 2
-	halfH = h / 2
+def createWallObstacle(x, y, w, h, color, routine=[]) -> hitbox.Hitbox:
+	obs = obstacle.Obstacle(x, y, color)
+	obs.createWallHitbox(w, h)
+	obs.addRoutine(routine)
 
-	hit = hitbox.Hitbox(x, y, color)
-	hit.addPoint(-halfW, -halfH)
-	hit.addPoint(halfW, -halfH)
-	hit.addPoint(halfW, halfH)
-	hit.addPoint(-halfW, halfH)
-
-	return {"hitbox" : hit, "rotateSpeed" : rotateSpeed}
+	return obs
 
 
-def createObstacle(x:int, y:int, listPoint:list, color, rotateSpeed=0) -> hitbox.Hitbox:
-	hit = hitbox.Hitbox(x, y, color)
+def createPolygonObstacle(x:int, y:int, listPoint:list, color, routine=[]) -> hitbox.Hitbox:
+	obs = obstacle.Obstacle(x, y, color)
+	obs.createPolygonHitbox(listPoint)
+	obs.addRoutine(routine)
 
-	for p in listPoint:
-		hit.addPoint(p[0], p[1])
+	return obs
 
-	return {"hitbox" : hit, "rotateSpeed" : rotateSpeed}
+
+def createCircleObstacle(x:int, y:int, radius:int, precision:int, color, routine=[]) -> hitbox.Hitbox:
+	obs = obstacle.Obstacle(x, y, color)
+	obs.createCircleHitbox(radius, precision)
+	obs.addRoutine(routine)
+
+	return obs
 
 
 
@@ -75,7 +78,7 @@ class Server:
 		# Walls creation
 		self.walls = [
 			# Wall up
-			createWall(
+			createWallObstacle(
 				AREA_SIZE[0] / 2,
 			 	AREA_BORDER_SIZE / 2,
 				AREA_SIZE[0],
@@ -83,7 +86,7 @@ class Server:
 				(50, 50, 50)
 			),
 			# Wall down
-			createWall(
+			createWallObstacle(
 				AREA_SIZE[0] / 2,
 				AREA_SIZE[1] - AREA_BORDER_SIZE / 2,
 				AREA_SIZE[0],
@@ -91,37 +94,60 @@ class Server:
 				(50, 50, 50)
 			),
 			# Obstables
-			createObstacle(
+			createPolygonObstacle(
 				AREA_SIZE[0] / 2,
 				0,
 				[(-300, 0), (300, 0), (275, 50), (75, 75), (0, 125), (-75, 75), (-275, 50)],
 				(200, 200, 0)
 			),
-			createObstacle(
+			createPolygonObstacle(
 				AREA_SIZE[0] / 2,
 				AREA_SIZE[1],
 				[(-300, 0), (300, 0), (275, -50), (0, -25), (-275, -50)],
 				(200, 200, 0)
 			),
-			createObstacle(
+			createCircleObstacle(
 				AREA_SIZE[0] / 2,
 				AREA_SIZE[1] / 2,
-				ball.getPointOfCircle(100, 32, 360 / 64),
+				100,
+				32,
 				(200, 0, 200)
 			),
-			createObstacle(
+			createPolygonObstacle(
 				AREA_SIZE[0] / 2,
 				AREA_SIZE[1] / 2,
 				[(10, 200), (-10, 200), (-10, -200), (10, -200)],
 				(200, 0, 200),
-				360
+				[
+					{"type" : OBSTACLE_ROUTINE_TYPE_ROTATION,
+	  					"time" : OBSTACLE_ROUTINE_TIME_INFINITE,
+						"effect" : 360}
+				]
 			),
-			createObstacle(
+			createPolygonObstacle(
 				AREA_SIZE[0] / 2,
 				AREA_SIZE[1] / 2,
 				[(10, 200), (-10, 200), (-10, -200), (10, -200)],
 				(200, 0, 200),
-				-360
+				[
+					{"type" : OBSTACLE_ROUTINE_TYPE_ROTATION,
+	  					"time" : OBSTACLE_ROUTINE_TIME_INFINITE,
+						"effect" : -360}
+				]
+			),
+			createPolygonObstacle(
+				AREA_SIZE[0] / 3,
+				0,
+				[(-20, 0), (0, -15), (0, 15)],
+				(0, 200, 200),
+				[
+					{"type" : OBSTACLE_ROUTINE_TYPE_TRANSLATION,
+	  					"time" : 10,
+						"effect" : Vec2(0, 50)},
+					{"type" : OBSTACLE_ROUTINE_TYPE_TRANSLATION,
+	  					"time" : 10,
+						"effect" : Vec2(0, -50)}
+				]
 			)
 		]
 
@@ -226,9 +252,10 @@ class Server:
 				self.powerUp["state"] = POWER_UP_VISIBLE
 				self.createPowerUp()
 
+		# Update walls routine
 		for w in self.walls:
-			if w["rotateSpeed"] != 0:
-				w["hitbox"].rotate(w["rotateSpeed"] * self.delta)
+			w.updateRoutine(self.delta)
+
 		self.teamLeft.tick(self.delta, self.paddlesKeyState, updateTime)
 		self.teamRight.tick(self.delta, self.paddlesKeyState, updateTime)
 
@@ -269,13 +296,13 @@ class Server:
 			else:
 				for w in self.walls:
 					# if not b.modifierSkipCollision and b.hitbox.isInside(w) and not b.hitbox.isCollide(w):
-					if not b.modifierSkipCollision and b.hitbox.isInside(w["hitbox"]):
-						outOfCenter = vec2Sub(b.pos, w["hitbox"].pos)
+					if not b.modifierSkipCollision and b.hitbox.isInside(w.hitbox):
+						outOfCenter = vec2Sub(b.pos, w.hitbox.pos)
 						if outOfCenter.norm() == 0:
 							outOfCenter = Vec2(1, 0)
 						outOfCenter.normalize()
 						b.direction = outOfCenter
-						if not b.hitbox.isCollide(w["hitbox"]):
+						if not b.hitbox.isCollide(w.hitbox):
 							dir = outOfCenter.dup()
 							dir.multiply(BALL_RADIUS * 2 + 5)
 							pos = vec2Add(b.pos, dir)
@@ -324,7 +351,7 @@ class Server:
 			self.powerUp["hitbox"].setPos(Vec2(x, y))
 
 			for w in self.walls:
-				collide = self.powerUp["hitbox"].isInsideSurrondingBox(w["hitbox"])
+				collide = self.powerUp["hitbox"].isInsideSurrondingBox(w.hitbox)
 				if collide:
 					break
 
@@ -561,7 +588,7 @@ class Server:
 		content = {"obstacles" : [], "powerUp" : self.powerUpEnable}
 
 		for wall in self.walls:
-			obstacle = {"position" : wall["hitbox"].pos.asTupple(),"points" : wall["hitbox"].getPointsCenter(), "color" : wall["hitbox"].color}
+			obstacle = {"position" : wall.hitbox.pos.asTupple(),"points" : wall.hitbox.getPointsCenter(), "color" : wall.hitbox.color}
 			content["obstacles"].append(obstacle)
 
 		message = [SERVER_MSG_TYPE_CREATE_START_INFO, content]
@@ -578,8 +605,8 @@ class Server:
 
 		for i in range(len(self.walls)):
 			wall = self.walls[i]
-			if wall["rotateSpeed"] != 0:
-				obstacle = {"id" : i, "points" : wall["hitbox"].getPointsCenter()}
+			if wall.numberOfRoutines != 0:
+				obstacle = {"id" : i, "points" : wall.hitbox.getPointsCenter()}
 				content.append(obstacle)
 
 		message = [SERVER_MSG_TYPE_UPDATE_OBSTACLE, content]

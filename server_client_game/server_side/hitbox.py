@@ -51,6 +51,12 @@ class Hitbox:
 		self.computeSurroundingRect()
 
 
+	def addPoints(self, lst:list[tuple[int, int]]):
+		for x, y in lst:
+			self.points.append(Vec2(self.pos.x + x, self.pos.y + y))
+			self.computeSurroundingRect()
+
+
 	def clearPoints(self):
 		self.points.clear()
 

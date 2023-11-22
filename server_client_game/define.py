@@ -34,6 +34,9 @@ RIGTH_TEAM_RECT = (AREA_SIZE[0] - SPACE_PART, 0, SPACE_PART, AREA_SIZE[1])
 
 PERFECT_SHOOT_SIZE = BALL_RADIUS * 4 # in pixel
 
+OBSTACLE_ROUTINE_TYPE_TRANSLATION = 0
+OBSTACLE_ROUTINE_TYPE_ROTATION = 1
+OBSTACLE_ROUTINE_TIME_INFINITE = -1
 
 ############################################################################################
 #                                        TEAM DEFINE                                       #

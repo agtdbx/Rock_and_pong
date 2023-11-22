@@ -2,6 +2,7 @@ from define import *
 from server_side.vec2 import *
 import server_side.hitbox as hitbox
 import server_side.paddle as paddle
+import server_side.obstacle as obstacle
 
 
 def getPointOfCircle(radius, precision, beginDegree = 0):
@@ -147,7 +148,7 @@ class Ball:
 		return realDirection
 
 
-	def updatePosition(self, delta, paddlesLeft, paddlesRight, walls, powerUp):
+	def updatePosition(self, delta, paddlesLeft, paddlesRight, walls:list[obstacle.Obstacle], powerUp):
 		if self.state != STATE_RUN or self.modifierStopBallTimer > 0:
 			return
 
@@ -197,7 +198,7 @@ class Ball:
 					newpos = self.pos.dup()
 					newpos.translateAlong(realDirection, step)
 					collision = False
-				collision = self.makeCollisionWithWall(w["hitbox"])
+				collision = self.makeCollisionWithWall(w.hitbox)
 
 			if collision:
 				realDirection = self.getRealDirection()
