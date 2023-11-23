@@ -137,16 +137,30 @@ class Server:
 			),
 			createPolygonObstacle(
 				AREA_SIZE[0] / 3,
-				0,
-				[(-20, 0), (0, -15), (0, 15)],
+				30,
+				[(-30, 0), (0, -30), (0, 30)],
 				(0, 200, 200),
 				[
 					{"type" : OBSTACLE_ROUTINE_TYPE_TRANSLATION,
-	  					"time" : 10,
-						"effect" : Vec2(0, 50)},
+	  					"time" : 5,
+						"effect" : Vec2(0, 168)},
 					{"type" : OBSTACLE_ROUTINE_TYPE_TRANSLATION,
-	  					"time" : 10,
-						"effect" : Vec2(0, -50)}
+	  					"time" : 5,
+						"effect" : Vec2(0, -168)}
+				]
+			),
+			createPolygonObstacle(
+				AREA_SIZE[0] / 3 * 2,
+				AREA_SIZE[1] - 30,
+				[(30, 0), (0, -30), (0, 30)],
+				(0, 200, 200),
+				[
+					{"type" : OBSTACLE_ROUTINE_TYPE_TRANSLATION,
+	  					"time" : 5,
+						"effect" : Vec2(0, -168)},
+					{"type" : OBSTACLE_ROUTINE_TYPE_TRANSLATION,
+	  					"time" : 5,
+						"effect" : Vec2(0, 168)}
 				]
 			)
 		]
@@ -599,14 +613,14 @@ class Server:
 	def createMessageUpdateObstacle(self):
 		# Content of obstacles :
 		# [
-		# 	{id, points:[[x, y]]}
+		# 	{id, position, points:[[x, y]]}
 		# ]
 		content = []
 
 		for i in range(len(self.walls)):
 			wall = self.walls[i]
 			if wall.numberOfRoutines != 0:
-				obstacle = {"id" : i, "points" : wall.hitbox.getPointsCenter()}
+				obstacle = {"id" : i, "position" : wall.hitbox.pos, "points" : wall.hitbox.getPointsCenter()}
 				content.append(obstacle)
 
 		message = [SERVER_MSG_TYPE_UPDATE_OBSTACLE, content]

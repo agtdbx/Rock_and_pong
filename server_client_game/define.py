@@ -161,7 +161,7 @@ SERVER_MSG_TYPE_CREATE_START_INFO = -1
 SERVER_MSG_TYPE_UPDATE_OBSTACLE = 0
 # Content of obstacles :
 # [
-# 	{id, points:[[x, y]]}
+# 	{id, position, points:[[x, y]]}
 # ]
 
 SERVER_MSG_TYPE_UPDATE_PADDLES = 1
