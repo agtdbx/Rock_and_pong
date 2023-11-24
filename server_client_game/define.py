@@ -38,6 +38,8 @@ OBSTACLE_ROUTINE_TYPE_TRANSLATION = 0
 OBSTACLE_ROUTINE_TYPE_ROTATION = 1
 OBSTACLE_ROUTINE_TIME_INFINITE = -1
 
+IA_COOLDOWN_GET_GAME_STATE = 1 # In seconds
+
 ############################################################################################
 #                                        TEAM DEFINE                                       #
 ############################################################################################

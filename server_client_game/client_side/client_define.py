@@ -61,18 +61,18 @@ POWER_UP_BALL_INVISIBLE_COLOR = (200, 200, 0) # in seconds
 ############################################################################################
 #                                      CLIENT DEFINE                                       #
 ############################################################################################
-# PLAYERS KEYS QWERTY
-PLAYER_KEYS = [
-	(pg.K_q, pg.K_a, pg.K_z, pg.K_SPACE), # L1 player
-	(pg.K_w, pg.K_s, pg.K_x, pg.K_SPACE), # L2 player
-	(pg.K_o, pg.K_k, pg.K_m, pg.K_SPACE), # R1 player
-	(pg.K_i, pg.K_j, pg.K_n, pg.K_SPACE), # R2 player
-]
+## PLAYERS KEYS QWERTY
+#PLAYER_KEYS = [
+#	(pg.K_q, pg.K_a, pg.K_z, pg.K_SPACE), # L1 player
+#	(pg.K_w, pg.K_s, pg.K_x, pg.K_SPACE), # L2 player
+#	(pg.K_o, pg.K_k, pg.K_m, pg.K_SPACE), # R1 player
+#	(pg.K_i, pg.K_j, pg.K_n, pg.K_SPACE), # R2 player
+#]
 
-# # PLAYERS KEYS AZERTY
-# PLAYER_KEYS = [
-# (pg.K_a, pg.K_q, pg.K_w, pg.K_SPACE), # L1 player
-# (pg.K_z, pg.K_s, pg.K_x, pg.K_SPACE), # L2 player
-# (pg.K_o, pg.K_k, pg.K_COMMA, pg.K_SPACE), # R1 player
-# (pg.K_i, pg.K_j, pg.K_n, pg.K_SPACE), # R2 player
-# ]
+# PLAYERS KEYS AZERTY
+PLAYER_KEYS = [
+(pg.K_a, pg.K_q, pg.K_w, pg.K_SPACE), # L1 player
+(pg.K_z, pg.K_s, pg.K_x, pg.K_SPACE), # L2 player
+(pg.K_o, pg.K_k, pg.K_COMMA, pg.K_SPACE), # R1 player
+(pg.K_i, pg.K_j, pg.K_n, pg.K_SPACE), # R2 player
+]

@@ -4,6 +4,7 @@ import server_side.hitbox as hitbox
 import server_side.team as team
 import server_side.ball as ball
 import server_side.obstacle as obstacle
+import server_side.ia as ia
 
 import random
 import time
@@ -59,6 +60,11 @@ class Server:
 		# Ball creation
 		self.balls = [ball.Ball(0, 0)]
 
+		# IA creation
+		self.iaTimer = 0
+		self.iaList = []
+		self.iaList.append(ia.Ia(TEAM_RIGHT, 0))
+
 		# Ball begin left side
 		if random.random() > 0.5:
 			self.balls[0].lastPaddleHitId = random.choice(self.teamLeft.paddles).id
@@ -94,75 +100,75 @@ class Server:
 				(50, 50, 50)
 			),
 			# Obstables
-			createPolygonObstacle(
-				AREA_SIZE[0] / 2,
-				0,
-				[(-300, 0), (300, 0), (275, 50), (75, 75), (0, 125), (-75, 75), (-275, 50)],
-				(200, 200, 0)
-			),
-			createPolygonObstacle(
-				AREA_SIZE[0] / 2,
-				AREA_SIZE[1],
-				[(-300, 0), (300, 0), (275, -50), (0, -25), (-275, -50)],
-				(200, 200, 0)
-			),
-			createCircleObstacle(
-				AREA_SIZE[0] / 2,
-				AREA_SIZE[1] / 2,
-				100,
-				32,
-				(200, 0, 200)
-			),
-			createPolygonObstacle(
-				AREA_SIZE[0] / 2,
-				AREA_SIZE[1] / 2,
-				[(10, 200), (-10, 200), (-10, -200), (10, -200)],
-				(200, 0, 200),
-				[
-					{"type" : OBSTACLE_ROUTINE_TYPE_ROTATION,
-	  					"time" : OBSTACLE_ROUTINE_TIME_INFINITE,
-						"effect" : 360}
-				]
-			),
-			createPolygonObstacle(
-				AREA_SIZE[0] / 2,
-				AREA_SIZE[1] / 2,
-				[(10, 200), (-10, 200), (-10, -200), (10, -200)],
-				(200, 0, 200),
-				[
-					{"type" : OBSTACLE_ROUTINE_TYPE_ROTATION,
-	  					"time" : OBSTACLE_ROUTINE_TIME_INFINITE,
-						"effect" : -360}
-				]
-			),
-			createPolygonObstacle(
-				AREA_SIZE[0] / 3,
-				30,
-				[(-30, 0), (0, -30), (0, 30)],
-				(0, 200, 200),
-				[
-					{"type" : OBSTACLE_ROUTINE_TYPE_TRANSLATION,
-	  					"time" : 5,
-						"effect" : Vec2(0, 168)},
-					{"type" : OBSTACLE_ROUTINE_TYPE_TRANSLATION,
-	  					"time" : 5,
-						"effect" : Vec2(0, -168)}
-				]
-			),
-			createPolygonObstacle(
-				AREA_SIZE[0] / 3 * 2,
-				AREA_SIZE[1] - 30,
-				[(30, 0), (0, -30), (0, 30)],
-				(0, 200, 200),
-				[
-					{"type" : OBSTACLE_ROUTINE_TYPE_TRANSLATION,
-	  					"time" : 5,
-						"effect" : Vec2(0, -168)},
-					{"type" : OBSTACLE_ROUTINE_TYPE_TRANSLATION,
-	  					"time" : 5,
-						"effect" : Vec2(0, 168)}
-				]
-			)
+			#createPolygonObstacle(
+			#	AREA_SIZE[0] / 2,
+			#	0,
+			#	[(-300, 0), (300, 0), (275, 50), (75, 75), (0, 125), (-75, 75), (-275, 50)],
+			#	(200, 200, 0)
+			#),
+			#createPolygonObstacle(
+			#	AREA_SIZE[0] / 2,
+			#	AREA_SIZE[1],
+			#	[(-300, 0), (300, 0), (275, -50), (0, -25), (-275, -50)],
+			#	(200, 200, 0)
+			#),
+			#createCircleObstacle(
+			#	AREA_SIZE[0] / 2,
+			#	AREA_SIZE[1] / 2,
+			#	100,
+			#	32,
+			#	(200, 0, 200)
+			#),
+			#createPolygonObstacle(
+			#	AREA_SIZE[0] / 2,
+			#	AREA_SIZE[1] / 2,
+			#	[(10, 200), (-10, 200), (-10, -200), (10, -200)],
+			#	(200, 0, 200),
+			#	[
+			#		{"type" : OBSTACLE_ROUTINE_TYPE_ROTATION,
+	  		#			"time" : OBSTACLE_ROUTINE_TIME_INFINITE,
+			#			"effect" : 360}
+			#	]
+			#),
+			#createPolygonObstacle(
+			#	AREA_SIZE[0] / 2,
+			#	AREA_SIZE[1] / 2,
+			#	[(10, 200), (-10, 200), (-10, -200), (10, -200)],
+			#	(200, 0, 200),
+			#	[
+			#		{"type" : OBSTACLE_ROUTINE_TYPE_ROTATION,
+	  		#			"time" : OBSTACLE_ROUTINE_TIME_INFINITE,
+			#			"effect" : -360}
+			#	]
+			#),
+			#createPolygonObstacle(
+			#	AREA_SIZE[0] / 3,
+			#	30,
+			#	[(-30, 0), (0, -30), (0, 30)],
+			#	(0, 200, 200),
+			#	[
+			#		{"type" : OBSTACLE_ROUTINE_TYPE_TRANSLATION,
+	  		#			"time" : 5,
+			#			"effect" : Vec2(0, 168)},
+			#		{"type" : OBSTACLE_ROUTINE_TYPE_TRANSLATION,
+	  		#			"time" : 5,
+			#			"effect" : Vec2(0, -168)}
+			#	]
+			#),
+			#createPolygonObstacle(
+			#	AREA_SIZE[0] / 3 * 2,
+			#	AREA_SIZE[1] - 30,
+			#	[(30, 0), (0, -30), (0, 30)],
+			#	(0, 200, 200),
+			#	[
+			#		{"type" : OBSTACLE_ROUTINE_TYPE_TRANSLATION,
+	  		#			"time" : 5,
+			#			"effect" : Vec2(0, -168)},
+			#		{"type" : OBSTACLE_ROUTINE_TYPE_TRANSLATION,
+	  		#			"time" : 5,
+			#			"effect" : Vec2(0, 168)}
+			#	]
+			#)
 		]
 
 		# idPaddle, paddleTeam, Ball speed, Number of bounce, CC, Perfect shoot, time of goal
@@ -241,6 +247,17 @@ class Server:
 
 		self.time += self.delta
 
+		# Update timers
+		if self.inputWait > 0:
+			self.inputWait -= self.delta
+			if self.inputWait < 0:
+				self.inputWait = 0
+
+		if self.iaTimer > 0:
+			self.iaTimer -= self.delta
+			if self.iaTimer < 0:
+				self.iaTimer = 0
+
 		# Check if ball move. If no ball move, all time base event are stopping
 		updateTime = False
 		numberOfBall = len(self.balls)
@@ -249,14 +266,11 @@ class Server:
 				updateTime = True
 				break
 
+		# For stats
 		if numberOfBall > self.ballNumber:
 			self.ballNumber = numberOfBall
 
-		if self.inputWait > 0:
-			self.inputWait -= self.delta
-			if self.inputWait < 0:
-				self.inputWait = 0
-
+		# Update power up
 		if self.powerUpEnable and not updateTime and self.powerUp["state"] != POWER_UP_SPAWN_COOLDOWN:
 			self.powerUp["state"] = POWER_UP_SPAWN_COOLDOWN
 
@@ -270,11 +284,25 @@ class Server:
 		for w in self.walls:
 			w.updateRoutine(self.delta)
 
+		# Ia tick
+		for ia in self.iaList:
+			if self.iaTimer == 0:
+				ia.updateGameEnvironement(self.walls, self.teamLeft.paddles, self.teamRight.paddles, self.balls, self.powerUp)
+			ia.tick(self.delta)
+			self.paddlesKeyState[ia.globalId * 4 + KEY_UP] = ia.keyToEmulate[KEY_UP]
+			self.paddlesKeyState[ia.globalId * 4 + KEY_DOWN] = ia.keyToEmulate[KEY_DOWN]
+			self.paddlesKeyState[ia.globalId * 4 + KEY_POWER_UP] = ia.keyToEmulate[KEY_POWER_UP]
+			self.paddlesKeyState[ia.globalId * 4 + KEY_LAUNCH_BALL] = ia.keyToEmulate[KEY_LAUNCH_BALL]
+
+		if self.iaTimer == 0:
+			self.iaTimer = IA_COOLDOWN_GET_GAME_STATE
+
+		# Paddles tick
 		self.teamLeft.tick(self.delta, self.paddlesKeyState, updateTime)
 		self.teamRight.tick(self.delta, self.paddlesKeyState, updateTime)
 
+		# Balls tick
 		ballToDelete = []
-
 		for i in range(len(self.balls)):
 			b = self.balls[i]
 			b.updatePosition(self.delta, self.teamLeft.paddles, self.teamRight.paddles, self.walls, self.powerUp)

@@ -136,3 +136,17 @@ class Paddle:
 
 		if powerUpEffect != None:
 			self.powerUpEffects.append(powerUpEffect)
+
+
+	def copy(self):
+		copy = Paddle(self.pos.x, self.pos.y, self.id, self.team)
+
+		copy.powerUp = self.powerUp
+		copy.powerUpEffects = self.powerUpEffects.copy()
+		copy.powerUpInCharge = self.powerUpInCharge.copy()
+
+		copy.modifierSpeed = self.modifierSpeed
+		if self.modifierSize != 1:
+			copy.modifySize(self.modifierSize)
+
+		return copy

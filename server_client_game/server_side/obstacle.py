@@ -71,3 +71,14 @@ class Obstacle:
 		elif currentRoutine["type"] == OBSTACLE_ROUTINE_TYPE_ROTATION:
 			self.hitbox.rotate(currentRoutine["effect"] * delta)
 
+
+	def copy(self):
+		copy = Obstacle(self.hitbox.pos.x, self.hitbox.pos.y, self.hitbox.color)
+		copy.hitbox.addPoints(self.hitbox.getPointsCenter())
+
+		copy.routine = self.routine.copy()
+		copy.routineIndex = self.routineIndex
+		copy.routineTime = self.routineTime
+		copy.numberOfRoutines = self.numberOfRoutines
+
+		return copy

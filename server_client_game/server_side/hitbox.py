@@ -228,3 +228,16 @@ class Hitbox:
 				collideInfos.append(collideBetweenSegments(p0, p1, p2, p3))
 
 		return collideInfos
+
+
+	def copy(self):
+		copy = Hitbox(self.pos.x, self.pos.y, self.color)
+
+		points = []
+		for p in self.points:
+			points.append(p.dup())
+		copy.addPoints(points)
+
+		copy.rotation = self.rotation
+
+		return copy

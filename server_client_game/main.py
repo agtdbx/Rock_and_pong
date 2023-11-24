@@ -3,7 +3,7 @@ import server_side.server
 
 import time
 
-server = server_side.server.Server(powerUpEnable=True)
+server = server_side.server.Server(powerUpEnable=False)
 client = client_side.client.Client()
 
 # Give messages from server to client
@@ -62,19 +62,19 @@ for ser, cli, loop in checkTime:
 		maxLoopTick = ser
 	moyLoopTick += ser
 
-moyServerTick /= len(checkTime)
-moyClientTick /= len(checkTime)
-moyLoopTick /= len(checkTime)
+#moyServerTick /= len(checkTime)
+#moyClientTick /= len(checkTime)
+#moyLoopTick /= len(checkTime)
 
-print("Server performance :")
-print("\tMinimum fps : ", 1 / minServerTick, " (", minServerTick, ")", sep="")
-print("\tAverage fps : ", 1 / moyServerTick, " (", moyServerTick, ")", sep="")
-print("\tMaximum fps : ", 1 / maxServerTick, " (", maxServerTick, ")", sep="")
-print("Client performance :")
-print("\tMinimum fps : ", 1 / minClientTick, " (", minClientTick, ")", sep="")
-print("\tAverage fps : ", 1 / moyClientTick, " (", moyClientTick, ")", sep="")
-print("\tMaximum fps : ", 1 / maxClientTick, " (", maxClientTick, ")", sep="")
-print("Loop performance :")
-print("\tMinimum fps : ", 1 / minLoopTick, " (", minLoopTick, ")", sep="")
-print("\tAverage fps : ", 1 / moyLoopTick, " (", moyLoopTick, ")", sep="")
-print("\tMaximum fps : ", 1 / maxLoopTick, " (", maxLoopTick, ")", sep="")
+#print("Server performance :")
+#print("\tMinimum fps : ", 1 / minServerTick, " (", minServerTick, ")", sep="")
+#print("\tAverage fps : ", 1 / moyServerTick, " (", moyServerTick, ")", sep="")
+#print("\tMaximum fps : ", 1 / maxServerTick, " (", maxServerTick, ")", sep="")
+#print("Client performance :")
+#print("\tMinimum fps : ", 1 / minClientTick, " (", minClientTick, ")", sep="")
+#print("\tAverage fps : ", 1 / moyClientTick, " (", moyClientTick, ")", sep="")
+#print("\tMaximum fps : ", 1 / maxClientTick, " (", maxClientTick, ")", sep="")
+#print("Loop performance :")
+#print("\tMinimum fps : ", 1 / minLoopTick, " (", minLoopTick, ")", sep="")
+#print("\tAverage fps : ", 1 / moyLoopTick, " (", moyLoopTick, ")", sep="")
+#print("\tMaximum fps : ", 1 / maxLoopTick, " (", maxLoopTick, ")", sep="")

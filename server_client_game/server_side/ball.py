@@ -385,6 +385,38 @@ class Ball:
 		return ball
 
 
+	def copy(self):
+		# Create new ball
+		ball = Ball(self.pos.x, self.pos.y)
+
+		# Copy direction
+		ball.direction = self.direction.dup()
+
+		# Copy new speed
+		ball.speed = self.speed
+
+		# Copy RUN state
+		ball.state = self.state
+
+		# Copy info of last paddle touch
+		ball.lastPaddleHitId = self.lastPaddleHitId
+		ball.lastPaddleTeam = self.lastPaddleTeam
+
+		# Dup power up effects
+		if self.modifierSize != 1:
+			ball.modifySize(self.modifierSize)
+		ball.modifierSkipCollision = self.modifierSkipCollision
+		ball.modifierInvisibleBall = self.modifierInvisibleBall
+		ball.modifierInvisibleBallTimer = self.modifierInvisibleBallTimer
+		ball.modifierWaveBall = self.modifierWaveBall
+		ball.modifierWaveBallTimer = self.modifierWaveBallTimer
+
+		ball.powerUpEffects = self.powerUpEffects
+		ball.numberOfBounce = self.numberOfBounce
+
+		return ball
+
+
 	def addPowerUpEffect(self, powerUp):
 		powerUpEffect = None
 
