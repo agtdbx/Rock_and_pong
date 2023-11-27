@@ -72,7 +72,7 @@ class Ia:
 		To make is plan, the Ia will change paddleKeyState to move paddle according to it's plan
 		"""
 		# Ia movement
-		if self.state == IA_STATE_GO_TO_Y_POS:
+		if self.state == IA_STATE_GO_TO_Y_POS and self.stateInfo != None:
 			if abs(self.iaPaddle.pos.y - self.stateInfo) <= IA_POSITION_PRECISION:
 				self.state = IA_STATE_WAIT
 				self.keyToEmulate[KEY_UP] = False
@@ -138,17 +138,32 @@ class Ia:
 
 		simulateTimeLimit = IA_EMULATE_MAX_TIME
 
+		stopSimulateIfLastPaddleTouchIsIaOne = []
+		for i in range(len(self.balls)):
+			b = self.balls[i]
+			if b.lastPaddleHitId == self.paddleId and b.lastPaddleTeam == self.teamId:
+				stopSimulateIfLastPaddleTouchIsIaOne.append(False)
+			else:
+				stopSimulateIfLastPaddleTouchIsIaOne.append(True)
+
+		self.emulateState = self.state
+		self.emulateStateInfo = self.stateInfo
+
 		while simulateTimeLimit > 0:
 			# Update walls routine
 			for w in self.walls:
 				w.updateRoutine(delta)
+
+			self.emulateTick(delta)
 
 			for i in range(len(self.balls)):
 				b = self.balls[i]
 				b.updatePosition(delta, self.paddles, [], self.walls, self.powerUp)
 				b.updateTime(delta)
 
-				if b.lastPaddleHitId == self.paddleId and b.lastPaddleTeam == self.teamId:
+				if not stopSimulateIfLastPaddleTouchIsIaOne[i] and (b.lastPaddleHitId != self.paddleId or b.lastPaddleTeam != self.teamId):
+					stopSimulateIfLastPaddleTouchIsIaOne[i] = True
+				elif stopSimulateIfLastPaddleTouchIsIaOne[i] and b.lastPaddleHitId == self.paddleId and b.lastPaddleTeam == self.teamId:
 					break
 
 				if b.state == STATE_IN_GOAL_LEFT:
@@ -160,19 +175,29 @@ class Ia:
 						self.stateInfo = b.pos.y
 					break
 
-				if b.state == STATE_IN_FOLLOW:
-					break
-
 			simulateTimeLimit -= delta
 
-		#if self.stateInfo == None:
-		#	self.stateInfo = self.balls[0].pos.y
+
+	def emulateTick(self, delta:float):
+		"""
+		Tick method of the Ia.
+		In this method, the Ia will emulate the game to know what to do.
+		To make is plan, the Ia will change paddleKeyState to move paddle according to it's plan
+		"""
+		# Ia movement
+		if self.emulateState == IA_STATE_GO_TO_Y_POS:
+			if abs(self.iaPaddle.pos.y - self.emulateStateInfo) <= IA_POSITION_PRECISION:
+				self.emulateState = IA_STATE_WAIT
+				self.emulateStateInfo = None
+			elif self.iaPaddle.pos.y > self.emulateStateInfo:
+				self.iaPaddle.move("up", delta)
+			elif self.iaPaddle.pos.y < self.emulateStateInfo:
+				self.iaPaddle.move("down", delta)
+			else:
+				self.emulateState = IA_STATE_WAIT
+				self.emulateStateInfo = None
 
 
 	def chooseNextActionToDo(self):
-		#if self.balls[0].state == STATE_IN_FOLLOW and self.balls[0].lastPaddleHitId == self.paddleId and self.balls[0].lastPaddleTeam == self.teamId:
-		#	self.state = IA_STATE_GO_TO_Y_POS
-		#	self.stateInfo =
 		if self.stateInfo != None:
 			self.state = IA_STATE_GO_TO_Y_POS
-		pass

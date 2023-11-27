@@ -1,6 +1,7 @@
 from define import *
 
 import server_side.paddle as paddle
+import random
 
 class Team:
 	def __init__(self, numberOfPlayers:int, team:int) -> None:
@@ -18,10 +19,10 @@ class Team:
 
 		self.paddles = []
 		if numberOfPlayers == 1:
-			self.paddles.append(paddle.Paddle(xPos, AREA_SIZE[1] // 2, 0, self.team))
+			self.paddles.append(paddle.Paddle(xPos, AREA_SIZE[1] // 2 + random.randint(-50, 50), 0, self.team))
 		else:
-			self.paddles.append(paddle.Paddle(xPos, AREA_SIZE[1] // 3, 0, self.team))
-			self.paddles.append(paddle.Paddle(xPos, AREA_SIZE[1] // 3 * 2, 1, self.team))
+			self.paddles.append(paddle.Paddle(xPos, AREA_SIZE[1] // 3 + random.randint(-50, 50), 0, self.team))
+			self.paddles.append(paddle.Paddle(xPos, AREA_SIZE[1] // 3 * 2 + random.randint(-50, 50), 1, self.team))
 
 		self.score = 0
 		# list of power up who try to use : [power up id, paddle id, power up used (bool)]

@@ -63,6 +63,7 @@ class Server:
 		# IA creation
 		self.iaTimer = 0
 		self.iaList = []
+		# self.iaList.append(ia.Ia(TEAM_LEFT, 0))
 		self.iaList.append(ia.Ia(TEAM_RIGHT, 0))
 
 		# Ball begin left side
@@ -100,75 +101,75 @@ class Server:
 				(50, 50, 50)
 			),
 			# Obstables
-			#createPolygonObstacle(
-			#	AREA_SIZE[0] / 2,
-			#	0,
-			#	[(-300, 0), (300, 0), (275, 50), (75, 75), (0, 125), (-75, 75), (-275, 50)],
-			#	(200, 200, 0)
-			#),
-			#createPolygonObstacle(
-			#	AREA_SIZE[0] / 2,
-			#	AREA_SIZE[1],
-			#	[(-300, 0), (300, 0), (275, -50), (0, -25), (-275, -50)],
-			#	(200, 200, 0)
-			#),
-			#createCircleObstacle(
-			#	AREA_SIZE[0] / 2,
-			#	AREA_SIZE[1] / 2,
-			#	100,
-			#	32,
-			#	(200, 0, 200)
-			#),
-			#createPolygonObstacle(
-			#	AREA_SIZE[0] / 2,
-			#	AREA_SIZE[1] / 2,
-			#	[(10, 200), (-10, 200), (-10, -200), (10, -200)],
-			#	(200, 0, 200),
-			#	[
-			#		{"type" : OBSTACLE_ROUTINE_TYPE_ROTATION,
-	  		#			"time" : OBSTACLE_ROUTINE_TIME_INFINITE,
-			#			"effect" : 360}
-			#	]
-			#),
-			#createPolygonObstacle(
-			#	AREA_SIZE[0] / 2,
-			#	AREA_SIZE[1] / 2,
-			#	[(10, 200), (-10, 200), (-10, -200), (10, -200)],
-			#	(200, 0, 200),
-			#	[
-			#		{"type" : OBSTACLE_ROUTINE_TYPE_ROTATION,
-	  		#			"time" : OBSTACLE_ROUTINE_TIME_INFINITE,
-			#			"effect" : -360}
-			#	]
-			#),
-			#createPolygonObstacle(
-			#	AREA_SIZE[0] / 3,
-			#	30,
-			#	[(-30, 0), (0, -30), (0, 30)],
-			#	(0, 200, 200),
-			#	[
-			#		{"type" : OBSTACLE_ROUTINE_TYPE_TRANSLATION,
-	  		#			"time" : 5,
-			#			"effect" : Vec2(0, 168)},
-			#		{"type" : OBSTACLE_ROUTINE_TYPE_TRANSLATION,
-	  		#			"time" : 5,
-			#			"effect" : Vec2(0, -168)}
-			#	]
-			#),
-			#createPolygonObstacle(
-			#	AREA_SIZE[0] / 3 * 2,
-			#	AREA_SIZE[1] - 30,
-			#	[(30, 0), (0, -30), (0, 30)],
-			#	(0, 200, 200),
-			#	[
-			#		{"type" : OBSTACLE_ROUTINE_TYPE_TRANSLATION,
-	  		#			"time" : 5,
-			#			"effect" : Vec2(0, -168)},
-			#		{"type" : OBSTACLE_ROUTINE_TYPE_TRANSLATION,
-	  		#			"time" : 5,
-			#			"effect" : Vec2(0, 168)}
-			#	]
-			#)
+			# createPolygonObstacle(
+			# 	AREA_SIZE[0] / 2,
+			# 	0,
+			# 	[(-300, 0), (300, 0), (275, 50), (75, 75), (0, 125), (-75, 75), (-275, 50)],
+			# 	(200, 200, 0)
+			# ),
+			# createPolygonObstacle(
+			# 	AREA_SIZE[0] / 2,
+			# 	AREA_SIZE[1],
+			# 	[(-300, 0), (300, 0), (275, -50), (0, -25), (-275, -50)],
+			# 	(200, 200, 0)
+			# ),
+			# createCircleObstacle(
+			# 	AREA_SIZE[0] / 2,
+			# 	AREA_SIZE[1] / 2,
+			# 	100,
+			# 	32,
+			# 	(200, 0, 200)
+			# ),
+			# createPolygonObstacle(
+			# 	AREA_SIZE[0] / 2,
+			# 	AREA_SIZE[1] / 2,
+			# 	[(10, 200), (-10, 200), (-10, -200), (10, -200)],
+			# 	(200, 0, 200),
+			# 	[
+			# 		{"type" : OBSTACLE_ROUTINE_TYPE_ROTATION,
+	  		# 			"time" : OBSTACLE_ROUTINE_TIME_INFINITE,
+			# 			"effect" : 360}
+			# 	]
+			# ),
+			# createPolygonObstacle(
+			# 	AREA_SIZE[0] / 2,
+			# 	AREA_SIZE[1] / 2,
+			# 	[(10, 200), (-10, 200), (-10, -200), (10, -200)],
+			# 	(200, 0, 200),
+			# 	[
+			# 		{"type" : OBSTACLE_ROUTINE_TYPE_ROTATION,
+	  		# 			"time" : OBSTACLE_ROUTINE_TIME_INFINITE,
+			# 			"effect" : -360}
+			# 	]
+			# ),
+			# createPolygonObstacle(
+			# 	AREA_SIZE[0] / 3,
+			# 	30,
+			# 	[(-30, 0), (0, -30), (0, 30)],
+			# 	(0, 200, 200),
+			# 	[
+			# 		{"type" : OBSTACLE_ROUTINE_TYPE_TRANSLATION,
+	  		# 			"time" : 5,
+			# 			"effect" : Vec2(0, 168)},
+			# 		{"type" : OBSTACLE_ROUTINE_TYPE_TRANSLATION,
+	  		# 			"time" : 5,
+			# 			"effect" : Vec2(0, -168)}
+			# 	]
+			# ),
+			# createPolygonObstacle(
+			# 	AREA_SIZE[0] / 3 * 2,
+			# 	AREA_SIZE[1] - 30,
+			# 	[(30, 0), (0, -30), (0, 30)],
+			# 	(0, 200, 200),
+			# 	[
+			# 		{"type" : OBSTACLE_ROUTINE_TYPE_TRANSLATION,
+	  		# 			"time" : 5,
+			# 			"effect" : Vec2(0, -168)},
+			# 		{"type" : OBSTACLE_ROUTINE_TYPE_TRANSLATION,
+	  		# 			"time" : 5,
+			# 			"effect" : Vec2(0, 168)}
+			# 	]
+			# )
 		]
 
 		# idPaddle, paddleTeam, Ball speed, Number of bounce, CC, Perfect shoot, time of goal
