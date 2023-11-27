@@ -122,9 +122,11 @@ class Ball:
 					# Remove the effect of the power up
 
 					if powerUpEffect[0] == POWER_UP_BALL_SLOW:
+						print("oui")
 						self.modifierSpeed *= POWER_UP_BALL_SLOW_SPEED_FACTOR
 						if self.modifierSpeed > 1:
 							self.modifierSpeed = 1
+						print(self.modifierSpeed)
 
 					elif powerUpEffect[0] == POWER_UP_BALL_BIG:
 						self.modifierSize /= POWER_UP_BALL_BIG_SIZE_FACTOR
@@ -136,6 +138,9 @@ class Ball:
 
 		for i in range(len(powerUpEffectToRemove)):
 			self.powerUpEffects.pop(powerUpEffectToRemove[i] - i)
+
+		if len(self.powerUpEffects) == 0:
+			self.resetModifier()
 
 
 	def getRealDirection(self) -> Vec2:
@@ -378,8 +383,7 @@ class Ball:
 		ball.modifierWaveBall = self.modifierWaveBall
 		ball.modifierWaveBallTimer = self.modifierWaveBallTimer
 
-		ball.powerUpEffects = self.powerUpEffects
-
+		ball.powerUpEffects = self.powerUpEffects.copy()
 		ball.numberOfBounce = self.numberOfBounce
 
 		return ball
@@ -411,7 +415,7 @@ class Ball:
 		ball.modifierWaveBall = self.modifierWaveBall
 		ball.modifierWaveBallTimer = self.modifierWaveBallTimer
 
-		ball.powerUpEffects = self.powerUpEffects
+		ball.powerUpEffects = self.powerUpEffects.copy()
 		ball.numberOfBounce = self.numberOfBounce
 
 		return ball

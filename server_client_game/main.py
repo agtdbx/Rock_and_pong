@@ -3,7 +3,7 @@ import server_side.server
 
 import time
 
-server = server_side.server.Server(powerUpEnable=False)
+server = server_side.server.Server(powerUpEnable=True)
 client = client_side.client.Client()
 
 # Give messages from server to client

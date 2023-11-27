@@ -514,6 +514,7 @@ class Server:
 		if self.powerUpEnable:
 			for p in self.teamLeft.paddles:
 				p.powerUp = random.randint(0, 12)
+				p.powerUp = 5
 
 		if len(self.balls) - len(ballToDelete) > 1:
 			ballToDelete.append(i)
