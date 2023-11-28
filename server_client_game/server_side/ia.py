@@ -154,6 +154,9 @@ class Ia:
 			for w in self.walls:
 				w.updateRoutine(delta)
 
+			for p in self.paddles:
+				p.updateTimes(delta)
+
 			self.emulateTick(delta)
 
 			for i in range(len(self.balls)):

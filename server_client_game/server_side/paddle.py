@@ -142,7 +142,9 @@ class Paddle:
 		copy = Paddle(self.pos.x, self.pos.y, self.id, self.team)
 
 		copy.powerUp = self.powerUp
-		copy.powerUpEffects = self.powerUpEffects.copy()
+		copy.powerUpEffects = []
+		for powerUp in self.powerUpEffects:
+			copy.powerUpEffects.append(powerUp.copy())
 		copy.powerUpInCharge = self.powerUpInCharge.copy()
 
 		copy.modifierSpeed = self.modifierSpeed

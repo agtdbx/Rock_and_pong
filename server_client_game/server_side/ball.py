@@ -122,11 +122,9 @@ class Ball:
 					# Remove the effect of the power up
 
 					if powerUpEffect[0] == POWER_UP_BALL_SLOW:
-						print("oui")
 						self.modifierSpeed *= POWER_UP_BALL_SLOW_SPEED_FACTOR
 						if self.modifierSpeed > 1:
 							self.modifierSpeed = 1
-						print(self.modifierSpeed)
 
 					elif powerUpEffect[0] == POWER_UP_BALL_BIG:
 						self.modifierSize /= POWER_UP_BALL_BIG_SIZE_FACTOR
@@ -383,7 +381,9 @@ class Ball:
 		ball.modifierWaveBall = self.modifierWaveBall
 		ball.modifierWaveBallTimer = self.modifierWaveBallTimer
 
-		ball.powerUpEffects = self.powerUpEffects.copy()
+		ball.powerUpEffects = []
+		for powerUp in self.powerUpEffects:
+			ball.powerUpEffects.append(powerUp.copy())
 		ball.numberOfBounce = self.numberOfBounce
 
 		return ball
@@ -415,7 +415,9 @@ class Ball:
 		ball.modifierWaveBall = self.modifierWaveBall
 		ball.modifierWaveBallTimer = self.modifierWaveBallTimer
 
-		ball.powerUpEffects = self.powerUpEffects.copy()
+		ball.powerUpEffects = []
+		for powerUp in self.powerUpEffects:
+			ball.powerUpEffects.append(powerUp.copy())
 		ball.numberOfBounce = self.numberOfBounce
 
 		return ball
