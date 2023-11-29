@@ -137,9 +137,6 @@ class Ball:
 		for i in range(len(powerUpEffectToRemove)):
 			self.powerUpEffects.pop(powerUpEffectToRemove[i] - i)
 
-		if len(self.powerUpEffects) == 0:
-			self.resetModifier()
-
 
 	def getRealDirection(self) -> Vec2:
 		if not self.modifierWaveBall:
