@@ -12,7 +12,7 @@ IA_STATE_WAIT = 0
 IA_STATE_GO_TO_Y_POS = 1
 
 IA_POSITION_PRECISION = 1 # In pixels
-IA_EMULATE_MAX_TIME = 10 # In seconds
+IA_EMULATE_MAX_TIME = 5 # In seconds
 
 ########################################################
 #                         CLASS                        #
@@ -54,15 +54,18 @@ class Ia:
 		else:
 			self.iaPaddle = self.paddles[self.paddleId + len(paddlesLeft)]
 
-		#
 		if self.balls[0].state == STATE_IN_FOLLOW:
 			self.balls[0].state == STATE_RUN
+
+		tmpPaddle = self.iaPaddle.copy()
 
 		# Simulate the game until one ball is in goal
 		self.emulateBallsToGoal()
 
 		# Choose where ia should be placed, and it action to do
 		self.chooseNextActionToDo()
+
+		self.iaPaddle = tmpPaddle
 
 
 	def tick(self, delta:float):
