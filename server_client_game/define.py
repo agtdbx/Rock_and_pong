@@ -1,5 +1,5 @@
 ############################################################################################
-#                                      BALL DEFINE                                       #
+#                                       BALL DEFINE                                        #
 ############################################################################################
 BALL_RADIUS = 10 # in pixel
 BALL_START_SPEED = 480 # pixel per seconds
@@ -38,6 +38,14 @@ OBSTACLE_ROUTINE_TYPE_TRANSLATION = 0
 OBSTACLE_ROUTINE_TYPE_ROTATION = 1
 OBSTACLE_ROUTINE_TIME_INFINITE = -1
 
+# {obstacle_type, obstacle_position, obstacle_color, obstacle_info, obstacle_routine}
+OBSTACLE_TYPE_RECTANGLE = 0
+OBSTACLE_TYPE_POLYGON = 1
+OBSTACLE_TYPE_CIRCLE = 2
+# obstacle_info RECTANGLE : [w, h]
+# obstacle_info POLYGON : [(x, y), (x, y), ...]
+# obstacle_info CIRCLE : [radius, precision]
+
 IA_COOLDOWN_GET_GAME_STATE = 1 # In seconds
 
 ############################################################################################
@@ -47,6 +55,9 @@ TEAM_MAX_PLAYER = 2
 TEAM_WIN_SCORE = 11
 TEAM_LEFT = 0
 TEAM_RIGHT = 1
+
+PADDLE_PLAYER = 0
+PADDLE_IA = 1
 
 ############################################################################################
 #                                       PADDLE DEFINE                                      #

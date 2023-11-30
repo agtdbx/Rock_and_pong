@@ -2,6 +2,7 @@ from client_side.client_define import *
 from client_side.vec2 import *
 import client_side.hitbox as hitbox
 import client_side.team as team
+import client_side.paddle as paddle
 import client_side.ball as ball
 
 import pygame as pg
@@ -60,8 +61,8 @@ class Client:
 		self.paddlesKeyState = PADDLES_KEYS_STATE.copy()
 
 		# Team creation
-		self.teamLeft = team.Team(1, TEAM_LEFT)
-		self.teamRight = team.Team(1, TEAM_RIGHT)
+		self.teamLeft = team.Team(0, TEAM_LEFT)
+		self.teamRight = team.Team(0, TEAM_RIGHT)
 
 		# Ball creation
 		self.balls = [ball.Ball(WIN_WIDTH / 2, WIN_HEIGHT / 2)]
@@ -343,12 +344,20 @@ class Client:
 			y = AREA_RECT[1] + content["position"][1]
 
 			if content["id_team"] == TEAM_LEFT:
+				if content["id_paddle"] >= len(self.teamLeft.paddles):
+					while content["id_paddle"] > len(self.teamLeft.paddles):
+						self.teamLeft.paddles.append(paddle.Paddle(0, 0, len(self.teamLeft.paddles), TEAM_LEFT))
+					self.teamLeft.paddles.append(paddle.Paddle(0, 0, content["id_paddle"], TEAM_LEFT))
 				self.teamLeft.paddles[content["id_paddle"]].setPos(x, y)
 				if self.teamLeft.paddles[content["id_paddle"]].modifierSize != content["modifierSize"]:
 					self.teamLeft.paddles[content["id_paddle"]].modifySize(content["modifierSize"])
 				self.teamLeft.paddles[content["id_paddle"]].powerUp = content["powerUp"]
 				self.teamLeft.paddles[content["id_paddle"]].powerUpInCharge = content["powerUpInCharge"]
 			else:
+				if content["id_paddle"] >= len(self.teamRight.paddles):
+					while content["id_paddle"] > len(self.teamRight.paddles):
+						self.teamRight.paddles.append(paddle.Paddle(0, 0, len(self.teamRight.paddles), TEAM_RIGHT))
+					self.teamRight.paddles.append(paddle.Paddle(0, 0, content["id_paddle"], TEAM_RIGHT))
 				self.teamRight.paddles[content["id_paddle"]].setPos(x, y)
 				if self.teamRight.paddles[content["id_paddle"]].modifierSize != content["modifierSize"]:
 					self.teamRight.paddles[content["id_paddle"]].modifySize(content["modifierSize"])

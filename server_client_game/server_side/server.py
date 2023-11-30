@@ -36,7 +36,7 @@ def createCircleObstacle(x:int, y:int, radius:int, precision:int, color, routine
 
 
 class Server:
-	def __init__(self, powerUpEnable):
+	def __init__(self, powerUpEnable, paddles_left, paddles_right):
 		"""
 		This method define all variables needed by the program
 		"""
@@ -54,8 +54,8 @@ class Server:
 		self.paddlesKeyState = PADDLES_KEYS_STATE.copy()
 
 		# Team creation
-		self.teamLeft = team.Team(1, TEAM_LEFT)
-		self.teamRight = team.Team(1, TEAM_RIGHT)
+		self.teamLeft = team.Team(len(paddles_left), TEAM_LEFT)
+		self.teamRight = team.Team(len(paddles_right), TEAM_RIGHT)
 
 		# Ball creation
 		self.balls = [ball.Ball(0, 0)]
@@ -63,7 +63,12 @@ class Server:
 		# IA creation
 		self.iaTimer = 0
 		self.iaList = []
-		self.iaList.append(ia.Ia(TEAM_RIGHT, 0))
+		for i in range(len(paddles_left)):
+			if paddles_left[i] == PADDLE_IA:
+				self.iaList.append(ia.Ia(TEAM_LEFT, i))
+		for i in range(len(paddles_right)):
+			if paddles_right[i] == PADDLE_IA:
+				self.iaList.append(ia.Ia(TEAM_RIGHT, i))
 
 		# Ball begin left side
 		if random.random() > 0.5:
@@ -80,6 +85,14 @@ class Server:
 		self.powerUp = {"state" : POWER_UP_SPAWN_COOLDOWN, "hitbox" : hitbox.Hitbox(0, 0, (0, 0, 0)), "paddleWhoGet" : (-1, -1)}
 		for p in ball.getPointOfCircle(POWER_UP_HITBOX_RADIUS, POWER_UP_HITBOX_PRECISION, 0):
 			self.powerUp["hitbox"].addPoint(p[0], p[1])
+
+		# {obstacle_type, obstacle_position, obstacle_color, obstacle_info, obstacle_routine}
+		# OBSTACLE_TYPE_RECTANGLE = 0
+		# OBSTACLE_TYPE_POLYGON = 1
+		# OBSTACLE_TYPE_CIRCLE = 2
+		# obstacle_info RECTANGLE : [w, h]
+		# obstacle_info POLYGON : [(x, y), (x, y), ...]
+		# obstacle_info CIRCLE : [radius, precision]
 
 		# Walls creation
 		self.walls = [
@@ -222,9 +235,7 @@ class Server:
 		while self.runMainLoop:
 			self.input()
 			self.tick()
-			# print("targetTime :", targetTime, "| deltaTime :", self.delta)
 			timeToSleep = max(0, targetTime - self.delta)
-			# print("timeToSleep :", timeToSleep)
 			time.sleep(timeToSleep)
 
 
