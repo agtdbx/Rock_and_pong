@@ -36,7 +36,7 @@ def createCircleObstacle(x:int, y:int, radius:int, precision:int, color, routine
 
 
 class Server:
-	def __init__(self, powerUpEnable, paddles_left, paddles_right):
+	def __init__(self, powerUpEnable, paddles_left, paddles_right, idMap):
 		"""
 		This method define all variables needed by the program
 		"""
@@ -86,131 +86,8 @@ class Server:
 		for p in ball.getPointOfCircle(POWER_UP_HITBOX_RADIUS, POWER_UP_HITBOX_PRECISION, 0):
 			self.powerUp["hitbox"].addPoint(p[0], p[1])
 
-		# {obstacle_type, obstacle_position, obstacle_color, obstacle_info, obstacle_routine}
-		# OBSTACLE_TYPE_RECTANGLE = 0
-		# OBSTACLE_TYPE_POLYGON = 1
-		# OBSTACLE_TYPE_CIRCLE = 2
-		# obstacle_info RECTANGLE : [w, h]
-		# obstacle_info POLYGON : [(x, y), (x, y), ...]
-		# obstacle_info CIRCLE : [radius, precision]
-
 		# Walls creation
-		self.walls = [
-			# Wall up
-			createWallObstacle(
-				AREA_SIZE[0] / 2,
-			 	AREA_BORDER_SIZE / 2,
-				AREA_SIZE[0],
-				AREA_BORDER_SIZE * 2,
-				(50, 50, 50)
-			),
-			# Wall down
-			createWallObstacle(
-				AREA_SIZE[0] / 2,
-				AREA_SIZE[1] - AREA_BORDER_SIZE / 2,
-				AREA_SIZE[0],
-				AREA_BORDER_SIZE * 2,
-				(50, 50, 50)
-			),
-			# Obstables
-			createPolygonObstacle(
-				AREA_SIZE[0] / 2,
-				0,
-				[(-300, 0), (300, 0), (275, 50), (75, 75), (0, 125), (-75, 75), (-275, 50)],
-				(200, 200, 0)
-			),
-			createPolygonObstacle(
-				AREA_SIZE[0] / 2,
-				AREA_SIZE[1],
-				[(-300, 0), (300, 0), (275, -50), (0, -25), (-275, -50)],
-				(200, 200, 0)
-			),
-			createCircleObstacle(
-				AREA_SIZE[0] / 2,
-				AREA_SIZE[1] / 2,
-				100,
-				32,
-				(200, 0, 200)
-			),
-			createPolygonObstacle(
-				AREA_SIZE[0] / 2,
-				AREA_SIZE[1] / 2,
-				[(10, 200), (-10, 200), (-10, -200), (10, -200)],
-				(200, 0, 200),
-				[
-					{"type" : OBSTACLE_ROUTINE_TYPE_ROTATION,
-	  					"time" : OBSTACLE_ROUTINE_TIME_INFINITE,
-						"effect" : 360}
-				]
-			),
-			createPolygonObstacle(
-				AREA_SIZE[0] / 2,
-				AREA_SIZE[1] / 2,
-				[(10, 200), (-10, 200), (-10, -200), (10, -200)],
-				(200, 0, 200),
-				[
-					{"type" : OBSTACLE_ROUTINE_TYPE_ROTATION,
-	  					"time" : OBSTACLE_ROUTINE_TIME_INFINITE,
-						"effect" : -360}
-				]
-			),
-			createPolygonObstacle(
-				AREA_SIZE[0] / 3,
-				30,
-				[(-30, 0), (0, -30), (0, 30)],
-				(0, 200, 200),
-				[
-					{"type" : OBSTACLE_ROUTINE_TYPE_TRANSLATION,
-	  					"time" : 5,
-						"effect" : Vec2(0, 168)},
-					{"type" : OBSTACLE_ROUTINE_TYPE_TRANSLATION,
-	  					"time" : 5,
-						"effect" : Vec2(0, -168)}
-				]
-			),
-			createPolygonObstacle(
-				AREA_SIZE[0] / 3 * 2,
-				AREA_SIZE[1] - 30,
-				[(30, 0), (0, -30), (0, 30)],
-				(0, 200, 200),
-				[
-					{"type" : OBSTACLE_ROUTINE_TYPE_TRANSLATION,
-	  					"time" : 5,
-						"effect" : Vec2(0, -168)},
-					{"type" : OBSTACLE_ROUTINE_TYPE_TRANSLATION,
-	  					"time" : 5,
-						"effect" : Vec2(0, 168)}
-				]
-			),
-			createPolygonObstacle(
-				AREA_SIZE[0] / 3 * 2,
-				30,
-				[(-30, 0), (0, -30), (0, 30)],
-				(0, 200, 200),
-				[
-					{"type" : OBSTACLE_ROUTINE_TYPE_TRANSLATION,
-	  					"time" : 5,
-						"effect" : Vec2(0, 168)},
-					{"type" : OBSTACLE_ROUTINE_TYPE_TRANSLATION,
-	  					"time" : 5,
-						"effect" : Vec2(0, -168)}
-				]
-			),
-			createPolygonObstacle(
-				AREA_SIZE[0] / 3,
-				AREA_SIZE[1] - 30,
-				[(30, 0), (0, -30), (0, 30)],
-				(0, 200, 200),
-				[
-					{"type" : OBSTACLE_ROUTINE_TYPE_TRANSLATION,
-	  					"time" : 5,
-						"effect" : Vec2(0, -168)},
-					{"type" : OBSTACLE_ROUTINE_TYPE_TRANSLATION,
-	  					"time" : 5,
-						"effect" : Vec2(0, 168)}
-				]
-			)
-		]
+		self.createMap(idMap)
 
 		# idPaddle, paddleTeam, Ball speed, Number of bounce, CC, Perfect shoot, time of goal
 		self.goals = []
@@ -766,3 +643,146 @@ class Server:
 		message = [SERVER_MSG_TYPE_SCORE_UPDATE, content]
 
 		self.messageForClients.append(message)
+
+
+	def createMap(self, idMap:int):
+		# Basic map
+		self.walls = [
+			# Wall up
+			createWallObstacle(
+				AREA_SIZE[0] / 2,
+			 	AREA_BORDER_SIZE / 2,
+				AREA_SIZE[0],
+				AREA_BORDER_SIZE * 2,
+				(50, 50, 50)
+			),
+			# Wall down
+			createWallObstacle(
+				AREA_SIZE[0] / 2,
+				AREA_SIZE[1] - AREA_BORDER_SIZE / 2,
+				AREA_SIZE[0],
+				AREA_BORDER_SIZE * 2,
+				(50, 50, 50)
+			)
+		]
+
+		if idMap == 1:
+			self.walls.append(createPolygonObstacle(
+								AREA_SIZE[0] / 2,
+								0,
+								[(-300, 0), (300, 0), (275, 50), (75, 75), (0, 125), (-75, 75), (-275, 50)],
+								(200, 200, 0)
+							))
+			self.walls.append(createPolygonObstacle(
+								AREA_SIZE[0] / 2,
+								AREA_SIZE[1],
+								[(-300, 0), (300, 0), (275, -50), (0, -25), (-275, -50)],
+								(200, 200, 0)
+							))
+			self.walls.append(createCircleObstacle(
+								AREA_SIZE[0] / 2,
+								AREA_SIZE[1] / 2,
+								100,
+								32,
+								(200, 0, 200)
+							))
+
+		elif idMap == 2:
+			self.walls.append(createPolygonObstacle(
+								AREA_SIZE[0] / 2,
+								0,
+								[(-300, 0), (300, 0), (275, 50), (75, 75), (0, 125), (-75, 75), (-275, 50)],
+								(200, 200, 0)
+							))
+			self.walls.append(createPolygonObstacle(
+								AREA_SIZE[0] / 2,
+								AREA_SIZE[1],
+								[(-300, 0), (300, 0), (275, -50), (0, -25), (-275, -50)],
+								(200, 200, 0)
+							))
+			self.walls.append(createCircleObstacle(
+								AREA_SIZE[0] / 2,
+								AREA_SIZE[1] / 2,
+								100,
+								32,
+								(200, 0, 200)
+							))
+			self.walls.append(createPolygonObstacle(
+								AREA_SIZE[0] / 2,
+								AREA_SIZE[1] / 2,
+								[(10, 200), (-10, 200), (-10, -200), (10, -200)],
+								(200, 0, 200),
+								[
+									{"type" : OBSTACLE_ROUTINE_TYPE_ROTATION,
+										"time" : OBSTACLE_ROUTINE_TIME_INFINITE,
+										"effect" : 360}
+								]
+							))
+			self.walls.append(createPolygonObstacle(
+								AREA_SIZE[0] / 2,
+								AREA_SIZE[1] / 2,
+								[(10, 200), (-10, 200), (-10, -200), (10, -200)],
+								(200, 0, 200),
+								[
+									{"type" : OBSTACLE_ROUTINE_TYPE_ROTATION,
+										"time" : OBSTACLE_ROUTINE_TIME_INFINITE,
+										"effect" : -360}
+								]
+							))
+			self.walls.append(createPolygonObstacle(
+								AREA_SIZE[0] / 3,
+								30,
+								[(-30, 0), (0, -30), (0, 30)],
+								(0, 200, 200),
+								[
+									{"type" : OBSTACLE_ROUTINE_TYPE_TRANSLATION,
+										"time" : 5,
+										"effect" : Vec2(0, 168)},
+									{"type" : OBSTACLE_ROUTINE_TYPE_TRANSLATION,
+										"time" : 5,
+										"effect" : Vec2(0, -168)}
+								]
+							))
+			self.walls.append(createPolygonObstacle(
+								AREA_SIZE[0] / 3 * 2,
+								AREA_SIZE[1] - 30,
+								[(30, 0), (0, -30), (0, 30)],
+								(0, 200, 200),
+								[
+									{"type" : OBSTACLE_ROUTINE_TYPE_TRANSLATION,
+										"time" : 5,
+										"effect" : Vec2(0, -168)},
+									{"type" : OBSTACLE_ROUTINE_TYPE_TRANSLATION,
+										"time" : 5,
+										"effect" : Vec2(0, 168)}
+								]
+							))
+			self.walls.append(createPolygonObstacle(
+								AREA_SIZE[0] / 3 * 2,
+								30,
+								[(-30, 0), (0, -30), (0, 30)],
+								(0, 200, 200),
+								[
+									{"type" : OBSTACLE_ROUTINE_TYPE_TRANSLATION,
+										"time" : 5,
+										"effect" : Vec2(0, 168)},
+									{"type" : OBSTACLE_ROUTINE_TYPE_TRANSLATION,
+										"time" : 5,
+										"effect" : Vec2(0, -168)}
+								]
+							))
+			self.walls.append(createPolygonObstacle(
+								AREA_SIZE[0] / 3,
+								AREA_SIZE[1] - 30,
+								[(30, 0), (0, -30), (0, 30)],
+								(0, 200, 200),
+								[
+									{"type" : OBSTACLE_ROUTINE_TYPE_TRANSLATION,
+										"time" : 5,
+										"effect" : Vec2(0, -168)},
+									{"type" : OBSTACLE_ROUTINE_TYPE_TRANSLATION,
+										"time" : 5,
+										"effect" : Vec2(0, 168)}
+								]
+							))
+
