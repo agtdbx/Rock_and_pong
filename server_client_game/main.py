@@ -3,7 +3,7 @@ import client_side.game_client as game_client
 import server_side.game_server as game_server
 
 
-map_to_load = 2
+map_to_load = 1
 paddles_left = [PADDLE_PLAYER]
 paddles_right = [PADDLE_IA]
 powerUpEnable=True

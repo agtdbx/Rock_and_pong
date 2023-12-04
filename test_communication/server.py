@@ -47,6 +47,11 @@ while(runServer):
                     print("Client", i, "disconnected")
                     pollerObject.unregister(clientSockets[i])
                 else:
+                    if len(msg) > 5 and msg[:5] == "DATA:":
+                        data = msg[5:]
+                        data = eval(data)
+                        print(data["test"])
+                        print(data)
                     print("Client", i, ":", msg)
 
     if len(fdVsEvent) == 0:

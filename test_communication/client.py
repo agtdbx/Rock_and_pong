@@ -25,6 +25,10 @@ while(runClient):
             if msg == "q":
                 print("/!\\ CLIENT EXIT /!\\")
                 runClient = False
+            elif msg == "test":
+                data = {"test" : [4, 1, 5, 3]}
+                msg = "DATA:" + str(data)
+                clientSocket.sendall(bytes(msg, encoding='utf-8'))
             else:
                 print("Stdin input :", msg)
                 clientSocket.sendall(bytes(msg, encoding='utf-8'))
