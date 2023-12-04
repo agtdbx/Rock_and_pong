@@ -14,6 +14,8 @@ def client():
 	while message != 'q':
 		s.send(message.encode('utf-8'))
 		data = s.recv(1024).decode('utf-8')
+		# if not data:
+		# 	break
 		print('Received from server: ' + data)
 		message = input('==> ')
 	s.close()

@@ -35,7 +35,7 @@ def createCircleObstacle(x:int, y:int, radius:int, precision:int, color, routine
 
 
 
-class Server:
+class GameServer:
 	def __init__(self, powerUpEnable, paddles_left, paddles_right, idMap):
 		"""
 		This method define all variables needed by the program

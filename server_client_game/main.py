@@ -1,6 +1,6 @@
 from define import *
-import client_side.client as client
-import server_side.server as server
+import client_side.game_client as game_client
+import server_side.game_server as game_server
 
 
 map_to_load = 2
@@ -8,27 +8,27 @@ paddles_left = [PADDLE_PLAYER]
 paddles_right = [PADDLE_IA]
 powerUpEnable=True
 
-server = server.Server(
+gameServer = game_server.GameServer(
 			powerUpEnable, paddles_left, paddles_right, map_to_load)
-client = client.Client()
+gameClient = game_client.GameClient()
 
 # Give messages from server to client
-client.messageFromServer.extend(server.messageForClients)
+gameClient.messageFromServer.extend(gameServer.messageForClients)
 
 checkTime = []
 
-while server.runMainLoop and client.runMainLoop:
+while gameServer.runMainLoop and gameClient.runMainLoop:
 	# Run server step for make all calculation
-	server.step()
+	gameServer.step()
 
 	# Give messages from server to client
-	client.messageFromServer.extend(server.messageForClients)
+	gameClient.messageFromServer.extend(gameServer.messageForClients)
 
 	# Run client step to draw server change, and check user input
-	client.step()
+	gameClient.step()
 
 	# Give messages from client to server
-	server.messageFromClients.extend(client.messageForServer)
+	gameServer.messageFromClients.extend(gameClient.messageForServer)
 
-client.quit()
-server.printFinalStat()
+gameClient.quit()
+gameServer.printFinalStat()

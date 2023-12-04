@@ -34,7 +34,7 @@ def createObstacle(x:int, y:int, listPoint:list, color:tuple) -> hitbox.Hitbox:
 
 
 
-class Client:
+class GameClient:
 	def __init__(self):
 		"""
 		This method define all variables needed by the program

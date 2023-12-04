@@ -1,19 +1,43 @@
+import select
 import socket
+import sys
 
-def client():
-	host = socket.gethostname()  # get local machine name
-	port = 8080  # Make sure it's within the > 1024 $$ <65535 range
+HOST = "127.0.0.1"  # The server's hostname or IP address
+PORT = 20000  # The port used by the server
 
-	s = socket.socket()
-	s.connect((host, port))
+clientSocket = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
+clientSocket.connect((HOST, PORT))
 
-	message = input('-> ')
-	while message != 'q':
-		s.send(message.encode('utf-8'))
-		data = s.recv(1024).decode('utf-8')
-		print('Received from server: ' + data)
-		message = input('==> ')
-	s.close()
+pollerObject = select.poll()
+pollerObject.register(0, select.POLLIN)
+pollerObject.register(clientSocket, select.POLLIN)
 
-if __name__ == '__main__':
-	client()
+runClient = True
+
+while(runClient):
+    fdVsEvent = pollerObject.poll(10000)
+    for descriptor, Event in fdVsEvent:
+        if descriptor == 0:
+            # Read line from stdin
+            msg = sys.stdin.readline()
+            # Remove \n
+            msg = msg[:-1]
+            if msg == "q":
+                print("/!\\ CLIENT EXIT /!\\")
+                runClient = False
+            else:
+                print("Stdin input :", msg)
+                clientSocket.sendall(bytes(msg, encoding='utf-8'))
+            continue
+        elif descriptor == clientSocket.fileno():
+            msg = clientSocket.recv(1024).decode('utf-8')
+            if not msg:
+                print("Server close")
+                runClient = False
+                break
+            print("Message from server :", msg)
+            continue
+        print("WTF t'es qui toi")
+
+    if len(fdVsEvent) == 0:
+        print("Nothing recieved")

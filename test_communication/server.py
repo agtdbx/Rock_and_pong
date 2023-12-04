@@ -1,23 +1,53 @@
+import select
 import socket
+import sys
 
-def server():
-	host = socket.gethostname()   # get local machine name
-	port = 8080  # Make sure it's within the > 1024 $$ <65535 range
+serverSocket    = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
+serverSocket.setsockopt(socket.SOL_SOCKET, socket.SO_REUSEADDR, 1)
 
-	s = socket.socket()
-	s.bind((host, port))
+ipAddress   = '127.0.0.1'
+portNumber  = 20000
 
-	s.listen(1)
-	client_socket, adress = s.accept()
-	print("Connection from: " + str(adress))
-	while True:
-		data = client_socket.recv(1024).decode('utf-8')
-		if not data:
-			break
-		print('From online user: ' + data)
-		data = data.upper()
-		client_socket.send(data.encode('utf-8'))
-	client_socket.close()
+serverSocket.bind((ipAddress, portNumber))
+serverSocket.listen()
 
-if __name__ == '__main__':
-	server()
+pollerObject = select.poll()
+pollerObject.register(0, select.POLLIN)
+pollerObject.register(serverSocket, select.POLLIN)
+
+clientSockets = []
+
+runServer = True
+
+while(runServer):
+    fdVsEvent = pollerObject.poll(10000)
+    for descriptor, Event in fdVsEvent:
+        if descriptor == 0:
+            # Read line from stdin
+            msg = sys.stdin.readline()
+            # Remove \n
+            msg = msg[:-1]
+            if msg == "q":
+                print("/!\\ SERVER EXIT /!\\")
+                runServer = False
+            else:
+                print("Stdin input :", msg)
+            continue
+        elif descriptor == serverSocket.fileno():
+            conn, addr = serverSocket.accept()
+            print("Client", len(clientSockets), "added")
+            pollerObject.register(conn, select.POLLIN)
+            clientSockets.append(conn)
+            conn.sendall(b"Welcom to hell")
+            continue
+        for i in range(len(clientSockets)):
+            if descriptor == clientSockets[i].fileno():
+                msg = clientSockets[i].recv(1024).decode('utf-8')
+                if not msg:
+                    print("Client", i, "disconnected")
+                    pollerObject.unregister(clientSockets[i])
+                else:
+                    print("Client", i, ":", msg)
+
+    if len(fdVsEvent) == 0:
+        print("Nothing recieved")
