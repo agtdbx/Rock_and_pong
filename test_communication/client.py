@@ -15,7 +15,7 @@ pollerObject.register(clientSocket, select.POLLIN)
 runClient = True
 
 while(runClient):
-    fdVsEvent = pollerObject.poll(10000)
+    fdVsEvent = pollerObject.poll(16)
     for descriptor, Event in fdVsEvent:
         if descriptor == 0:
             # Read line from stdin
@@ -43,5 +43,5 @@ while(runClient):
             continue
         print("WTF t'es qui toi")
 
-    if len(fdVsEvent) == 0:
-        print("Nothing recieved")
+    # if len(fdVsEvent) == 0:
+    #     print("Nothing recieved")

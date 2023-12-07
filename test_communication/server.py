@@ -20,7 +20,7 @@ clientSockets = []
 runServer = True
 
 while(runServer):
-    fdVsEvent = pollerObject.poll(10000)
+    fdVsEvent = pollerObject.poll(16)
     for descriptor, Event in fdVsEvent:
         if descriptor == 0:
             # Read line from stdin
@@ -32,6 +32,8 @@ while(runServer):
                 runServer = False
             else:
                 print("Stdin input :", msg)
+                for clientSocket in clientSockets:
+                    clientSocket.sendall(bytes(msg, encoding='utf-8'))
             continue
         elif descriptor == serverSocket.fileno():
             conn, addr = serverSocket.accept()
@@ -54,5 +56,5 @@ while(runServer):
                         print(data)
                     print("Client", i, ":", msg)
 
-    if len(fdVsEvent) == 0:
-        print("Nothing recieved")
+    # if len(fdVsEvent) == 0:
+    #     print("Nothing recieved")

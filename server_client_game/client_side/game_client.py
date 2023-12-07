@@ -329,7 +329,7 @@ class GameClient:
 		# 	{id, position, points:[[x, y]]}
 		# ]
 		for content in messageContent:
-			self.walls[content["id"]].setPos(vec2Add(content["position"], Vec2(AREA_RECT[0], AREA_RECT[1])))
+			self.walls[content["id"]].setPos(vec2Add(Vec2(content["position"][0], content["position"][1]), Vec2(AREA_RECT[0], AREA_RECT[1])))
 			self.walls[content["id"]].clearPoints()
 			self.walls[content["id"]].addPoints(content["points"])
 

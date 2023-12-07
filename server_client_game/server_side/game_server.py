@@ -95,6 +95,7 @@ class GameServer:
 		self.ballNumber = 0
 
 		# For communications
+		self.timeBeforeUpdateClient = TIME_SEND_UPDATE_INFO_TO_CLIENT
 		# (Message type, message content)
 		self.messageForClients = []
 		# (Message type, message content)
@@ -129,15 +130,19 @@ class GameServer:
 			self.input()
 			self.tick()
 
+
 		# After compute it, clear message from the server
 		self.messageFromClients.clear()
 
-		# Create new message for clients
-		self.createMessageUpdateObstacle()
-		self.createMessageInfoPaddles()
-		self.createMessageInfoBalls()
-		if self.powerUpEnable:
-			self.createMessageInfoPowerUp()
+		self.timeBeforeUpdateClient -= self.delta
+		if self.timeBeforeUpdateClient <= 0:
+			# Create new message for clients
+			self.createMessageUpdateObstacle()
+			self.createMessageInfoPaddles()
+			self.createMessageInfoBalls()
+			if self.powerUpEnable:
+				self.createMessageInfoPowerUp()
+			self.timeBeforeUpdateClient = TIME_SEND_UPDATE_INFO_TO_CLIENT
 
 
 	def input(self):
@@ -564,7 +569,7 @@ class GameServer:
 		for i in range(len(self.walls)):
 			wall = self.walls[i]
 			if wall.numberOfRoutines != 0:
-				obstacle = {"id" : i, "position" : wall.hitbox.pos, "points" : wall.hitbox.getPointsCenter()}
+				obstacle = {"id" : i, "position" : wall.hitbox.pos.asTupple(), "points" : wall.hitbox.getPointsCenter()}
 				content.append(obstacle)
 
 		message = [SERVER_MSG_TYPE_UPDATE_OBSTACLE, content]
